@@ -8,7 +8,7 @@ Demo of a shift-manager tool: line bottleneck, flow between machines, OEE, crew 
 
 | File | What it is |
 |---|---|
-| `index.html` | The whole app in one file. Tabs: Overview (manager), Line (stream top to bottom, bottleneck, OEE, losses), Crew (ILUO, staffing, recommendation), Operators (tablets), Analysis, History (hour/shift/day/week, Pareto by period, insights), Actions |
+| `index.html` | The whole app in one file. Role switcher (Operator, Team leader, Shift manager, Site leadership, Engineering, CI) sets the first tab and a strip of what matters now; tap a machine for its detail. Tabs: Overview (manager), Line (stream top to bottom, bottleneck, OEE, losses), Crew (ILUO, staffing, recommendation), Operators (tablets), Analysis, History (hour/shift/day/week, Pareto by period, insights), Actions |
 | `test.js` | Engine test: 5 shifts with successive fixes, checks % of plan and bottleneck |
 | `test-month.js` | Month test: 52 shifts, no fixes vs staged fixes with ramp |
 | `docs/lean/rollout.md` | How fixes are sequenced, rolled out and sustained (TOC, PDCA on weeks, ramp, audit) |
