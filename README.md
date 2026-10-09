@@ -8,7 +8,7 @@ Demo of a shift-manager tool: line bottleneck, flow between machines, OEE, crew 
 
 | File | What it is |
 |---|---|
-| `index.html` | The whole app in one file. Tabs: Overview (manager), Line (stream top to bottom, bottleneck, OEE, losses), Crew (ILUO, staffing, recommendation), Operators (tablets), Analysis, Actions |
+| `index.html` | The whole app in one file. Tabs: Overview (manager), Line (stream top to bottom, bottleneck, OEE, losses), Crew (ILUO, staffing, recommendation), Operators (tablets), Analysis, History (hour/shift/day/week, Pareto by period, insights), Actions |
 | `test.js` | Engine test: 5 shifts with successive fixes, checks % of plan and bottleneck |
 | `test-month.js` | Month test: 52 shifts, no fixes vs staged fixes with ramp |
 | `docs/lean/rollout.md` | How fixes are sequenced, rolled out and sustained (TOC, PDCA on weeks, ramp, audit) |
@@ -28,6 +28,8 @@ OEE: availability (time without own stops) × performance (against ideal rate; w
 Crew: the operator's ILUO level multiplies own-stop duration (I ×1.45, L ×1.15, U ×1.0, O ×0.8). In the product, staffing and the matrix come from Crewmap.
 
 Calendar: 30 days, day shift 06:00–18:00 and night shift 18:00–06:00, no production on Sundays: 52 shifts. A fix starts at 40% effect and reaches 100% after 6 shifts; three shifts without the tablet check ticked and it slips 10 points per shift, an audit restores it (`docs/lean/rollout.md`).
+
+History: every finished shift is stored in the browser (IndexedDB). Export and import as JSON for replay. Insights are rules over stored shifts: rising and falling reasons week over week, recurring reasons, day vs night, fixes that held or slipped, check tick rate, bottleneck moved, reporting quality.
 
 Proposals in the demo come from a rule engine, not an AI model.
 

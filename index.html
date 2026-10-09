@@ -341,6 +341,8 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
 .notes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 20px; }
 .notes p { margin: 6px 0 0; font-size: 14px; max-width: 65ch; }
 .tp[hidden] { display: none !important; }
+.hctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 16px; }
+.bnA { background: var(--setup); } .bnB { background: var(--slow); } .bnC { background: var(--stop); }
 #toasts { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; flex-direction: column; gap: 10px; max-width: min(400px, calc(100vw - 40px)); }
 .toast { background: var(--ink); color: var(--bg); border-left: 4px solid var(--bn); padding: 12px 14px; border-radius: var(--rs); font-size: 14px; box-shadow: 0 8px 22px rgba(0,0,0,.2); animation: tin .25s ease-out; }
 @keyframes tin { from { transform: translateY(8px); opacity: 0; } }
@@ -383,6 +385,7 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
       <button type="button" role="tab" id="t-zaloga" aria-controls="p-zaloga" aria-selected="false" tabindex="-1" data-tab="zaloga">Crew</button>
       <button type="button" role="tab" id="t-operatorzy" aria-controls="p-operatorzy" aria-selected="false" tabindex="-1" data-tab="operatorzy">Operators<span class="badge" id="tbBadge" hidden>0</span></button>
       <button type="button" role="tab" id="t-analiza" aria-controls="p-analiza" aria-selected="false" tabindex="-1" data-tab="analiza">Analysis</button>
+      <button type="button" role="tab" id="t-historia" aria-controls="p-historia" aria-selected="false" tabindex="-1" data-tab="historia">History</button>
       <button type="button" role="tab" id="t-dzialania" aria-controls="p-dzialania" aria-selected="false" tabindex="-1" data-tab="dzialania">Actions</button>
       <button type="button" role="tab" id="t-demo" aria-controls="p-demo" aria-selected="false" tabindex="-1" data-tab="demo">About</button>
     </div>
@@ -471,6 +474,29 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
     </div>
   </section>
 
+  <section class="tp" id="p-historia" role="tabpanel" aria-labelledby="t-historia" hidden>
+    <div class="sh"><h2>History</h2><p>Every shift is stored in this browser. Hour, shift, day and week views, and what the data says to the lean coach.</p></div>
+    <div class="hctl">
+      <div class="seg" role="group" aria-label="Period"><button type="button" data-per="24h" aria-pressed="false">Last 24 h</button><button type="button" data-per="7d" aria-pressed="true">Last 7 days</button><button type="button" data-per="month" aria-pressed="false">Month by day</button><button type="button" data-per="weeks" aria-pressed="false">By week</button></div>
+      <span class="lmeta" id="hMeta"></span>
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn" id="bExport" type="button">Copy data as JSON</button>
+      <label class="btn" for="fImport" style="cursor:pointer">Load JSON<input type="file" id="fImport" accept="application/json" hidden></label>
+    </div>
+    <div class="kpis" id="hKpis"></div>
+    <div class="charts">
+      <div class="chart"><span class="lbl" id="hTrendL">Plan attainment per shift</span><canvas id="hTrend" height="180"></canvas>
+        <div class="legend"><span><i style="background:var(--ink)"></i>Good units / plan</span><span><i style="background:var(--bn)"></i>Marker colour: shift bottleneck</span><span><i style="background:var(--line)"></i>100%</span></div></div>
+      <div class="chart"><span class="lbl">OEE components, line bottleneck of each shift</span><canvas id="hOee" height="160"></canvas>
+        <div class="legend"><span><i style="background:var(--setup)"></i>Availability</span><span><i style="background:var(--slow)"></i>Performance</span><span><i style="background:var(--run)"></i>Quality</span><span><i style="background:var(--ink)"></i>OEE</span></div></div>
+    </div>
+    <div class="ana" style="margin-top:20px">
+      <div class="panel"><h3>Loss Pareto, selected period</h3><p class="hint">Magenta: minutes while the machine was the bottleneck. Sorted by bottleneck minutes.</p><div class="par" id="hPareto"></div></div>
+      <div class="panel"><h3>Bottleneck by week</h3><p class="hint">Share of shift time each machine was the constraint. When it moves, the next fix moves with it.</p><div class="hist-wrap" style="margin:0;padding:0;border:0;background:none"><table class="oee" id="hBn"></table></div></div>
+      <div class="panel wide"><h3>Insights for the lean coach</h3><p class="hint">Rules over the stored shifts: rising, recurring, day vs night, fixes that held or slipped, reporting quality.</p><ul class="pat" id="hIns"></ul></div>
+    </div>
+  </section>
+
   <section class="tp" id="p-dzialania" role="tabpanel" aria-labelledby="t-dzialania" hidden>
     <div class="sh"><h2>Actions</h2><p>Proposals ranked by gain at the bottleneck. A fix takes effect from the next shift, so the result shows in the numbers.</p></div>
     <div class="props" id="props"></div>
@@ -486,6 +512,7 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
       <div class="panel"><span class="lbl">OEE</span><p>Availability = time without own stops and changeovers. Performance = output against ideal rate in available time, so waiting for another machine lowers performance. Quality = good units.</p></div>
       <div class="panel"><span class="lbl">Bottleneck</span><p>Active period method (Roser). At any moment the bottleneck is the machine with the longest uninterrupted period of running or own stoppage. Starved and blocked states end the period, because the machine is waiting for another one.</p></div>
       <div class="panel"><span class="lbl">Proposals</span><p>In the demo: a lean rule engine (Pareto, Ishikawa, muda, mura, muri, SMED, TPM, poka-yoke). In the product: a local model on a server inside the plant. Data never leaves the site.</p></div>
+      <div class="panel"><span class="lbl">History</span><p>Finished shifts are stored in this browser only (IndexedDB). Nothing leaves the page. Copy data as JSON to move it, Load JSON to replay it. Reset demo clears the store.</p></div>
       <div class="panel"><span class="lbl">Crew</span><p>ILUO levels change how fast stops are cleared. In the product, staffing and the matrix come from Crewmap; here they are built in.</p></div>
       <div class="panel"><span class="lbl">Ownership</span><p>© 2026 Norbert Mazur, all rights reserved: the app, its source code, screens, texts, reason taxonomy and the combination of bottleneck detection, crew ILUO, tablet modes and the proposal engine. Not claimed and free for anyone: active period method (Roser, 2001), OEE (ISO 22400), ILUO, muda/mura/muri, SMED, TPM, TOC. Real plant data stays the plant's property. Full text in the LICENSE file.</p></div>
       <div class="panel"><span class="lbl">Plant</span><p>Oakmere Bar Co. does not exist. Numbers, machines and failures are invented for this demo.</p></div>
@@ -863,8 +890,9 @@ function endShift() {
     $('#endTxt').textContent = `Month finished: ${pct(avg)} of plan on average`;
     $('#endSub').textContent = `${UI.hist.length} shifts. Last week ${pct(UI.hist.slice(-12).reduce((a, h) => a + h.pct, 0) / 12)}. See History for the trend.`;
     $('#endBar').hidden = false; $('#bPlay').disabled = true; $('#bEnd').disabled = true; $('#bDay').disabled = true;
-    renderAll(true); return;
+    saveState(); renderAll(true); return;
   }
+  if (!UI.presim) saveState();
   if (!UI.presim) toast(`${S.cal.dow} ${S.cal.type} shift (day ${S.cal.day}) finished: ${pct(goodOut(S) / PLAN_TOTAL)} of plan. Bottleneck: ${main ? mname(main) : '–'}.`);
   nextShift();
 }
@@ -878,12 +906,12 @@ function nextShift() {
 function runShifts(count) {
   UI.presim = true;
   for (let i = 0; i < count && !UI.monthDone; i++) { advance(SHIFT_SEC); }
-  UI.presim = false; if (!UI.monthDone) updateFocus(true); renderAll(true);
+  UI.presim = false; if (!UI.monthDone) updateFocus(true); saveState(); renderAll(true);
 }
 function resetDemo() {
   UI.hist = []; UI.queued = {}; UI.appliedAt = {}; UI.fixState = {}; UI.prevCum = null; UI.prevMain = null; UI.assign = { ...DEFAULT_ASSIGN }; UI.monthDone = false;
   startShift(1); UI.presim = true; advance(6 * 3600); UI.presim = false; updateFocus(true);
-  UI.playing = true; renderAll(true);
+  UI.playing = true; STORE.del('month'); renderAll(true);
 }
 function auditFix(k) {
   const st = UI.fixState[k]; if (!st) return;
@@ -1404,8 +1432,176 @@ function renderHistChart() {
   $('#oHist').innerHTML = items.map(i => `<div class="hcc"><span class="hcv">${pct(i.p)}</span><div class="hct${i.live ? ' live' : ''}"><i style="height:${Math.min(100, 100 * i.p / max)}%"></i><s style="bottom:${100 / max}%"></s></div><span class="hcl">${i.lbl}${i.live ? ' live' : ''}</span><span class="hcb">${i.bn ? mname(i.bn) : '–'}</span></div>`).join('');
 }
 
+// ---------- history store (IndexedDB, this browser only) ----------
+const STORE = (() => {
+  let db = null;
+  const open = () => new Promise(res => {
+    try {
+      const rq = indexedDB.open('bneck', 1);
+      rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
+      rq.onsuccess = () => { db = rq.result; res(db); };
+      rq.onerror = () => res(null);
+    } catch (e) { res(null); }
+  });
+  const get = k => new Promise(res => { if (!db) return res(null); try { const t = db.transaction('kv').objectStore('kv').get(k); t.onsuccess = () => res(t.result || null); t.onerror = () => res(null); } catch (e) { res(null); } });
+  const set = (k, v) => new Promise(res => { if (!db) return res(false); try { const t = db.transaction('kv', 'readwrite').objectStore('kv').put(v, k); t.onsuccess = () => res(true); t.onerror = () => res(false); } catch (e) { res(false); } });
+  const del = k => new Promise(res => { if (!db) return res(false); try { const t = db.transaction('kv', 'readwrite').objectStore('kv').delete(k); t.onsuccess = () => res(true); t.onerror = () => res(false); } catch (e) { res(false); } });
+  return { open, get, set, del };
+})();
+function snapshot() { return { v: 1, savedAt: Date.now(), n: S.n, hist: UI.hist, appliedAt: UI.appliedAt, fixState: UI.fixState, assign: UI.assign, monthDone: UI.monthDone }; }
+function saveState() { STORE.set('month', snapshot()); }
+function loadState(d) {
+  if (!d || !Array.isArray(d.hist)) return false;
+  UI.hist = d.hist; UI.appliedAt = d.appliedAt || {}; UI.fixState = d.fixState || {}; UI.assign = { ...DEFAULT_ASSIGN, ...(d.assign || {}) }; UI.queued = {}; UI.monthDone = !!d.monthDone;
+  UI.prevCum = UI.hist.length ? null : null; UI.prevMain = UI.hist.length ? UI.hist[UI.hist.length - 1].main : null;
+  const n = Math.min(SHIFTS, Math.max(1, d.n || UI.hist.length + 1));
+  if (UI.monthDone) { startShift(SHIFTS); UI.presim = true; advance(SHIFT_SEC); UI.presim = false; }
+  else { startShift(n); UI.presim = true; advance(600); UI.presim = false; UI.playing = true; }
+  renderAll(true); return true;
+}
+$('#bExport').addEventListener('click', async () => {
+  const txt = JSON.stringify(snapshot());
+  try { await navigator.clipboard.writeText(txt); toast(`Copied ${UI.hist.length} shifts as JSON (${Math.round(txt.length / 1024)} kB).`); }
+  catch (e) { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); toast('Clipboard blocked. The JSON is selected in a text box at the bottom of the page; copy it and delete the box.'); }
+});
+$('#fImport').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  const rd = new FileReader(); rd.onload = () => { try { const d = JSON.parse(rd.result); if (loadState(d)) { saveState(); toast(`Loaded ${UI.hist.length} shifts from ${f.name}.`); } else toast('That file is not a BNECK export.'); } catch (err) { toast('Could not read the file.'); } };
+  rd.readAsText(f); e.target.value = '';
+});
+
+// ---------- history views ----------
+let HPER = '7d';
+document.querySelectorAll('[data-per]').forEach(b => b.addEventListener('click', () => { HPER = b.dataset.per; document.querySelectorAll('[data-per]').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false')); renderHistory(true); }));
+function histSel() {
+  const H = UI.hist;
+  if (HPER === '7d') return H.filter(h => h.day > (S.cal.day - 7));
+  if (HPER === '24h') return H.slice(-2);
+  return H;
+}
+function periodLabel() { return { '24h': 'last 24 h', '7d': 'last 7 days', month: 'this month', weeks: 'this month' }[HPER]; }
+function aggRows(sel) {
+  const rows = {};
+  for (const h of sel) for (const r of h.rows) { const k = r.m + '|' + r.r, o = rows[k] || (rows[k] = { m: r.m, r: r.r, n: 0, min: 0, bn: 0 }); o.n += r.n; o.min += r.min; o.bn += r.bn; }
+  return Object.values(rows);
+}
+function hSeries() {
+  // returns [{lbl, p, bn, oee:{A,P,Q,oee}}] per point for the chosen period
+  const H = UI.hist;
+  const pt = h => ({ lbl: `D${h.day}${h.type === 'day' ? 'd' : 'n'}`, p: h.pct, bn: h.main, oee: h.main ? h.oee[h.main] : null });
+  if (HPER === '24h') {
+    const out = []; const last = H.slice(-2);
+    for (const h of last) for (const b of h.hourly) out.push({ lbl: pad(b.clock) + ':00', p: b.out / (PLAN_RATE * 60), bn: b.bn, oee: null });
+    for (const b of S.hourly) out.push({ lbl: pad(b.clock) + ':00', p: b.out / (PLAN_RATE * 60), bn: b.bn, oee: null, live: true });
+    return out.slice(-24);
+  }
+  if (HPER === '7d') return H.filter(h => h.day > (S.cal.day - 7)).map(pt);
+  if (HPER === 'month') {
+    const days = {}; for (const h of H) { const d = days[h.day] || (days[h.day] = { lbl: 'D' + h.day, ps: [], bns: {}, o: [] }); d.ps.push(h.pct); d.bns[h.main] = (d.bns[h.main] || 0) + 1; if (h.main) d.o.push(h.oee[h.main]); }
+    return Object.values(days).map(d => ({ lbl: d.lbl, p: d.ps.reduce((a, b) => a + b, 0) / d.ps.length, bn: Object.entries(d.bns).sort((a, b) => b[1] - a[1])[0][0], oee: d.o.length ? avgOee(d.o) : null }));
+  }
+  const wks = {}; for (const h of H) { const w = wks[h.week] || (wks[h.week] = { lbl: 'Week ' + h.week, ps: [], bns: {}, o: [] }); w.ps.push(h.pct); w.bns[h.main] = (w.bns[h.main] || 0) + 1; if (h.main) w.o.push(h.oee[h.main]); }
+  return Object.values(wks).map(w => ({ lbl: w.lbl, p: w.ps.reduce((a, b) => a + b, 0) / w.ps.length, bn: Object.entries(w.bns).sort((a, b) => b[1] - a[1])[0][0], oee: w.o.length ? avgOee(w.o) : null }));
+}
+function avgOee(list) { const k = ['A', 'P', 'Q', 'oee'], o = {}; for (const x of k) o[x] = list.reduce((a, b) => a + b[x], 0) / list.length; return o; }
+function drawTrend() {
+  const c = $('#hTrend'), H = 180; const pr = prep(c, H); if (!pr) return; const { g, W } = pr;
+  const pts = hSeries(); const L = 48, R = 12, T = 10, B = 26, pw = W - L - R, ph = H - T - B, ymax = 1.25;
+  const X = i => L + (pts.length > 1 ? pw * i / (pts.length - 1) : pw / 2), Y = v => T + ph * (1 - Math.min(ymax, v) / ymax);
+  g.font = `11px ${COL.mono}`; g.textAlign = 'right'; g.textBaseline = 'middle';
+  for (const v of [0, 0.25, 0.5, 0.75, 1, 1.25]) { g.fillStyle = v === 1 ? COL.line : COL.line2; g.fillRect(L, Y(v), pw, v === 1 ? 2 : 1); g.fillStyle = COL.muted; g.fillText(pct(v), L - 6, Y(v)); }
+  if (!pts.length) { g.fillStyle = COL.muted; g.textAlign = 'left'; g.fillText('No finished shifts yet.', L + 8, T + 20); return; }
+  g.strokeStyle = COL.ink; g.lineWidth = 2; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(X(i), Y(p.p)) : g.moveTo(X(i), Y(p.p))); g.stroke();
+  const BNC = { A: COL.setup, B: COL.slow, C: COL.stop };
+  pts.forEach((p, i) => { g.fillStyle = p.bn ? BNC[p.bn] : COL.muted; g.beginPath(); g.arc(X(i), Y(p.p), p.live ? 3 : 4, 0, 7); g.fill(); if (p.live) { g.strokeStyle = COL.ink; g.lineWidth = 1; g.stroke(); } });
+  g.fillStyle = COL.muted; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+  const step = Math.ceil(pts.length / Math.max(1, Math.floor(pw / 56)));
+  pts.forEach((p, i) => { if (i % step === 0 || i === pts.length - 1) g.fillText(p.lbl, X(i), H - 8); });
+  const lblT = { '24h': 'Output per hour / plan, last 24 h', '7d': 'Plan attainment per shift, last 7 days', month: 'Plan attainment per day', weeks: 'Plan attainment per week' };
+  $('#hTrendL').textContent = lblT[HPER];
+}
+function drawOeeTrend() {
+  const c = $('#hOee'), H = 160; const pr = prep(c, H); if (!pr) return; const { g, W } = pr;
+  const pts = hSeries().filter(p => p.oee); const L = 48, R = 12, T = 10, B = 26, pw = W - L - R, ph = H - T - B;
+  const X = i => L + (pts.length > 1 ? pw * i / (pts.length - 1) : pw / 2), Y = v => T + ph * (1 - v);
+  g.font = `11px ${COL.mono}`; g.textAlign = 'right'; g.textBaseline = 'middle';
+  for (const v of [0, 0.5, 0.85, 1]) { g.fillStyle = COL.line2; g.fillRect(L, Y(v), pw, 1); g.fillStyle = COL.muted; g.fillText(pct(v), L - 6, Y(v)); }
+  if (!pts.length) { g.fillStyle = COL.muted; g.textAlign = 'left'; g.fillText(HPER === '24h' ? 'OEE is per shift; pick 7 days, month or weeks.' : 'No finished shifts yet.', L + 8, T + 20); return; }
+  const series = [['A', COL.setup, 1.5], ['P', COL.slow, 1.5], ['Q', COL.run, 1.5], ['oee', COL.ink, 2.5]];
+  for (const [k, col, w] of series) { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(X(i), Y(p.oee[k])) : g.moveTo(X(i), Y(p.oee[k]))); g.stroke(); }
+  g.fillStyle = COL.muted; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+  const step = Math.ceil(pts.length / Math.max(1, Math.floor(pw / 56)));
+  pts.forEach((p, i) => { if (i % step === 0 || i === pts.length - 1) g.fillText(p.lbl, X(i), H - 8); });
+}
+function insights() {
+  const H = UI.hist, L = [];
+  if (H.length < 4) return [[false, 'Fewer than 4 finished shifts. Insights start after the first two days.', 'Data']];
+  const wk = {}; for (const h of H) (wk[h.week] = wk[h.week] || []).push(h);
+  const weeks = Object.keys(wk).map(Number).sort((a, b) => a - b);
+  const sumBy = (list, f) => { const o = {}; for (const h of list) for (const r of h.rows) { const k = r.m + '|' + r.r; o[k] = (o[k] || 0) + f(r); } return o; };
+  const name = k => { const [m, r] = k.split('|'); return `${mname(m)}: ${rlabel(r).toLowerCase()}`; };
+  // rising / falling week over week (bottleneck minutes)
+  if (weeks.length >= 2) {
+    const a = sumBy(wk[weeks[weeks.length - 2]], r => r.bn), b = sumBy(wk[weeks[weeks.length - 1]], r => r.bn);
+    const na = wk[weeks[weeks.length - 2]].length, nb = wk[weeks[weeks.length - 1]].length;
+    for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
+      const pa = (a[k] || 0) / na, pb = (b[k] || 0) / nb;
+      if (pb >= 8 && pb > pa * 1.3) L.push([true, `${name(k)} is rising: ${fmt(pb)} min per shift at the bottleneck this week vs ${fmt(pa)} last week.`, `Week ${weeks[weeks.length - 1]} vs ${weeks[weeks.length - 2]}`]);
+      if (pa >= 8 && pb < pa * 0.5) L.push([false, `${name(k)} is falling: ${fmt(pa)} → ${fmt(pb)} min per shift at the bottleneck.`, `Week ${weeks[weeks.length - 1]} vs ${weeks[weeks.length - 2]}`]);
+    }
+  }
+  // recurring
+  const recent = H.slice(-12), cnt = {}, mins = {};
+  const fixedReasons = new Set(); for (const k in UI.appliedAt) if (PROP[k].reasons && (S.fx[k] || 0) >= 0.9) for (const r of PROP[k].reasons) fixedReasons.add(PROP[k].m + '|' + r);
+  for (const h of recent) for (const r of h.rows) if (r.r !== '__none' && r.r !== 'inne' && r.r !== 'przezbrojenie') { const k = r.m + '|' + r.r; cnt[k] = (cnt[k] || 0) + 1; mins[k] = (mins[k] || 0) + r.min; }
+  const rec = Object.keys(cnt).filter(k => cnt[k] >= recent.length * 0.8 && recent.length >= 6 && mins[k] / recent.length >= 10 && !fixedReasons.has(k)).sort((a, b) => mins[b] - mins[a]).slice(0, 3);
+  for (const k of rec) L.push([false, `${name(k)} appears in ${cnt[k]} of the last ${recent.length} shifts, ${fmt(mins[k] / recent.length)} min per shift. Chronic, not random: a standard, not a repair.`, 'Recurring']);
+  // day vs night
+  const dn = { day: {}, night: {} }, nn = { day: 0, night: 0 }; for (const h of recent) { nn[h.type]++; for (const r of h.rows) dn[h.type][r.m + '|' + r.r] = (dn[h.type][r.m + '|' + r.r] || 0) + r.min; }
+  if (nn.day >= 3 && nn.night >= 3) for (const k of new Set([...Object.keys(dn.day), ...Object.keys(dn.night)])) {
+    const d = (dn.day[k] || 0) / nn.day, n = (dn.night[k] || 0) / nn.night;
+    if (n >= 10 && n > 2 * d) L.push([true, `${name(k)}: ${fmt(n)} min per night shift vs ${fmt(d)} per day shift. Look at environment, staffing or supplies at night.`, 'Day vs night']);
+    if (d >= 10 && d > 2 * n) L.push([false, `${name(k)}: ${fmt(d)} min per day shift vs ${fmt(n)} per night shift.`, 'Day vs night']);
+  }
+  // fixes held / slipped
+  for (const k in UI.appliedAt) {
+    const p = PROP[k], at = UI.appliedAt[k], before = H.filter(h => h.n < at), after = H.filter(h => h.n >= at + 6);
+    if (!before.length || after.length < 3 || !p.reasons) continue;
+    const f = list => list.reduce((a, h) => a + h.rows.filter(r => r.m === p.m && p.reasons.includes(r.r)).reduce((x, r) => x + r.min, 0), 0) / list.length;
+    const b = f(before), a = f(after); if (b < 5) continue;
+    const held = a <= b * 0.5;
+    L.push([!held, `${p.title}: ${fmt(b)} → ${fmt(a)} min per shift (${held ? 'held' : 'did not hold'}). ${held ? 'Keep it on the weekly audit.' : 'Back to Plan: check the standard and the 5 Why.'}`, `Fix check · ${after.length} shifts after ramp`]);
+    const ticks = H.filter(h => h.n >= at), tr = ticks.filter(h => h.ticks && h.ticks[k]).length / Math.max(1, ticks.length);
+    if (ticks.length >= 4 && tr < 0.8) L.push([true, `${p.title}: tablet check ticked in ${pct(tr)} of shifts. Below 80% the fix will slip.`, 'Sustain']);
+  }
+  // bottleneck moved
+  if (weeks.length >= 2) { const main = w => { const c = {}; for (const h of wk[w]) if (h.main) c[h.main] = (c[h.main] || 0) + 1; return Object.entries(c).sort((a, b) => b[1] - a[1])[0]?.[0]; }; const m1 = main(weeks[weeks.length - 2]), m2 = main(weeks[weeks.length - 1]); if (m1 && m2 && m1 !== m2) L.push([true, `The bottleneck moved from the ${mname(m1).toLowerCase()} to the ${mname(m2).toLowerCase()}. Proposals for the ${mname(m1).toLowerCase()} now have about zero gain.`, 'Constraint']); }
+  // reporting quality
+  const ev = recent.reduce((a, h) => a + h.events.filter(e => e.type !== 'setup').length, 0), none = recent.reduce((a, h) => a + h.events.filter(e => e.type !== 'setup' && !e.reason).length, 0);
+  if (ev && none / ev > 0.25) L.push([true, `${pct(none / ev)} of stops in the last ${recent.length} shifts have no reason. Fix reporting before fixing machines.`, 'Data quality']);
+  L.sort((a, b) => (b[0] ? 1 : 0) - (a[0] ? 1 : 0));
+  return L.length ? L.slice(0, 8) : [[false, 'Nothing stands out yet. Run more shifts.', 'Data']];
+}
+function renderHistory(force) {
+  if ($('#p-historia').hidden && !force) return;
+  const sel = histSel();
+  const n = sel.length, avg = n ? sel.reduce((a, h) => a + h.pct, 0) / n : 0, best = n ? Math.max(...sel.map(h => h.pct)) : 0, worst = n ? Math.min(...sel.map(h => h.pct)) : 0;
+  const rej = sel.reduce((a, h) => a + h.rej, 0), good = sel.reduce((a, h) => a + h.out, 0);
+  $('#hMeta').textContent = `${UI.hist.length} shifts stored · day ${S.cal.day} of ${DAYS}`;
+  $('#hKpis').innerHTML = `<div class="kpi"><span class="lbl">Shifts, ${periodLabel()}</span><span class="kv mono">${n}</span><span class="ks">${n ? `best ${pct(best)} · worst ${pct(worst)}` : 'none finished yet'}</span></div>
+    <div class="kpi"><span class="lbl">Average attainment</span><span class="kv mono">${n ? pct(avg) : '–'}</span><span class="ks">good units / plan</span></div>
+    <div class="kpi"><span class="lbl">Good units</span><span class="kv mono">${fmt(good)}</span><span class="ks">rejects ${fmt(rej)}</span></div>
+    <div class="kpi bnk"><span class="lbl">Bottleneck, ${periodLabel()}</span><span class="kv d">${n ? (() => { const c = {}; for (const h of sel) if (h.main) c[h.main] = (c[h.main] || 0) + 1; const t = Object.entries(c).sort((a, b) => b[1] - a[1])[0]; return t ? `${MACH[t[0]].name}` : '–'; })() : '–'}</span><span class="ks">${n ? (() => { const c = {}; for (const h of sel) if (h.main) c[h.main] = (c[h.main] || 0) + 1; const t = Object.entries(c).sort((a, b) => b[1] - a[1])[0]; return t ? `${t[1]} of ${n} shifts` : ''; })() : ''}</span></div>`;
+  const rows = aggRows(sel).sort((a, b) => b.bn - a.bn || b.min - a.min).slice(0, 8), mx = Math.max(1, ...rows.map(r => r.min));
+  $('#hPareto').innerHTML = rows.length ? rows.map(r => `<div class="prow"><span class="nm"><span class="pm">${r.m}</span>${esc(rlabel(r.r))}</span><span class="ptrack"><i style="width:${100 * r.min / mx}%"></i><b style="width:${100 * r.bn / mx}%"></b></span><span class="pv">${fmt(r.min)} min · <em>${fmt(r.bn)}</em></span></div>`).join('') : '<p class="calm">No finished shifts in this period.</p>';
+  const wk = {}; for (const h of UI.hist) { const w = wk[h.week] || (wk[h.week] = { n: 0, A: 0, B: 0, C: 0, p: 0 }); w.n++; w.p += h.pct; for (const m of MS) w[m] += h.bnSh[m]; }
+  $('#hBn').innerHTML = `<thead><tr><th>Week</th><th>Shifts</th><th>Mixer</th><th>Former</th><th>Oven</th><th>Plan</th></tr></thead><tbody>${Object.entries(wk).map(([k, w]) => `<tr><td>Week ${k}</td><td>${w.n}</td>${MS.map(m => { const v = w[m] / w.n; return `<td class="${v >= 0.5 ? 'lo' : ''}">${pct(v)}</td>`; }).join('')}<td>${pct(w.p / w.n)}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:left;font-family:var(--f-b);color:var(--muted)">No finished shifts yet.</td></tr>'}</tbody>`;
+  $('#hIns').innerHTML = insights().map(([hot, t, s]) => `<li class="${hot ? 'hot' : ''}">${esc(t)}<small>${esc(s)}</small></li>`).join('');
+  drawTrend(); drawOeeTrend();
+}
+
 // ---------- tabs ----------
-const TABS = ['przeglad', 'linia', 'zaloga', 'operatorzy', 'analiza', 'dzialania', 'demo'];
+const TABS = ['przeglad', 'linia', 'zaloga', 'operatorzy', 'analiza', 'historia', 'dzialania', 'demo'];
 let TAB = 'przeglad';
 function showTab(id, focusTab) {
   if (!TABS.includes(id)) id = 'przeglad';
@@ -1419,7 +1615,7 @@ function showTab(id, focusTab) {
   $('#t-' + id).scrollIntoView({ block: 'nearest', inline: 'nearest' });
   try { history.replaceState(null, '', '#' + id); } catch (e) {}
   const nav = $('.nav'); if (nav.getBoundingClientRect().top <= 1 && window.scrollY > nav.offsetTop) window.scrollTo({ top: nav.offsetTop });
-  renderAll();
+  renderAll(); if (id === 'historia') renderHistory(true);
 }
 $('.tablist').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab); });
 $('.tablist').addEventListener('keydown', e => {
@@ -1458,9 +1654,9 @@ function renderSlow() {
   if (!UI.presim && !S.done) updateFocus(false);
   UI.rows = lossRows();
   for (const m of MS) renderTab(m);
-  renderFlow(); renderPareto(); renderFish(); renderWaste(); renderPatterns(); renderProps(); renderHist(); renderOverview(); renderHistChart(); renderSide(); renderCrew();
+  renderFlow(); renderPareto(); renderFish(); renderWaste(); renderPatterns(); renderProps(); renderHist(); renderOverview(); renderHistChart(); renderSide(); renderCrew(); renderHistory(false);
 }
-function renderAll(force) { if (force) UI.sigs = {}; renderSlow(); renderFast(); drawCum(); drawGantt(); }
+function renderAll(force) { if (force) UI.sigs = {}; renderSlow(); renderFast(); drawCum(); drawGantt(); if (force) renderHistory(true); }
 
 let last = performance.now(), acc = 0, tFast = 0, tSlow = 0, tCanvas = 0;
 function frame(now) {
@@ -1530,10 +1726,11 @@ $('#tabs').innerHTML = MS.map(tabShell).join('');
 buildLine(); readColors();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readColors(); drawCum(); drawGantt(); });
 new MutationObserver(() => { readColors(); drawCum(); drawGantt(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-window.addEventListener('resize', () => { drawCum(); drawGantt(); });
+window.addEventListener('resize', () => { drawCum(); drawGantt(); renderHistory(false); });
 if (document.fonts) document.fonts.ready.then(() => { drawCum(); drawGantt(); });
 resetDemo();
 showTab((location.hash || '').slice(1));
 requestAnimationFrame(frame);
+STORE.open().then(async () => { const d = await STORE.get('month'); if (d && d.hist && d.hist.length && loadState(d)) toast(`Resumed the saved month at day ${S.cal.day}. Reset demo starts over.`); });
 })();
 </script>
