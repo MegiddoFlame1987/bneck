@@ -10,11 +10,13 @@ Demo of a shift-manager tool: line bottleneck, flow between machines, OEE, crew 
 |---|---|
 | `index.html` | The whole app in one file. Tabs: Overview (manager), Line (stream top to bottom, bottleneck, OEE, losses), Crew (ILUO, staffing, recommendation), Operators (tablets), Analysis, Actions |
 | `test.js` | Engine test: 5 shifts with successive fixes, checks % of plan and bottleneck |
+| `test-month.js` | Month test: 52 shifts, no fixes vs staged fixes with ramp |
+| `docs/lean/rollout.md` | How fixes are sequenced, rolled out and sustained (TOC, PDCA on weeks, ramp, audit) |
 
 ## Run
 
 - App: open `index.html` in a browser. No build, no server.
-- Test: `node test.js`
+- Tests: `node test.js` and `node test-month.js`
 - Vercel: import the repo, preset "Other", no build command.
 
 ## How it works
@@ -24,6 +26,8 @@ Bottleneck: active period method (Roser). At any moment the bottleneck is the ma
 OEE: availability (time without own stops) × performance (against ideal rate; waiting for another machine lowers it) × quality (good units).
 
 Crew: the operator's ILUO level multiplies own-stop duration (I ×1.45, L ×1.15, U ×1.0, O ×0.8). In the product, staffing and the matrix come from Crewmap.
+
+Calendar: 30 days, day shift 06:00–18:00 and night shift 18:00–06:00, no production on Sundays: 52 shifts. A fix starts at 40% effect and reaches 100% after 6 shifts; three shifts without the tablet check ticked and it slips 10 points per shift, an audit restores it (`docs/lean/rollout.md`).
 
 Proposals in the demo come from a rule engine, not an AI model.
 

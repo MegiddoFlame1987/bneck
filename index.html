@@ -325,7 +325,9 @@ main { max-width: 1360px; margin: 0 auto; padding-inline: 24px; padding-block: 2
 .pact { margin-top: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding-top: 6px; }
 .queued { font-size: 13px; font-weight: 600; color: var(--ok); }
 .applied { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; align-items: center; }
-.chip { font-size: 13px; border: 1px solid var(--ok); color: var(--ok); border-radius: 999px; padding: 3px 12px; }
+.chip { font-size: 13px; border: 1px solid var(--ok); color: var(--ok); border-radius: 999px; padding: 3px 12px; display: inline-flex; align-items: center; gap: 8px; }
+.chip.warn { border-color: var(--slow); color: var(--slow); }
+.chipbtn { border: 1px solid currentColor; background: none; border-radius: 999px; font-size: 12px; padding: 1px 8px; cursor: pointer; }
 .subh { font-size: 22px; margin-top: 28px; }
 .hist-wrap { overflow-x: auto; margin-top: 14px; background: var(--surface); border: 1px solid var(--line2); border-radius: var(--r); padding: 6px 16px; }
 table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 600px; }
@@ -363,8 +365,10 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
         <button type="button" data-sp="60" aria-pressed="false" title="1 shift minute per second">×1</button>
         <button type="button" data-sp="150" aria-pressed="true" title="2.5 shift minutes per second">×2.5</button>
         <button type="button" data-sp="600" aria-pressed="false" title="10 shift minutes per second">×10</button>
+        <button type="button" data-sp="3600" aria-pressed="false" title="1 shift hour per second">×60</button>
       </div>
-      <button class="btn" id="bEnd" type="button">Run to end of shift</button>
+      <button class="btn" id="bEnd" type="button">End of shift</button>
+      <button class="btn" id="bDay" type="button" title="Finish this shift and the next one">+1 day</button>
       <label class="tog"><input type="checkbox" id="tAuto" checked> Operators report automatically</label>
       <button class="btn" id="bReset" type="button">Reset demo</button>
     </div>
@@ -385,15 +389,15 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
     <div class="live">
       <button class="btn playb" id="bPlay" type="button">Pause</button>
       <span class="clk" id="clk">00:00</span>
-      <span class="lmeta" id="shiftLbl">Shift 1</span>
+      <span class="lmeta" id="shiftLbl">Day 1 · Mon · Day shift</span>
       <span class="lchip" id="nPct">0% of plan</span>
       <span class="lchip bn" id="nBn">BN: –</span>
     </div>
   </div>
   <div class="nprog"><i id="progBar"></i></div>
   <div class="endwrap"><div class="endbar" id="endBar" hidden>
-    <b id="endTxt">Shift finished</b><span id="endSub"></span>
-    <button class="btn primary" id="bNext" type="button">Next shift</button>
+    <b id="endTxt">Month finished</b><span id="endSub"></span>
+    <button class="btn primary" id="bNext" type="button">Start a new month</button>
   </div></div>
 </nav>
 
@@ -492,7 +496,17 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
 
 <script>
 /*ENGINE-START*/
-const SHIFT_SEC = 43200, START_H = 18, PLAN_RATE = 120, PLAN_TOTAL = PLAN_RATE * 720, BATCH = 2500;
+const SHIFT_SEC = 43200, PLAN_RATE = 120, PLAN_TOTAL = PLAN_RATE * 720, BATCH = 2500;
+// Calendar: 30 days, day shift 06:00-18:00 and night shift 18:00-06:00, no production on Sundays (day 7, 14, 21, 28).
+const DAYS = 30, DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const CAL = [];
+for (let d = 1; d <= DAYS; d++) { if ((d - 1) % 7 === 6) continue; CAL.push({ day: d, dow: DOW[(d - 1) % 7], type: 'day', startH: 6 }); CAL.push({ day: d, dow: DOW[(d - 1) % 7], type: 'night', startH: 18 }); }
+const SHIFTS = CAL.length;
+const calOf = n => CAL[Math.min(CAL.length, Math.max(1, n)) - 1];
+const weekOf = n => Math.ceil(calOf(n).day / 7);
+// Fix effectiveness: 0..1. 40% on the first shift, +10 points per shift to 100% after 6 shifts (docs/lean/rollout.md).
+const rampOf = shiftsSince => Math.min(1, 0.4 + 0.1 * Math.max(0, shiftsSince));
+const lerp = (a, b, e) => a + (b - a) * e;
 const MS = ['A', 'B', 'C'];
 const ACTIVE = { RUN: 1, SLOW: 1, STOP: 1, SETUP: 1 };
 const IDEAL = { A: BATCH / (17 * 60), B: 150 / 60, C: 135 / 60 };
@@ -538,21 +552,25 @@ function rng(seed) {
   return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
 const uni = (R, r) => r[0] + (r[1] - r[0]) * R();
+let START_H = 18;
 const hourOf = t => (((START_H + Math.floor(t / 3600)) % 24) + 24) % 24;
 const zst = () => ({ RUN: 0, SLOW: 0, STARVED: 0, BLOCKED: 0, STOP: 0, SETUP: 0 });
 let EVID = 0;
 
+// fx[k] is the effectiveness of fix k in 0..1 (1 = fully in place). Base values: ASSUMED for a mid-size bar line, see README.
 function params(fx) {
+  const E = k => Math.max(0, Math.min(1, +fx[k] || 0));
+  const kit = E('kitting'), syr = E('syrop'), smed = E('smed'), zas = E('zastepstwo'), noz = E('noz'), buf = E('bufor'), tpm = E('tpm'), pro = E('prowadnice');
   return {
-    pWait: fx.kitting ? 0.05 : 0.65, waitDur: fx.kitting ? [2, 5] : [9, 17],
-    pColdNight: fx.syrop ? 0.06 : 0.9, pColdDay: fx.syrop ? 0.04 : 0.6, coldExtra: fx.syrop ? [3, 5] : [8, 15],
+    pWait: lerp(0.65, 0.05, kit), waitDur: [lerp(9, 2, kit), lerp(17, 5, kit)],
+    pColdNight: lerp(0.9, 0.06, syr), pColdDay: lerp(0.6, 0.04, syr), coldExtra: [lerp(8, 3, syr), lerp(15, 5, syr)],
     loadMin: 3.5, mixMin: 10.5, disMin: 3, zaworMTBF: 240, zaworDur: [6, 12],
-    setupDur: fx.smed ? [11, 15] : [40, 52], setupAt: [3 * 3600, 8 * 3600],
-    breaks: fx.zastepstwo ? [] : [[4.5 * 3600, 20], [9.5 * 3600, 20]],
-    nozMTBF: fx.noz ? 150 : 30, nozDur: [2, 4.5],
-    rateB: 150 / 60, beltCap: fx.bufor ? 3000 : 800,
-    torMTBF: fx.tpm ? 150 : 26, torDur: [4, 8],
-    zatorMTBF: fx.prowadnice ? 220 : 50, zatorDur: [1, 3],
+    setupDur: [lerp(40, 11, smed), lerp(52, 15, smed)], setupAt: [3 * 3600, 8 * 3600],
+    breaks: zas >= 0.999 ? [] : [[4.5 * 3600, 20 * (1 - zas)], [9.5 * 3600, 20 * (1 - zas)]],
+    nozMTBF: lerp(30, 150, noz), nozDur: [2, 4.5],
+    rateB: 150 / 60, beltCap: Math.round(lerp(800, 3000, buf)),
+    torMTBF: lerp(26, 150, tpm), torDur: [4, 8],
+    zatorMTBF: lerp(50, 220, pro), zatorDur: [1, 3],
     rateC: 135 / 60, hopperCap: 2 * BATCH,
   };
 }
@@ -567,16 +585,17 @@ function pickSub(R, reason, t) {
 }
 
 function newShift(n, fx, prevMain, assign) {
-  const P = params(fx);
+  const P = params(fx), cal = calOf(n);
+  START_H = cal.startH;
   return {
-    n, fx: { ...fx }, P, assign: { ...(assign || DEFAULT_ASSIGN) }, rej: { B: 0, C: 0 }, R: rng(9001 + n * 7919), R2: rng(424242 + n * 31),
+    n, cal, fx: { ...fx }, P, assign: { ...(assign || DEFAULT_ASSIGN) }, rej: { B: 0, C: 0 }, R: rng(9001 + n * 7919), R2: rng(424242 + n * 31),
     t: 0, out: 0, outA: 0, outB: 0, hopper: BATCH, belt: Math.round(0.5 * P.beltCap),
     A: { st: 'RUN', ph: 'start', pleft: 0, left: 0, ev: null, mixEl: 0, mixStd: 0, mixExtra: 0, cold: false, slowEv: null, batch: 0 },
     B: { st: 'RUN', left: 0, ev: null, setupIdx: 0, breakIdx: 0 },
     C: { st: 'RUN', left: 0, ev: null },
     events: [], periods: { A: [], B: [], C: [] }, actStart: { A: 0, B: 0, C: 0 },
     secs: { A: zst(), B: zst(), C: zst() }, minAcc: { A: zst(), B: zst(), C: zst() },
-    minState: { A: [], B: [], C: [] }, cum: [],
+    minState: { A: [], B: [], C: [] }, cum: [], hourly: [],
     wait: { A: { starved: {}, blocked: {} }, B: { starved: {}, blocked: {} }, C: { starved: {}, blocked: {} } },
     focus: prevMain || null, focusSince: 0, auto: true, checks: {}, done: false,
   };
@@ -589,7 +608,7 @@ function warmShift(s) {
   for (const ev of s.events) { ev.start = Math.max(ev.start, 0); ev.autoAt = Math.max(ev.autoAt, 30); }
   s.out = s.outA = s.outB = 0; s.rej = { B: 0, C: 0 };
   for (const m of MS) { s.periods[m] = []; s.secs[m] = zst(); s.minAcc[m] = zst(); s.minState[m] = []; s.wait[m] = { starved: {}, blocked: {} }; }
-  s.cum = []; s.A.batch = 1;
+  s.cum = []; s.hourly = []; s.A.batch = 1;
   return s;
 }
 
@@ -672,7 +691,7 @@ function step(s) {
   if (B.st === 'STOP' || B.st === 'SETUP') { if (--B.left <= 0) { B.ev.end = t; if (B.ev.reason === 'noz') s.rej.B += 15; B.ev = null; B.st = 'RUN'; } }
   else {
     if (B.setupIdx < P.setupAt.length && t >= P.setupAt[B.setupIdx]) { B.setupIdx++; startStop(s, 'B', 'przezbrojenie', uni(R, P.setupDur), 'SETUP'); }
-    else if (B.breakIdx < P.breaks.length && t >= P.breaks[B.breakIdx][0]) { const d = P.breaks[B.breakIdx][1]; B.breakIdx++; startStop(s, 'B', 'przerwa', d); }
+    else if (B.breakIdx < P.breaks.length && t >= P.breaks[B.breakIdx][0]) { const d = P.breaks[B.breakIdx][1]; B.breakIdx++; if (d >= 1) startStop(s, 'B', 'przerwa', d); }
     else if (B.st === 'RUN' && R() < 1 / (P.nozMTBF * 60)) startStop(s, 'B', 'noz', uni(R, P.nozDur));
     if (B.st !== 'STOP' && B.st !== 'SETUP') {
       const free = P.beltCap - s.belt, av = s.hopper;
@@ -700,6 +719,7 @@ function step(s) {
       s.minState[m].push(best); s.minAcc[m] = zst();
     }
     s.cum.push(s.out);
+    if (s.t > 0 && s.t % 3600 === 0) { const h = s.t / 3600, prev = s.hourly.length ? s.hourly[s.hourly.length - 1].cumOut : 0; const bn = bnShares(bnMinutes(s).slice(-60)); s.hourly.push({ h: h - 1, clock: (START_H + h - 1) % 24, out: s.out - prev, cumOut: s.out, good: goodOut(s), bn: bn.main, rej: Math.round(s.rej.B + s.rej.C) }); }
   }
   if (s.t >= SHIFT_SEC) {
     s.done = true;
@@ -783,16 +803,24 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 const pct = x => Math.round(x * 100) + '%';
 const mname = m => MACH[m].short;
 
-const UI = { speed: 150, assign: { ...DEFAULT_ASSIGN }, playing: true, auto: true, hist: [], queued: {}, appliedAt: {}, prevCum: null, prevMain: null, presim: false, bn: [], bnSh: { sh: { A: 0, B: 0, C: 0 }, main: null, tot: 0 }, rows: {}, sigs: {}, flash: null };
+const UI = { speed: 150, assign: { ...DEFAULT_ASSIGN }, playing: true, auto: true, hist: [], queued: {}, appliedAt: {}, fixState: {}, runTo: 0, monthDone: false, prevCum: null, prevMain: null, presim: false, bn: [], bnSh: { sh: { A: 0, B: 0, C: 0 }, main: null, tot: 0 }, rows: {}, sigs: {}, flash: null };
 let S = null;
 
 // ---------- sim control ----------
+// Fix effectiveness per shift: ramp from the shift it was applied (docs/lean/rollout.md), decay after 3 consecutive shifts with the check unticked, audit restores.
+function fixEffects(n) {
+  const fx = {};
+  for (const k in UI.appliedAt) {
+    const st = UI.fixState[k] || (UI.fixState[k] = { miss: 0, decay: 0, audits: 0 });
+    fx[k] = Math.max(0.5, rampOf(n - UI.appliedAt[k]) - st.decay);
+  }
+  return fx;
+}
 function startShift(n) {
-  const fx = {}; for (const k in UI.appliedAt) fx[k] = 1;
-  S = warmShift(newShift(n, fx, UI.prevMain, UI.assign));
+  S = warmShift(newShift(n, fixEffects(n), UI.prevMain, UI.assign));
   S.auto = UI.auto; S.focusSince = 0;
   UI.sigs = {}; UI.bn = []; UI.bnSh = { sh: { A: 0, B: 0, C: 0 }, main: null, tot: 0 };
-  $('#endBar').hidden = true; $('#bPlay').disabled = false; $('#bEnd').disabled = false;
+  $('#endBar').hidden = true; $('#bPlay').disabled = false; $('#bEnd').disabled = false; $('#bDay').disabled = false;
 }
 function updateFocus(silent) {
   UI.bn = bnMinutes(S); UI.bnSh = bnShares(UI.bn);
@@ -817,25 +845,51 @@ function advance(n) {
 }
 function endShift() {
   S.summarized = true; updateFocus(true);
-  const main = UI.bnSh.main;
-  UI.hist.push({ n: S.n, out: goodOut(S), pct: goodOut(S) / PLAN_TOTAL, main, share: main ? UI.bnSh.sh[main] : 0, fx: Object.keys(S.fx) });
-  UI.prevCum = S.cum.slice(); UI.prevMain = main; UI.playing = false;
-  $('#endTxt').textContent = `Shift ${S.n} finished: ${pct(goodOut(S) / PLAN_TOTAL)} of plan`;
-  const q = Object.keys(UI.queued).length;
-  $('#endSub').textContent = `Bottleneck: ${main ? mname(main) + ' (' + pct(UI.bnSh.sh[main]) + ' of shift)' : '–'}. ` + (q ? `${q} new ${q === 1 ? 'fix takes' : 'fixes take'} effect next shift.` : 'Pick a fix under Actions, or run the next shift unchanged.');
-  $('#endBar').hidden = false; $('#bPlay').disabled = true; $('#bEnd').disabled = true;
-  renderAll(true);
+  const main = UI.bnSh.main, rows = lossRows();
+  const ticks = {}; for (const k in S.fx) ticks[k] = !!S.checks[k];
+  for (const k in UI.appliedAt) {
+    const st = UI.fixState[k]; if (!st) continue;
+    if (ticks[k]) { st.miss = 0; } else { st.miss++; if (st.miss >= 3) st.decay = Math.min(0.5, st.decay + 0.1); }
+  }
+  UI.hist.push({ n: S.n, day: S.cal.day, dow: S.cal.dow, type: S.cal.type, week: weekOf(S.n), out: goodOut(S), gross: S.out, rej: Math.round(S.rej.B + S.rej.C), pct: goodOut(S) / PLAN_TOTAL,
+    main, share: main ? UI.bnSh.sh[main] : 0, bnSh: { ...UI.bnSh.sh }, fx: { ...S.fx }, ticks, secs: JSON.parse(JSON.stringify(S.secs)), oee: Object.fromEntries(MS.map(m => [m, oee(S, m)])),
+    rows: Object.values(rows).map(r => ({ m: r.m, r: r.r, n: r.n, min: Math.round(r.min * 10) / 10, bn: Math.round(r.bn * 10) / 10 })), hourly: S.hourly.slice(), crew: { ...S.assign },
+    events: S.events.map(ev => ({ m: ev.m, type: ev.type, reason: ev.rec ? ev.rec.reason : null, sub: ev.rec && ev.rec.sub != null ? ev.rec.sub : null, start: ev.start, end: ev.end == null ? SHIFT_SEC : ev.end, op: ev.op })) });
+  UI.prevCum = S.cum.slice(); UI.prevMain = main;
+  const last = S.n >= SHIFTS;
+  if (last) {
+    UI.playing = false; UI.monthDone = true; UI.runTo = 0;
+    const avg = UI.hist.reduce((a, h) => a + h.pct, 0) / UI.hist.length;
+    $('#endTxt').textContent = `Month finished: ${pct(avg)} of plan on average`;
+    $('#endSub').textContent = `${UI.hist.length} shifts. Last week ${pct(UI.hist.slice(-12).reduce((a, h) => a + h.pct, 0) / 12)}. See History for the trend.`;
+    $('#endBar').hidden = false; $('#bPlay').disabled = true; $('#bEnd').disabled = true; $('#bDay').disabled = true;
+    renderAll(true); return;
+  }
+  if (!UI.presim) toast(`${S.cal.dow} ${S.cal.type} shift (day ${S.cal.day}) finished: ${pct(goodOut(S) / PLAN_TOTAL)} of plan. Bottleneck: ${main ? mname(main) : '–'}.`);
+  nextShift();
 }
 function nextShift() {
   const n = S.n + 1;
   for (const k in UI.queued) UI.appliedAt[k] = n;
   UI.queued = {};
-  startShift(n); UI.playing = true; renderAll(true);
+  const keep = UI.playing;
+  startShift(n); UI.playing = keep; renderAll(true);
+}
+function runShifts(count) {
+  UI.presim = true;
+  for (let i = 0; i < count && !UI.monthDone; i++) { advance(SHIFT_SEC); }
+  UI.presim = false; if (!UI.monthDone) updateFocus(true); renderAll(true);
 }
 function resetDemo() {
-  UI.hist = []; UI.queued = {}; UI.appliedAt = {}; UI.prevCum = null; UI.prevMain = null; UI.assign = { ...DEFAULT_ASSIGN };
+  UI.hist = []; UI.queued = {}; UI.appliedAt = {}; UI.fixState = {}; UI.prevCum = null; UI.prevMain = null; UI.assign = { ...DEFAULT_ASSIGN }; UI.monthDone = false;
   startShift(1); UI.presim = true; advance(6 * 3600); UI.presim = false; updateFocus(true);
   UI.playing = true; renderAll(true);
+}
+function auditFix(k) {
+  const st = UI.fixState[k]; if (!st) return;
+  st.decay = 0; st.miss = 0; st.audits++;
+  toast(`${PROP[k].title}: audited, standard confirmed.`);
+  renderProps();
 }
 
 // ---------- derived data ----------
@@ -1101,6 +1155,7 @@ function setAssign(m, id) {
   renderAll();
 }
 document.addEventListener('change', e => { const sel = e.target.closest('select[data-pos]'); if (sel) setAssign(sel.dataset.pos, sel.value); });
+document.addEventListener('click', e => { const a = e.target.closest('[data-audit]'); if (a) auditFix(a.dataset.audit); });
 document.addEventListener('click', e => { const b = e.target.closest('[data-swap]'); if (b) { const [m, id] = b.dataset.swap.split(':'); setAssign(m, id); } });
 
 // ---------- canvases ----------
@@ -1301,17 +1356,17 @@ function renderProps() {
       <h4>${esc(p.title)}</h4><p class="what">${esc(p.what)}</p>
       <dl><dt>Evidence</dt><dd>${esc(o.ev)}</dd><dt>Waste</dt><dd>${esc(p.waste)}</dd><dt>Effect</dt><dd>${esc(p.effect)}</dd><dt>Estimate</dt><dd class="gain">${g}</dd></dl>${o.gain >= 500 ? '<p class="offnote">Upper bound. After the fix the bottleneck may move.</p>' : ''}
       ${o.isBn ? '' : `<p class="offnote">The ${mname(p.m).toLowerCase()} is not the bottleneck. Fixing it now will not raise line output.</p>`}
-      <div class="pact">${q ? `<span class="queued">Scheduled from shift ${S.n + 1}</span><button type="button" class="btn" data-act="undo" data-k="${p.id}">Undo</button>` : `<button type="button" class="btn${o.isBn ? ' primary' : ''}" data-act="apply" data-k="${p.id}">Implement from shift ${S.n + 1}</button>`}</div>
+      <div class="pact">${q ? `<span class="queued">Scheduled from next shift</span><button type="button" class="btn" data-act="undo" data-k="${p.id}">Undo</button>` : `<button type="button" class="btn${o.isBn ? ' primary' : ''}" data-act="apply" data-k="${p.id}">Implement from next shift</button>`}</div>
     </article>`;
   });
   if (!h) h = '<p class="calm">No proposals. The line has headroom against plan, or data is missing.</p>';
   if (UI.sigs.props !== h) { UI.sigs.props = h; $('#props').innerHTML = h; }
   const ap = Object.entries(UI.appliedAt);
-  $('#applied').innerHTML = ap.length ? '<span class="lbl">In place:</span>' + ap.map(([k, n]) => `<span class="chip">${esc(PROP[k].title)} · from shift ${n}</span>`).join('') : '';
+  $('#applied').innerHTML = ap.length ? '<span class="lbl">In place:</span>' + ap.map(([k, n]) => { const e = S.fx[k] || 0, st = UI.fixState[k] || {}; return `<span class="chip${e < 0.95 ? ' warn' : ''}">${esc(PROP[k].title)} · since day ${calOf(n).day} · ${pct(e)} effect${st.decay ? ' · slipping' : ''}${e < 0.95 ? ` <button type="button" class="chipbtn" data-audit="${k}">Audit</button>` : ''}</span>`; }).join('') : '';
 }
 function renderHist() {
-  const rows = UI.hist.map(h => `<tr><td class="num">${h.n}</td><td>${h.fx.length ? h.fx.map(k => esc(PROP[k].title)).join(', ') : 'none'}</td><td class="num">${fmt(h.out)}</td><td class="num">${fmt(PLAN_TOTAL)}</td><td><div class="hbar"><i style="width:${Math.min(100, h.pct / 1.2 * 100)}%"></i><s style="left:${100 / 1.2}%"></s></div><span class="mono" style="font-size:12px">${pct(h.pct)}</span></td><td>${h.main ? mname(h.main) + ' <span class="mono" style="color:var(--muted);font-size:12px">' + pct(h.share) + '</span>' : '–'}</td></tr>`);
-  if (!S.done) rows.push(`<tr><td class="num">${S.n}</td><td>${Object.keys(S.fx).length ? Object.keys(S.fx).map(k => esc(PROP[k].title)).join(', ') : 'none'}</td><td class="num">${fmt(goodOut(S))}</td><td class="num">${fmt(PLAN_TOTAL)}</td><td><span class="mono" style="font-size:12px;color:var(--muted)">in progress, ${clock(S.t)}</span></td><td>${UI.bnSh.main ? mname(UI.bnSh.main) : '–'}</td></tr>`);
+  const rows = UI.hist.slice(-14).map(h => `<tr><td class="num">D${h.day} ${h.type === 'day' ? 'D' : 'N'}</td><td>${Object.keys(h.fx).length ? Object.keys(h.fx).map(k => esc(PROP[k].title) + ' ' + pct(h.fx[k])).join(', ') : 'none'}</td><td class="num">${fmt(h.out)}</td><td class="num">${fmt(PLAN_TOTAL)}</td><td><div class="hbar"><i style="width:${Math.min(100, h.pct / 1.2 * 100)}%"></i><s style="left:${100 / 1.2}%"></s></div><span class="mono" style="font-size:12px">${pct(h.pct)}</span></td><td>${h.main ? mname(h.main) + ' <span class="mono" style="color:var(--muted);font-size:12px">' + pct(h.share) + '</span>' : '–'}</td></tr>`);
+  if (!S.done) rows.push(`<tr><td class="num">D${S.cal.day} ${S.cal.type === 'day' ? 'D' : 'N'}</td><td>${Object.keys(S.fx).length ? Object.keys(S.fx).map(k => esc(PROP[k].title) + ' ' + pct(S.fx[k])).join(', ') : 'none'}</td><td class="num">${fmt(goodOut(S))}</td><td class="num">${fmt(PLAN_TOTAL)}</td><td><span class="mono" style="font-size:12px;color:var(--muted)">in progress, ${clock(S.t)}</span></td><td>${UI.bnSh.main ? mname(UI.bnSh.main) : '–'}</td></tr>`);
   $('#hist').innerHTML = rows.join('');
 }
 
@@ -1323,7 +1378,8 @@ function renderOverview() {
     const gap = planNow - goodOut(S);
     L.push(`Line: <b>${pct(goodOut(S) / planNow)} of plan</b> (good units) at ${clock(S.t)}. ${gap > 0 ? `<b>${fmt(gap)} pcs</b> short.` : `<b>${fmt(-gap)} pcs</b> ahead.`}`);
   }
-  if (main) {
+  if (main && S.t < 3600) L.push(`Bottleneck carried over from the previous shift: <span class="bnw">${MACH[main].name.toLowerCase()}</span>. This shift's data settles after the first hour.`);
+  else if (main) {
     const waits = MS.filter(m => m !== main).map(m => `${mname(m).toLowerCase()} ${pct((S.secs[m].STARVED + S.secs[m].BLOCKED) / Math.max(1, S.t))}`).join(', ');
     L.push(`The line is limited by the <span class="bnw">${MACH[main].name.toLowerCase()}</span>, bottleneck for ${pct(UI.bnSh.sh[main])} of the shift. The other machines wait: ${waits} of the time.`);
     const top = Object.values(UI.rows).filter(r => r.m === main && r.bn >= 1).sort((a, b) => b.bn - a.bn)[0];
@@ -1334,7 +1390,7 @@ function renderOverview() {
   if (best) L.push(`First: <b>${esc(best.p.title)}</b> (${esc(best.p.tool)}). Estimate up to +${fmt(Math.round(best.gain / 100) * 100)} pcs per shift.`);
   else if (main) L.push('No fix with a clear gain. Collect more reason reports.');
   const prev = UI.hist[UI.hist.length - 1];
-  if (prev && !S.done) L.push(`Previous shift: ${pct(prev.pct)} of plan, bottleneck: ${prev.main ? mname(prev.main).toLowerCase() : '–'}.`);
+  if (prev && !S.done) L.push(`Previous shift (${prev.dow} ${prev.type}): ${pct(prev.pct)} of plan, bottleneck: ${prev.main ? mname(prev.main).toLowerCase() : '–'}.`);
   const h = L.map(x => `<li>${x}</li>`).join('');
   if (UI.sigs.ov !== h) { UI.sigs.ov = h; $('#oSum').innerHTML = h; }
   const rows = main ? Object.values(UI.rows).filter(r => r.m === main && r.bn >= 0.5).sort((a, b) => b.bn - a.bn).slice(0, 5) : [];
@@ -1342,10 +1398,10 @@ function renderOverview() {
   $('#oTop').innerHTML = rows.length ? rows.map(r => `<div class="prow"><span class="nm"><span class="pm">${r.m}</span>${esc(rlabel(r.r))}</span><span class="ptrack"><b style="width:${100 * r.bn / mx}%"></b></span><span class="pv"><em>${fmt(r.bn)} min</em></span></div>`).join('') : '<p class="calm">No losses at the bottleneck this shift.</p>';
 }
 function renderHistChart() {
-  const items = UI.hist.slice(-7).map(h => ({ n: h.n, p: h.pct, bn: h.main, live: false }));
-  if (!S.done) items.push({ n: S.n, p: S.t ? goodOut(S) / (PLAN_RATE * S.t / 60) : 0, bn: UI.bnSh.main, live: true });
+  const items = UI.hist.slice(-9).map(h => ({ n: h.n, lbl: `D${h.day} ${h.type === 'day' ? 'D' : 'N'}`, p: h.pct, bn: h.main, live: false }));
+  if (!S.done) items.push({ n: S.n, lbl: `D${S.cal.day} ${S.cal.type === 'day' ? 'D' : 'N'}`, p: S.t ? goodOut(S) / (PLAN_RATE * S.t / 60) : 0, bn: UI.bnSh.main, live: true });
   const max = 1.2;
-  $('#oHist').innerHTML = items.map(i => `<div class="hcc"><span class="hcv">${pct(i.p)}</span><div class="hct${i.live ? ' live' : ''}"><i style="height:${Math.min(100, 100 * i.p / max)}%"></i><s style="bottom:${100 / max}%"></s></div><span class="hcl">Shift ${i.n}${i.live ? ', live' : ''}</span><span class="hcb">${i.bn ? mname(i.bn) : '–'}</span></div>`).join('');
+  $('#oHist').innerHTML = items.map(i => `<div class="hcc"><span class="hcv">${pct(i.p)}</span><div class="hct${i.live ? ' live' : ''}"><i style="height:${Math.min(100, 100 * i.p / max)}%"></i><s style="bottom:${100 / max}%"></s></div><span class="hcl">${i.lbl}${i.live ? ' live' : ''}</span><span class="hcb">${i.bn ? mname(i.bn) : '–'}</span></div>`).join('');
 }
 
 // ---------- tabs ----------
@@ -1377,7 +1433,7 @@ document.addEventListener('click', e => { const b = e.target.closest('[data-go]'
 // ---------- render loop ----------
 function renderFast() {
   $('#clk').textContent = clock(S.t);
-  $('#shiftLbl').textContent = `Shift ${S.n}`;
+  $('#shiftLbl').textContent = `Day ${S.cal.day} · ${S.cal.dow} · ${S.cal.type === 'day' ? 'Day' : 'Night'} shift · ${S.n}/${SHIFTS}`;
   $('#progBar').style.width = (100 * S.t / SHIFT_SEC) + '%';
   const planNow = PLAN_RATE * S.t / 60;
   const good = goodOut(S);
@@ -1387,7 +1443,7 @@ function renderFast() {
   const bn = renderLine(), main = S.focus || UI.bnSh.main;
   $('#kPctS').textContent = `shift target ${fmt(PLAN_TOTAL)} pcs`;
   $('#kBn').textContent = main ? MACH[main].name : '–';
-  $('#kBnS').textContent = main ? `${pct(UI.bnSh.sh[main])} of shift · now: ${bn ? mname(bn).toLowerCase() : '–'}` : 'active period method';
+  $('#kBnS').textContent = main ? (S.t < 3600 ? `carried over · now: ${bn ? mname(bn).toLowerCase() : '–'}` : `${pct(UI.bnSh.sh[main])} of shift · now: ${bn ? mname(bn).toLowerCase() : '–'}`) : 'active period method';
   $('#nPct').textContent = planNow ? pct(good / planNow) + ' of plan' : '– of plan';
   $('#nBn').innerHTML = '<span class="lg">Bottleneck</span><span class="sm">BN</span>: ' + (bn ? mname(bn) : '–');
   let np = 0; for (const ev of S.events) if (needsInput(S, ev)) np++;
@@ -1435,8 +1491,8 @@ function act(el) {
     UI.sigs[ev.m] = null; UI.rows = lossRows(); renderTab(ev.m); tabDynamic(ev.m);
   } else if (a === 'apply') {
     UI.queued[el.dataset.k] = true; renderProps();
-    toast(`${PROP[el.dataset.k].title}: in place from shift ${S.n + 1}.`);
-    if (S.done) { const q = Object.keys(UI.queued).length; $('#endSub').textContent = `${q} new ${q === 1 ? 'fix takes' : 'fixes take'} effect next shift.`; }
+    toast(`${PROP[el.dataset.k].title}: starts next shift at 40% effect, full after 6 shifts.`);
+    
   } else if (a === 'undo') { delete UI.queued[el.dataset.k]; renderProps(); }
 }
 document.addEventListener('pointerdown', e => {
@@ -1456,8 +1512,9 @@ $('#bPlay').addEventListener('click', () => { if (!S.done) UI.playing = !UI.play
 document.querySelectorAll('[data-sp]').forEach(b => b.addEventListener('click', () => {
   UI.speed = +b.dataset.sp; document.querySelectorAll('[data-sp]').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
 }));
-$('#bEnd').addEventListener('click', () => { if (!S.done) { UI.presim = true; advance(SHIFT_SEC); UI.presim = false; renderAll(true); } });
-$('#bNext').addEventListener('click', nextShift);
+$('#bEnd').addEventListener('click', () => { if (!S.done) runShifts(1); });
+$('#bDay').addEventListener('click', () => { if (!S.done) runShifts(2); });
+$('#bNext').addEventListener('click', resetDemo);
 $('#bReset').addEventListener('click', resetDemo);
 $('#tAuto').addEventListener('change', e => { UI.auto = e.target.checked; S.auto = UI.auto; UI.sigs = {}; renderAll(); });
 
