@@ -388,6 +388,7 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
 .evl .mono { color: var(--muted); }
 .dr-sec h4 { font-size: 18px; margin-bottom: 8px; }
 .tp[hidden] { display: none !important; }
+.foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line2); color: var(--muted); font-size: 12px; line-height: 1.5; max-width: 90ch; }
 .hctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 16px; }
 .bnA { background: var(--setup); } .bnB { background: var(--slow); } .bnC { background: var(--stop); }
 #toasts { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; flex-direction: column; gap: 10px; max-width: min(400px, calc(100vw - 40px)); }
@@ -569,6 +570,7 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
       <div class="panel"><span class="lbl">Plant</span><p>Oakmere Bar Co. does not exist. Numbers, machines and failures are invented for this demo.</p></div>
     </div>
   </section>
+  <footer class="foot">© 2026 Norbert Mazur, all rights reserved: BNECK, its code, screens and the combination of bottleneck + crew ILUO + tablet modes + proposal engine. Not claimed, public: active period method (Roser, 2001), OEE (ISO 22400), ILUO, muda/mura/muri, SMED, TPM, TOC. Oakmere Bar Co. is fictional. Real plant data stays the plant's property. See LICENSE.</footer>
 </main>
 <div class="drawer" id="drawer" hidden>
   <div class="dr-back" id="drBack"></div>
@@ -1878,9 +1880,10 @@ $('#tAuto').addEventListener('change', e => { UI.auto = e.target.checked; S.auto
 
 // ---------- ownership notice ----------
 (() => {
-  let seen = false; try { seen = localStorage.getItem('bneck-ipn') === '1'; } catch (e) {}
+  // Shown on every new browser session. 'Got it' hides it until the tab is closed.
+  let seen = false; try { seen = sessionStorage.getItem('bneck-ipn') === '1'; } catch (e) {}
   const el = $('#ipn'); el.hidden = seen;
-  $('#ipnOk').addEventListener('click', () => { el.hidden = true; try { localStorage.setItem('bneck-ipn', '1'); } catch (e) {} });
+  $('#ipnOk').addEventListener('click', () => { el.hidden = true; try { sessionStorage.setItem('bneck-ipn', '1'); } catch (e) {} });
 })();
 
 // ---------- boot ----------
