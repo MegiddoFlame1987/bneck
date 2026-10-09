@@ -652,7 +652,7 @@ function planShift(n, status) {
     let best = null;
     for (const m of MS) {
       if (assign[m]) continue;
-      for (const p of present) if (!used.has(p.id) && p.home == null && (!best || p.lvl[m] > best.p.lvl[m])) best = { m, p };
+      for (const p of present) if (!used.has(p.id) && p.home == null && (!best || p.lvl[m] > best.p.lvl[best.m])) best = { m, p };
     }
     if (!best) break;
     assign[best.m] = best.p.id; used.add(best.p.id);
