@@ -1,13 +1,15 @@
-// Month test: 52 production shifts (30 days, Sundays off). No fixes vs staged fixes with ramp. Run: node test-month.js
+// Month test: 52 production shifts (30 days, Sundays off). No fixes vs staged fixes with ramp, and staged fixes with
+// the crew rota and absences. Run: node test-month.js
 const fs = require('fs'), vm = require('vm');
 const html = fs.readFileSync(__dirname + '/index.html', 'utf8');
 const a = html.indexOf('/*ENGINE-START*/'), b = html.indexOf('/*ENGINE-END*/');
-const E = vm.runInNewContext(html.slice(a, b) + '\n;({ SHIFTS, rampOf, warmShift, newShift, step, bnMinutes, bnShares, autoOps, goodOut, PLAN_TOTAL })');
-function month(plan) {
+const E = vm.runInNewContext(html.slice(a, b) + '\n;({ SHIFTS, rampOf, warmShift, newShift, step, bnMinutes, bnShares, autoOps, goodOut, PLAN_TOTAL, planShift })');
+function month(plan, rota) {
   const res = []; let prev = null;
   for (let n = 1; n <= E.SHIFTS; n++) {
     const fx = {}; for (const k in plan) if (n >= plan[k]) fx[k] = E.rampOf(n - plan[k]);
-    const s = E.warmShift(E.newShift(n, fx, prev)); while (!s.done) { E.step(s); if (s.t % 10 === 0) E.autoOps(s); }
+    const assign = rota ? E.planShift(n).assign : undefined;
+    const s = E.warmShift(E.newShift(n, fx, prev, assign)); while (!s.done) { E.step(s); if (s.t % 10 === 0) E.autoOps(s); }
     const bn = E.bnShares(E.bnMinutes(s)); prev = bn.main;
     res.push({ day: s.cal.day, p: E.goodOut(s) / E.PLAN_TOTAL, bn: bn.main });
   }
@@ -19,6 +21,12 @@ const base = wk(month({}));
 const staged = wk(month({ kitting: 3, syrop: 3, tpm: 9, bufor: 9, smed: 15, noz: 15, zastepstwo: 15, prowadnice: 21 }));
 console.log('no fixes     ', base.map(([k, v]) => `W${k} ${(v * 100).toFixed(0)}%`).join('  '));
 console.log('staged fixes ', staged.map(([k, v]) => `W${k} ${(v * 100).toFixed(0)}%`).join('  '));
+// Same fixes with the crew rota and absences: some shifts lose an operator, the month still holds.
+const rota = wk(month({ kitting: 3, syrop: 3, tpm: 9, bufor: 9, smed: 15, noz: 15, zastepstwo: 15, prowadnice: 21 }, true));
+const openShifts = Array.from({ length: E.SHIFTS }, (_, i) => E.planShift(i + 1)).filter(p => p.open.length).length;
+console.log('with rota    ', rota.map(([k, v]) => `W${k} ${(v * 100).toFixed(0)}%`).join('  '), `  (${openShifts} shifts with an open machine)`);
+if (rota.filter(([k]) => +k >= 3).some(([, v]) => v < 0.90)) { fail++; console.log('FAIL with rota: week 3+ below 90%'); }
+if (!openShifts) { fail++; console.log('FAIL with rota: no shift with an open machine, absences have no effect'); }
 for (const [k, v] of base) if (v < 0.40 || v > 0.65) { fail++; console.log(`FAIL no fixes week ${k}: ${(v * 100).toFixed(0)}% outside 40–65%`); }
 const late = staged.filter(([k]) => +k >= 3).map(([, v]) => v);
 if (late.some(v => v < 0.95)) { fail++; console.log('FAIL staged fixes: week 3+ below 95%'); }
