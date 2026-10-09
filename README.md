@@ -26,3 +26,15 @@ OEE: availability (time without own stops) × performance (against ideal rate; w
 Crew: the operator's ILUO level multiplies own-stop duration (I ×1.45, L ×1.15, U ×1.0, O ×0.8). In the product, staffing and the matrix come from Crewmap.
 
 Proposals in the demo come from a rule engine, not an AI model.
+
+## Licence and ownership
+
+Copyright (c) 2026 Norbert Mazur. All rights reserved. See `LICENSE`.
+
+| Owned by the author | Public, not owned by anyone |
+|---|---|
+| Source code of the app and the simulation engine | Active period method (Roser, 2001) |
+| Combination: bottleneck + crew ILUO + operator tablet modes + lean proposal engine | OEE (ISO 22400), ILUO, muda/mura/muri, SMED, TPM, TOC |
+| BNECK name, texts, screens, reason taxonomy | Lean vocabulary and standard KPIs |
+
+Plant data from any real site stays the property of that site. Oakmere Bar Co. is fictional.

@@ -38,6 +38,12 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 h2, h3, h4 { font-family: var(--f-d); text-wrap: balance; margin: 0; letter-spacing: .01em; }
 
 /* top bar */
+.ipn { background: var(--ink); color: var(--bg); }
+.ipn-in { max-width: 1360px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
+.ipn-txt { flex: 1 1 520px; min-width: 0; font-size: 13px; line-height: 1.5; }
+.ipn-more { color: var(--faint); }
+.ipn .btn { background: var(--bg); color: var(--ink); border-color: var(--bg); }
+@media (max-width: 560px) { .ipn-in { padding-inline: 16px; } }
 .top { background: var(--surface); }
 .top-in { max-width: 1360px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; }
 .brand { display: flex; align-items: center; gap: 10px; }
@@ -339,6 +345,12 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
 @media (prefers-reduced-motion: reduce) { .varrow.on, .tab.flash, .toast { animation: none; } }
 </style>
 
+<div class="ipn" id="ipn" hidden role="region" aria-label="Ownership notice">
+  <div class="ipn-in">
+    <div class="ipn-txt"><b>Ownership notice.</b> The app, its source code, screens and the combination of bottleneck detection, crew ILUO and the lean proposal engine are © 2026 Norbert Mazur, all rights reserved. The methods behind it are public and not claimed: active period method (Roser, 2001), OEE per ISO 22400, ILUO, muda/mura/muri, SMED, TPM, Theory of Constraints. Oakmere Bar Co. is fictional; any real plant's data stays that plant's property. Viewing this demo is permitted. <span class="ipn-more">Details in the About tab.</span></div>
+    <button type="button" class="btn" id="ipnOk">Got it</button>
+  </div>
+</div>
 <header class="top">
   <div class="top-in">
     <div class="brand">
@@ -471,6 +483,7 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
       <div class="panel"><span class="lbl">Bottleneck</span><p>Active period method (Roser). At any moment the bottleneck is the machine with the longest uninterrupted period of running or own stoppage. Starved and blocked states end the period, because the machine is waiting for another one.</p></div>
       <div class="panel"><span class="lbl">Proposals</span><p>In the demo: a lean rule engine (Pareto, Ishikawa, muda, mura, muri, SMED, TPM, poka-yoke). In the product: a local model on a server inside the plant. Data never leaves the site.</p></div>
       <div class="panel"><span class="lbl">Crew</span><p>ILUO levels change how fast stops are cleared. In the product, staffing and the matrix come from Crewmap; here they are built in.</p></div>
+      <div class="panel"><span class="lbl">Ownership</span><p>© 2026 Norbert Mazur, all rights reserved: the app, its source code, screens, texts, reason taxonomy and the combination of bottleneck detection, crew ILUO, tablet modes and the proposal engine. Not claimed and free for anyone: active period method (Roser, 2001), OEE (ISO 22400), ILUO, muda/mura/muri, SMED, TPM, TOC. Real plant data stays the plant's property. Full text in the LICENSE file.</p></div>
       <div class="panel"><span class="lbl">Plant</span><p>Oakmere Bar Co. does not exist. Numbers, machines and failures are invented for this demo.</p></div>
     </div>
   </section>
@@ -1447,6 +1460,13 @@ $('#bEnd').addEventListener('click', () => { if (!S.done) { UI.presim = true; ad
 $('#bNext').addEventListener('click', nextShift);
 $('#bReset').addEventListener('click', resetDemo);
 $('#tAuto').addEventListener('change', e => { UI.auto = e.target.checked; S.auto = UI.auto; UI.sigs = {}; renderAll(); });
+
+// ---------- ownership notice ----------
+(() => {
+  let seen = false; try { seen = localStorage.getItem('bneck-ipn') === '1'; } catch (e) {}
+  const el = $('#ipn'); el.hidden = seen;
+  $('#ipnOk').addEventListener('click', () => { el.hidden = true; try { localStorage.setItem('bneck-ipn', '1'); } catch (e) {} });
+})();
 
 // ---------- boot ----------
 $('#tabs').innerHTML = MS.map(tabShell).join('');

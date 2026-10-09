@@ -1,0 +1,16 @@
+BNECK
+Copyright (c) 2026 Norbert Mazur. All rights reserved.
+
+This software and its source code (index.html, test.js, documentation)
+are the property of Norbert Mazur. No part may be copied, modified,
+distributed or used commercially without written permission.
+
+Not covered by this notice, and free for anyone to use:
+- the active period method for bottleneck detection (C. Roser et al., 2001),
+- OEE and its definitions (ISO 22400), ILUO skill levels, muda/mura/muri,
+  SMED, TPM, Theory of Constraints and other published lean methods.
+
+Oakmere Bar Co., its machines, crew and numbers are fictional.
+
+Evaluation use (viewing the demo) is permitted. An open-source licence
+may be granted later; until then this notice applies.
