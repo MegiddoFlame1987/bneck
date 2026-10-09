@@ -43,7 +43,9 @@ for (const c of crewCases) {
 
 // Shift plan: fixed people to their machine, the floater to the gap where their level is highest.
 const one = E.planShift(1, { kasia: 'HOL' }), two = E.planShift(1, { kasia: 'HOL', marek: 'SICK' });
-const planOk = one.assign.A === 'tomek' && one.open.length === 0 && two.assign.A === 'tomek' && two.open.join() === 'B';
+const eve = E.planShift(2, { anna: 'HOL', sam: 'SICK' });  // Eve: mixer I, former L -> she takes the former
+const planOk = one.assign.A === 'tomek' && one.open.length === 0 && two.assign.A === 'tomek' && two.open.join() === 'B'
+  && eve.assign.B === 'ewa' && eve.open.join() === 'A';
 if (!planOk) fail++;
-console.log(`${planOk ? 'OK  ' : 'FAIL'} shift plan: Kate off -> Tom (O) on the mixer; Kate and Mark off -> former open`);
+console.log(`${planOk ? 'OK  ' : 'FAIL'} shift plan: Kate off -> Tom (O) on the mixer; Kate and Mark off -> former open; Ann and Sam off -> Eve (L) on the former, mixer open`);
 process.exit(fail ? 1 : 0);
