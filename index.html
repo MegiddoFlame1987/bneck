@@ -4,29 +4,22 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: light control-room surfaces, generous spacing, one accent (magenta) for the constraint; machine states use a 6-colour semantic set that stays distinct in both themes */
+/* Light by default (shop floor, daylight). Dark is an in-app switch for night control rooms: dark grey, not black. Low-saturation state colours, one muted plum for the constraint. */
 :root {
-  --bg: #EEF1F5; --surface: #FFFFFF; --raised: #FFFFFF; --sunk: #F4F6F9; --ink: #16202B; --muted: #5B6B7C; --faint: #8A98A8; --line: #D5DCE5; --line2: #E6EBF1;
-  --run: #1F9D63; --slow: #D98E04; --starve: #7B61D1; --block: #E8742B; --stop: #D9342B; --setup: #2B7BD6;
-  --bn: #C0176B; --bnsoft: #FBE4F0; --onbn: #FFFFFF; --ok: #1F9D63; --oksoft: #E3F5EC; --warnsoft: #FFF2D6; --stopsoft: #FBE5E3; --inv: rgba(22,32,43,.14);
+  --bg: #ECEDEB; --surface: #F8F8F6; --raised: #FFFFFF; --sunk: #F1F1EE; --ink: #22262A; --muted: #5F666C; --faint: #8C9298; --line: #D3D5D2; --line2: #E3E4E1;
+  --run: #3A8F68; --slow: #C28A2A; --starve: #7A6BB8; --block: #D27A3F; --stop: #C44A42; --setup: #4A7FB8;
+  --bn: #8E2A6A; --bnsoft: #F3E4EE; --onbn: #FFFFFF; --ok: #3A8F68; --oksoft: #E4F0EA; --warnsoft: #F7EEDC; --stopsoft: #F6E3E1; --inv: rgba(34,38,42,.14);
   --f-d: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
   --f-b: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-m: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
-  --r: 10px; --rs: 6px; --sh: 0 1px 2px rgba(22,32,43,.06), 0 4px 14px rgba(22,32,43,.05);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0F1419; --surface: #182029; --raised: #1D2731; --sunk: #131A21; --ink: #E8EDF3; --muted: #9FADBC; --faint: #6F7E8E; --line: #2E3A47; --line2: #232D38;
-    --run: #3FC283; --slow: #F0B23A; --starve: #A48DF0; --block: #F59552; --stop: #F2605A; --setup: #5FA1F0;
-    --bn: #F06CB0; --bnsoft: #3A1A2B; --onbn: #1C0612; --ok: #3FC283; --oksoft: #15302A; --warnsoft: #352A14; --stopsoft: #3A1F1F; --inv: rgba(232,237,243,.16);
-    --sh: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
-    color-scheme: dark;
-  }
+  --r: 10px; --rs: 6px; --sh: 0 1px 2px rgba(34,38,42,.05), 0 3px 10px rgba(34,38,42,.04);
+  color-scheme: light;
 }
 :root[data-theme="dark"] {
-  --bg: #0F1419; --surface: #182029; --raised: #1D2731; --sunk: #131A21; --ink: #E8EDF3; --muted: #9FADBC; --faint: #6F7E8E; --line: #2E3A47; --line2: #232D38;
-  --run: #3FC283; --slow: #F0B23A; --starve: #A48DF0; --block: #F59552; --stop: #F2605A; --setup: #5FA1F0;
-  --bn: #F06CB0; --bnsoft: #3A1A2B; --onbn: #1C0612; --ok: #3FC283; --oksoft: #15302A; --warnsoft: #352A14; --stopsoft: #3A1F1F; --inv: rgba(232,237,243,.16);
-  --sh: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  --bg: #23262A; --surface: #2C3035; --raised: #33373D; --sunk: #272A2E; --ink: #DDE0E3; --muted: #A2A8AE; --faint: #777D83; --line: #43484E; --line2: #393D43;
+  --run: #5FB58C; --slow: #D9A85A; --starve: #A091D8; --block: #E39A66; --stop: #E07068; --setup: #7AA6D6;
+  --bn: #D98BBF; --bnsoft: #43303C; --onbn: #1E1218; --ok: #5FB58C; --oksoft: #2A3A32; --warnsoft: #3E3628; --stopsoft: #42302F; --inv: rgba(221,224,227,.16);
+  --sh: 0 1px 2px rgba(0,0,0,.25), 0 3px 10px rgba(0,0,0,.2);
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -340,9 +333,22 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
 .hbar s { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--bn); }
 .notes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 20px; }
 .notes p { margin: 6px 0 0; font-size: 14px; max-width: 65ch; }
+/* scopes */
+body.scope-op .tabs { grid-template-columns: minmax(0, 720px); justify-content: center; }
+body.scope-op .tab { padding: 22px 24px 18px; }
+body.scope-op .tab-h h3 { font-size: 28px; }
+body.scope-op .tstate b { font-size: 34px; }
+body.scope-op .rb button { min-height: 56px; font-size: 17px; padding: 12px 18px; }
+body.scope-op .rb button.rare { min-height: 40px; font-size: 13px; }
+body.scope-op .chk { font-size: 16px; }
+body.scope-op .chk input { width: 24px; height: 24px; }
+.apick { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 18px; }
+body.scope-op .nav .tablist, body.scope-tl .nav .tablist { display: none; }
+body.scope-op .rolewrap, body.scope-tl .rolewrap { display: none; }
+body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr); }
 /* roles */
 .rolew { display: inline-flex; align-items: center; gap: 8px; }
-.rolew select { border: 1px solid var(--line); border-radius: var(--rs); background: var(--surface); padding: 7px 10px; font-weight: 500; }
+.rolew select { border: 1px solid var(--line); border-radius: var(--rs); background: var(--surface); padding: 7px 10px; font-weight: 500; max-width: 240px; }
 .rolewrap { max-width: 1360px; margin: 0 auto; padding-inline: 24px; }
 @media (max-width: 560px) { .rolewrap { padding-inline: 16px; } }
 .rolestrip { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding-block: 10px; font-size: 13px; }
@@ -404,7 +410,8 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
     </div>
     <div class="plant"><b>Oakmere Bar Co. · Line 2</b><span>30 g oat bars · fictional plant, simulated data</span></div>
     <div class="ctrl">
-      <label class="rolew"><span class="lbl">I am</span><select id="roleSel" aria-label="Your role"><option value="sm">Shift manager</option><option value="op">Operator</option><option value="tl">Team leader</option><option value="slt">Site leadership</option><option value="eng">Engineering</option><option value="ci">CI / Lean</option></select></label>
+      <label class="rolew"><span class="lbl">View</span><select id="roleSel" aria-label="Your view"><option value="sm">Shift manager · this shift</option><option value="op">Operator · one machine</option><option value="tl">Team leader · the line</option><option value="slt">Site leadership · the month</option></select></label>
+      <button class="btn" id="bTheme" type="button" title="Light or dark">Dark</button>
       <div class="seg" role="group" aria-label="Simulation speed">
         <button type="button" data-sp="60" aria-pressed="false" title="1 shift minute per second">×1</button>
         <button type="button" data-sp="150" aria-pressed="true" title="2.5 shift minutes per second">×2.5</button>
@@ -440,7 +447,7 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
     </div>
   </div>
   <div class="nprog"><i id="progBar"></i></div>
-  <div class="rolewrap"><div class="rolestrip" id="roleStrip"></div></div>
+  <div class="rolewrap" id="rolewrapEl"><div class="rolestrip" id="roleStrip"></div></div>
   <div class="endwrap"><div class="endbar" id="endBar" hidden>
     <b id="endTxt">Month finished</b><span id="endSub"></span>
     <button class="btn primary" id="bNext" type="button">Start a new month</button>
@@ -468,7 +475,7 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
   </section>
 
   <section class="tp" id="p-linia" role="tabpanel" aria-labelledby="t-linia" hidden>
-    <div class="sh"><h2>Live line</h2><p>For the shift manager. The stream flows top to bottom. On the right: bottleneck, OEE and losses.</p></div>
+    <div class="sh"><h2>Live line</h2><p>The stream flows top to bottom. On the right: bottleneck, OEE and this shift so far. Tap a machine for detail.</p></div>
     <div class="slegend"><span><i style="background:var(--run)"></i>Running</span><span><i style="background:var(--slow)"></i>Slow cycle</span><span><i style="background:var(--starve)"></i>Starved</span><span><i style="background:var(--block)"></i>Blocked</span><span><i style="background:var(--stop)"></i>Stopped</span><span><i style="background:var(--setup)"></i>Changeover</span></div>
     <div class="lineg">
       <div class="vflow" id="vflow"></div>
@@ -502,7 +509,8 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
   </section>
 
   <section class="tp" id="p-operatorzy" role="tabpanel" aria-labelledby="t-operatorzy" hidden>
-    <div class="sh"><h2>Operator tablets</h2><p>The sensor knows the machine stopped. The operator says why. The tablet at the bottleneck asks for detail, the others have quick buttons. Untick “Operators report automatically” at the top to answer for the operators yourself.</p></div>
+    <div class="sh"><h2 id="opH">Operator tablets</h2><p id="opP">The sensor knows the machine stopped. The operator says why. The tablet at the bottleneck asks for detail, the others have quick buttons. Untick “Operators report automatically” at the top to answer for the operators yourself.</p></div>
+    <div class="apick" id="apick" hidden><span class="lbl">Machine</span><div class="seg" role="group" aria-label="Machine"><button type="button" data-asset="A" aria-pressed="true">A · Mixer</button><button type="button" data-asset="B" aria-pressed="false">B · Former</button><button type="button" data-asset="C" aria-pressed="false">C · Oven</button></div><span class="lmeta">In the plant each tablet is fixed to its machine.</span></div>
     <div class="tabs" id="tabs"></div>
   </section>
 
@@ -536,6 +544,7 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
     <div class="ana" style="margin-top:20px">
       <div class="panel"><h3>Loss Pareto, selected period</h3><p class="hint">Magenta: minutes while the machine was the bottleneck. Sorted by bottleneck minutes.</p><div class="par" id="hPareto"></div></div>
       <div class="panel"><h3>Bottleneck by week</h3><p class="hint">Share of shift time each machine was the constraint. When it moves, the next fix moves with it.</p><div class="hist-wrap" style="margin:0;padding:0;border:0;background:none"><table class="oee" id="hBn"></table></div></div>
+      <div class="panel wide" id="hDecP" hidden><h3>Decisions for site leadership</h3><p class="hint">Three things only leadership can decide, from this month's data.</p><ol class="nxt" id="hDec"></ol></div>
       <div class="panel wide"><h3>Insights for the lean coach</h3><p class="hint">Rules over the stored shifts: rising, recurring, day vs night, fixes that held or slipped, reporting quality.</p><ul class="pat" id="hIns"></ul></div>
     </div>
   </section>
@@ -1008,7 +1017,7 @@ function pending(m) {
 
 // ---------- operator tablets ----------
 function tabShell(m) {
-  return `<article class="tab" id="tab${m}">
+  return `<article class="tab" id="tab${m}" data-m="${m}">
     <div class="tab-h"><h3><span class="mid">${m}</span>${MACH[m].name}</h3><span class="mode" id="md${m}"></span></div>
     <div class="tstate" id="ts${m}"><b id="sw${m}">Pracuje</b><span id="ss${m}"></span></div>
     <p class="impact" id="im${m}"></p>
@@ -1174,7 +1183,7 @@ function renderSide() {
   $('#sBnRows').innerHTML = MS.map(m => `<div class="bnrow"><span>${MACH[m].name}</span><span class="bar"><i style="width:${100 * UI.bnSh.sh[m]}%"></i></span><span class="pv">${pct(UI.bnSh.sh[m])}</span></div>`).join('');
   const rows = MS.map(m => { const o = oee(S, m); return `<tr><td>${MACH[m].name}</td><td>${pct(o.A)}</td><td>${pct(o.P)}</td><td>${pct(o.Q)}</td><td class="${oeeCls(o.oee)}">${pct(o.oee)}</td></tr>`; });
   const planNow = PLAN_RATE * S.t / 60 || 1, lo = goodOut(S) / planNow;
-  rows.push(`<tr class="tot"><td>Linia</td><td colspan="3" style="font-family:var(--f-b);color:var(--muted);text-align:left">good / plan</td><td class="${oeeCls(lo)}">${pct(lo)}</td></tr>`);
+  rows.push(`<tr class="tot"><td>Line</td><td colspan="3" style="font-family:var(--f-b);color:var(--muted);text-align:left">good / plan</td><td class="${oeeCls(lo)}">${pct(lo)}</td></tr>`);
   $('#sOee').innerHTML = rows.join('');
   const planH = PLAN_RATE * 60, hrs = S.hourly.map(b => b.out), cur = S.out - (S.hourly.length ? S.hourly[S.hourly.length - 1].cumOut : 0), curFrac = (S.t % 3600) / 3600;
   const bars = hrs.map(v => `<i class="${v < planH * 0.85 ? 'lo' : ''}" style="--h:${Math.min(100, 100 * v / (planH * 1.2))}%" title="${fmt(v)} pcs"></i>`).join('') + (curFrac > 0.05 ? `<i class="live" style="--h:${Math.min(100, 100 * (cur / curFrac) / (planH * 1.2))}%" title="${fmt(cur)} pcs so far"></i>` : '');
@@ -1627,8 +1636,20 @@ function insights() {
   L.sort((a, b) => (b[0] ? 1 : 0) - (a[0] ? 1 : 0));
   return L.length ? L.slice(0, 8) : [[false, 'Nothing stands out yet. Run more shifts.', 'Data']];
 }
+function renderDecisions() {
+  const H = UI.hist; if (ROLE !== 'slt') return;
+  const D = [];
+  const props = computeProps().filter(o => o.gain >= 500);
+  if (props[0]) D.push(`<li><b>Approve: ${esc(props[0].p.title)}</b> <span class="mono">up to +${fmt(Math.round(props[0].gain / 100) * 100)} pcs per shift</span><small>${esc(props[0].p.tool)} · ${mname(props[0].p.m)} · effort ${props[0].p.id === 'bufor' ? 'M, capital' : 'S, standard work'}</small></li>`);
+  const slip = Object.keys(UI.appliedAt).filter(k => (S.fx[k] || 0) < 0.95);
+  if (slip.length) D.push(`<li><b>Hold the line on ${slip.length} slipping ${slip.length === 1 ? 'fix' : 'fixes'}</b><small>${slip.map(k => esc(PROP[k].title)).join(', ')}: ask for the weekly audit, not a new project.</small></li>`);
+  for (const m of MS) { const n = CREW.filter(c => c.lvl[m] >= 3).length; if (n <= 2) { D.push(`<li><b>Fund cross-training on the ${mname(m).toLowerCase()}</b><small>Only ${n} people at U or O. One absence drops the line to level L. Target: 4 within a quarter.</small></li>`); break; } }
+  if (H.length >= 24) { const wk = {}; for (const h of H.slice(-24)) for (const m of MS) wk[m] = (wk[m] || 0) + h.bnSh[m] / 24; const top = Object.entries(wk).sort((a, b) => b[1] - a[1])[0]; if (top && top[1] >= 0.8 && !props.length) D.push(`<li><b>Elevate the ${mname(top[0]).toLowerCase()}</b><small>Constraint ${pct(top[1])} of the last two weeks and no cheap fix left. Capital request: faster unit or extra capacity.</small></li>`); }
+  $('#hDec').innerHTML = (D.length ? D : ['<li>No decision pending. The line is improving on its own standards.</li>']).slice(0, 3).join('');
+}
 function renderHistory(force) {
   if ($('#p-historia').hidden && !force) return;
+  renderDecisions();
   const sel = histSel();
   const n = sel.length, avg = n ? sel.reduce((a, h) => a + h.pct, 0) / n : 0, best = n ? Math.max(...sel.map(h => h.pct)) : 0, worst = n ? Math.min(...sel.map(h => h.pct)) : 0;
   const rej = sel.reduce((a, h) => a + h.rej, 0), good = sel.reduce((a, h) => a + h.out, 0);
@@ -1647,23 +1668,34 @@ function renderHistory(force) {
 
 // ---------- roles ----------
 const ROLES = {
-  op:  { name: 'Operator', tab: 'operatorzy', tabs: ['operatorzy', 'linia', 'zaloga'] },
-  tl:  { name: 'Team leader', tab: 'linia', tabs: ['linia', 'operatorzy', 'zaloga', 'przeglad'] },
-  sm:  { name: 'Shift manager', tab: 'przeglad', tabs: ['przeglad', 'linia', 'zaloga', 'operatorzy', 'analiza', 'historia', 'dzialania'] },
-  slt: { name: 'Site leadership', tab: 'historia', tabs: ['historia', 'przeglad', 'dzialania'] },
-  eng: { name: 'Engineering', tab: 'linia', tabs: ['linia', 'analiza', 'historia', 'dzialania'] },
-  ci:  { name: 'CI / Lean', tab: 'dzialania', tabs: ['dzialania', 'analiza', 'historia', 'przeglad'] },
+  op:  { name: 'Operator', scope: 'op', tab: 'operatorzy', tabs: ['operatorzy'], strip: false },
+  tl:  { name: 'Team leader', scope: 'tl', tab: 'linia', tabs: ['linia'], strip: false },
+  sm:  { name: 'Shift manager', scope: 'sm', tab: 'przeglad', tabs: ['przeglad', 'linia', 'zaloga', 'operatorzy', 'analiza', 'historia', 'dzialania', 'demo'], strip: true },
+  slt: { name: 'Site leadership', scope: 'slt', tab: 'historia', tabs: ['historia', 'dzialania', 'demo'], strip: true },
 };
-let ROLE = 'sm';
-try { const r = localStorage.getItem('bneck-role'); if (ROLES[r]) ROLE = r; } catch (e) {}
+let ROLE = 'sm', ASSET = 'A';
+try { const r = localStorage.getItem('bneck-role'); if (ROLES[r]) ROLE = r; const a = localStorage.getItem('bneck-asset'); if (MS.includes(a)) ASSET = a; } catch (e) {}
 function setRole(r, go) {
   if (!ROLES[r]) return; ROLE = r; $('#roleSel').value = r;
   try { localStorage.setItem('bneck-role', r); } catch (e) {}
-  const order = [...ROLES[r].tabs, ...TABS.filter(t => !ROLES[r].tabs.includes(t))];
-  const list = $('.tablist'); for (const t of order) list.appendChild($('#t-' + t));
-  if (go) showTab(ROLES[r].tab);
-  renderRoleStrip();
+  document.body.className = 'scope-' + ROLES[r].scope;
+  for (const t of TABS) $('#t-' + t).hidden = !ROLES[r].tabs.includes(t);
+  $('#rolewrapEl').hidden = !ROLES[r].strip;
+  $('#apick').hidden = r !== 'op';
+  $('#hDecP').hidden = r !== 'slt';
+  $('#opH').textContent = r === 'op' ? `${MACH[ASSET].name} tablet` : 'Operator tablets';
+  $('#opP').textContent = r === 'op' ? 'Your machine only. Say why it stopped, tick the standard checks. The buffer before and after tells you how much time you have.' : 'The sensor knows the machine stopped. The operator says why. The tablet at the bottleneck asks for detail, the others have quick buttons. Untick “Operators report automatically” at the top to answer for the operators yourself.';
+  for (const m of MS) $('#tab' + m).hidden = r === 'op' && m !== ASSET;
+  if (r === 'slt') { HPER = 'weeks'; document.querySelectorAll('[data-per]').forEach(x => x.setAttribute('aria-pressed', x.dataset.per === 'weeks' ? 'true' : 'false')); }
+  if (go || !ROLES[r].tabs.includes(TAB)) showTab(ROLES[r].tab);
+  renderRoleStrip(); UI.sigs = {}; renderAll();
 }
+function setAsset(m) { ASSET = m; try { localStorage.setItem('bneck-asset', m); } catch (e) {} document.querySelectorAll('[data-asset]').forEach(b => b.setAttribute('aria-pressed', b.dataset.asset === m ? 'true' : 'false')); setRole('op', false); }
+document.querySelectorAll('[data-asset]').forEach(b => b.addEventListener('click', () => setAsset(b.dataset.asset)));
+let THEME = 'light';
+try { const t = localStorage.getItem('bneck-theme'); if (t === 'dark') THEME = 'dark'; } catch (e) {}
+function setTheme(t) { THEME = t; document.documentElement.setAttribute('data-theme', t); $('#bTheme').textContent = t === 'dark' ? 'Light' : 'Dark'; try { localStorage.setItem('bneck-theme', t); } catch (e) {} readColors(); if (S) { drawCum(); drawGantt(); renderHistory(false); } }
+$('#bTheme').addEventListener('click', () => setTheme(THEME === 'dark' ? 'light' : 'dark'));
 function roleItems() {
   const planNow = PLAN_RATE * S.t / 60 || 1, main = S.focus || UI.bnSh.main, bn = nowBn();
   let open = 0; for (const ev of S.events) if (needsInput(S, ev)) open++;
@@ -1689,14 +1721,6 @@ function roleItems() {
     I.push({ t: `Month so far <b>${H.length ? pct(H.reduce((a, h) => a + h.pct, 0) / H.length) : '–'}</b>`, tab: 'historia', hot: false });
     I.push({ t: `Fixes in place <b>${Object.keys(UI.appliedAt).length}</b>`, tab: 'dzialania', hot: false });
     I.push({ t: `Day ${S.cal.day} of ${DAYS}`, tab: 'historia', hot: false });
-  } else if (ROLE === 'eng') {
-    for (const m of MS) { const o = oee(S, m); I.push({ t: `${mname(m)} availability <b>${pct(o.A)}</b>`, tab: 'linia', hot: o.A < 0.85 }); }
-    const slip = Object.keys(UI.appliedAt).filter(k => (S.fx[k] || 0) < 0.95); if (slip.length) I.push({ t: `Audit due: <b>${slip.length}</b>`, tab: 'dzialania', hot: true });
-  } else if (ROLE === 'ci') {
-    I.push({ t: `Proposals with gain <b>${props.length}</b>`, tab: 'dzialania', hot: props.length > 0 });
-    const ins = H.length >= 4 ? insights().filter(x => x[0]).length : 0; I.push({ t: `Hot insights <b>${ins}</b>`, tab: 'historia', hot: ins > 0 });
-    I.push({ t: `Bottleneck: <b>${main ? mname(main) : '–'}</b>`, tab: 'analiza', hot: false });
-    const evs = S.events.filter(e => e.type !== 'setup'), none = evs.filter(e => !e.rec).length; I.push({ t: `Stops without reason <b>${evs.length ? pct(none / evs.length) : '–'}</b>`, tab: 'operatorzy', hot: evs.length >= 4 && none / evs.length > 0.25 });
   }
   return I;
 }
@@ -1741,7 +1765,7 @@ function renderDrawer() {
 const TABS = ['przeglad', 'linia', 'zaloga', 'operatorzy', 'analiza', 'historia', 'dzialania', 'demo'];
 let TAB = 'przeglad';
 function showTab(id, focusTab) {
-  if (!TABS.includes(id)) id = 'przeglad';
+  if (!TABS.includes(id) || !ROLES[ROLE].tabs.includes(id)) id = ROLES[ROLE].tab;
   TAB = id;
   for (const t of TABS) {
     const b = $('#t-' + t), on = t === id;
@@ -1866,6 +1890,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
 new MutationObserver(() => { readColors(); drawCum(); drawGantt(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 window.addEventListener('resize', () => { drawCum(); drawGantt(); renderHistory(false); });
 if (document.fonts) document.fonts.ready.then(() => { drawCum(); drawGantt(); });
+setTheme(THEME);
 resetDemo();
 setRole(ROLE, false);
 showTab((location.hash || '').slice(1) || ROLES[ROLE].tab);
