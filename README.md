@@ -8,7 +8,7 @@ Demo of a shift-manager tool: line bottleneck, flow between machines, OEE, crew 
 
 | File | What it is |
 |---|---|
-| `index.html` | The whole app in one file. View switcher = scope: Operator sees one machine, Team leader sees the line, Shift manager sees the shift (all tabs), Site leadership sees the month (History by week, decisions, Actions). Light theme by default, dark as an in-app switch. Tap a machine for its detail. Tabs: Overview (manager), Line (stream top to bottom, bottleneck, OEE, losses), Crew (ILUO, staffing, recommendation), Operators (tablets), Analysis, History (hour/shift/day/week, Pareto by period, insights), Actions |
+| `index.html` | The whole app in one file. View switcher = scope: Operator sees one machine with large downtime buttons for that machine only, Team leader sees the line, Shift manager sees the shift (all tabs), Site leadership sees the month (History by week, decisions, Actions). Light theme by default, dark as an in-app switch. Tap a machine for its detail. Tabs: Flow (who sits where: production stream on X, decisions and strategy on Y, interactive), Overview (manager, help needed from other teams), Line (stream top to bottom, bottleneck, OEE, losses), Crew (ILUO, staffing, recommendation), Operators (tablets), Analysis, Fishbone (pick a recurring bottleneck problem, Ishikawa from operator answers across shifts, 5 Why, matching fix), History (hour/shift/day/week, Pareto by period, insights), Actions |
 | `test.js` | Engine test: 5 shifts with successive fixes, checks % of plan and bottleneck |
 | `test-month.js` | Month test: 52 shifts, no fixes vs staged fixes with ramp |
 | `docs/lean/rollout.md` | How fixes are sequenced, rolled out and sustained (TOC, PDCA on weeks, ramp, audit) |

@@ -388,6 +388,45 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
 .evl .mono { color: var(--muted); }
 .dr-sec h4 { font-size: 18px; margin-bottom: 8px; }
 .tp[hidden] { display: none !important; }
+/* flow */
+.flowg { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 340px); gap: 20px; align-items: start; }
+@media (max-width: 980px) { .flowg { grid-template-columns: minmax(0, 1fr); } }
+.fmap { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+.band { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; align-items: stretch; }
+.band + .band { margin-top: 0; }
+.bandl { display: flex; flex-direction: column; justify-content: center; border-right: 3px solid var(--line); padding-right: 10px; }
+.bandl b { font-family: var(--f-d); font-size: 18px; }
+.bandl span { font-size: 11px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.bandr { display: flex; flex-wrap: wrap; gap: 10px; padding-block: 14px; min-width: 0; }
+.band.prod .bandr { flex-wrap: nowrap; overflow-x: auto; align-items: stretch; gap: 0; }
+.fnode { border: 1px solid var(--line); background: var(--surface); border-radius: var(--rs); padding: 8px 12px; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fnode:hover { border-color: var(--muted); }
+.fnode[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ink); }
+.fnode b { font-size: 14px; }
+.fnode small { color: var(--muted); font-size: 12px; }
+.fnode.ext { border-style: dashed; background: var(--sunk); }
+.fnode.dim { opacity: .35; }
+.fnode.mach { min-width: 128px; border-width: 2px; }
+.fnode.mach.is-bn { border-color: var(--bn); }
+.fnode.buf { min-width: 92px; background: var(--sunk); border-style: dashed; }
+.fnode .st { font-family: var(--f-d); font-size: 17px; font-weight: 700; }
+.farrow { align-self: center; color: var(--faint); padding-inline: 4px; font-size: 18px; flex: none; }
+.vlink { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; }
+.vlink div { display: flex; gap: 22px; font-size: 12px; color: var(--muted); padding: 4px 0 4px 6px; border-left: 3px solid var(--line); margin-left: 89px; grid-column: 1 / -1; }
+.vlink b { color: var(--ink); font-weight: 600; }
+.fdet h3 { margin-bottom: 4px; }
+.fdet dl { margin: 10px 0 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; font-size: 13px; }
+.fdet dt { color: var(--muted); }
+.fdet dd { margin: 0; }
+.fdet .live { margin-top: 12px; padding: 10px 12px; background: var(--sunk); border-radius: var(--rs); font-size: 13px; }
+.esc { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; font-size: 14px; }
+.esc small { display: block; color: var(--muted); font-size: 12px; }
+.esc .mono { font-size: 13px; }
+.opgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.opgrid button { min-height: 64px; border: 2px solid var(--line); background: var(--surface); border-radius: 10px; font-size: 17px; font-weight: 600; cursor: pointer; padding: 10px; }
+.opgrid button:hover:not(:disabled) { border-color: var(--ink); }
+.opgrid button:disabled { opacity: .45; cursor: default; }
+.opgrid button.other { font-weight: 500; color: var(--muted); }
 .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line2); color: var(--muted); font-size: 12px; line-height: 1.5; max-width: 90ch; }
 .hctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 16px; }
 .bnA { background: var(--setup); } .bnB { background: var(--slow); } .bnC { background: var(--stop); }
@@ -411,7 +450,7 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
     </div>
     <div class="plant"><b>Oakmere Bar Co. · Line 2</b><span>30 g oat bars · fictional plant, simulated data</span></div>
     <div class="ctrl">
-      <label class="rolew"><span class="lbl">View</span><select id="roleSel" aria-label="Your view"><option value="sm">Shift manager · this shift</option><option value="op">Operator · one machine</option><option value="tl">Team leader · the line</option><option value="slt">Site leadership · the month</option></select></label>
+      <label class="rolew"><span class="lbl">View</span><select id="roleSel" aria-label="Your view"><option value="sm">Shift manager · this shift</option><option value="op">Operator · one machine</option><option value="tl">Team leader · the line</option><option value="slt">Site leadership / CI · the month</option></select></label>
       <button class="btn" id="bTheme" type="button" title="Light or dark">Dark</button>
       <div class="seg" role="group" aria-label="Simulation speed">
         <button type="button" data-sp="60" aria-pressed="false" title="1 shift minute per second">×1</button>
@@ -435,6 +474,8 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
       <button type="button" role="tab" id="t-zaloga" aria-controls="p-zaloga" aria-selected="false" tabindex="-1" data-tab="zaloga">Crew</button>
       <button type="button" role="tab" id="t-operatorzy" aria-controls="p-operatorzy" aria-selected="false" tabindex="-1" data-tab="operatorzy">Operators<span class="badge" id="tbBadge" hidden>0</span></button>
       <button type="button" role="tab" id="t-analiza" aria-controls="p-analiza" aria-selected="false" tabindex="-1" data-tab="analiza">Analysis</button>
+      <button type="button" role="tab" id="t-flow" aria-controls="p-flow" aria-selected="false" tabindex="-1" data-tab="flow">Flow</button>
+      <button type="button" role="tab" id="t-fishbone" aria-controls="p-fishbone" aria-selected="false" tabindex="-1" data-tab="fishbone">Fishbone</button>
       <button type="button" role="tab" id="t-historia" aria-controls="p-historia" aria-selected="false" tabindex="-1" data-tab="historia">History</button>
       <button type="button" role="tab" id="t-dzialania" aria-controls="p-dzialania" aria-selected="false" tabindex="-1" data-tab="dzialania">Actions</button>
       <button type="button" role="tab" id="t-demo" aria-controls="p-demo" aria-selected="false" tabindex="-1" data-tab="demo">About</button>
@@ -467,6 +508,7 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
     <div class="ov">
       <div class="panel ovsum"><h3>Summary</h3><ol class="sum" id="oSum"></ol>
         <div class="ovbtns"><button type="button" class="btn" data-go="analiza">Full analysis</button><button type="button" class="btn primary" data-go="dzialania">Proposed actions</button></div></div>
+      <div class="panel" id="escP"><h3>Help needed from other teams</h3><p class="hint">Losses this shift owned outside production. Raise once, the owner gets the minutes and the top cause.</p><div class="stack" id="esc"></div></div>
       <div class="panel"><h3>Next three actions</h3><p class="hint">From the proposal engine, ranked by gain at the bottleneck. Full list under Actions.</p><ol class="nxt" id="oNext"></ol></div>
       <div class="chart"><span class="lbl">Cumulative output</span><canvas id="cum" height="150"></canvas>
         <div class="legend"><span><i style="background:var(--ink)"></i>This shift</span><span><i style="background:var(--line)"></i>Plan 120 pcs/min</span><span id="lgPrev" hidden><i style="background:var(--muted);opacity:.5"></i>Previous shift</span></div>
@@ -520,9 +562,26 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
     <div class="ana">
       <div class="panel"><h3>Flow chain</h3><p class="hint">Who waited for whom, and why.</p><div class="flow" id="flow"></div></div>
       <div class="panel"><h3>Loss Pareto</h3><p class="hint">Full bar: stop minutes. Magenta: minutes while this machine was the bottleneck.</p><div class="par" id="pareto"></div></div>
-      <div class="panel wide"><h3 id="fishT">Ishikawa</h3><p class="hint">Causes of bottleneck losses by 6M, from operator answers.</p><div class="fish-wrap"><svg id="fish" viewBox="0 0 920 300" role="img" aria-label="Ishikawa diagram for the bottleneck"></svg></div></div>
       <div class="panel"><h3>Muda · Mura · Muri</h3><p class="hint">Loss minutes by type of waste.</p><div class="waste" id="waste"></div></div>
       <div class="panel"><h3>Patterns in the data</h3><p class="hint">Recurring effects seen this shift.</p><ul class="pat" id="pat"></ul></div>
+    </div>
+  </section>
+
+  <section class="tp" id="p-flow" role="tabpanel" aria-labelledby="t-flow" hidden>
+    <div class="sh"><h2>Flow</h2><p>Who sits where and what they look after. X: the production stream, left to right. Y: data goes up, decisions come down. Tap any box.</p></div>
+    <div class="flowg">
+      <div class="fmap" id="fmap"></div>
+      <aside class="panel fdet" id="fdet"></aside>
+    </div>
+  </section>
+
+  <section class="tp" id="p-fishbone" role="tabpanel" aria-labelledby="t-fishbone" hidden>
+    <div class="sh"><h2>Fishbone</h2><p>Pick a problem that keeps coming back and costs bottleneck time. Causes come from the operators' answers across all stored shifts.</p></div>
+    <div class="hctl"><label class="rolew"><span class="lbl">Problem</span><select id="fishSel" aria-label="Recurring problem"></select></label><span class="lmeta" id="fishMeta"></span></div>
+    <div class="panel"><h3 id="fishT">Ishikawa</h3><p class="hint">6M. Number under each cause: times reported · minutes lost.</p><div class="fish-wrap"><svg id="fish" viewBox="0 0 920 300" role="img" aria-label="Ishikawa diagram"></svg></div></div>
+    <div class="ana" style="margin-top:20px">
+      <div class="panel"><h3>5 Why, from the data</h3><p class="hint">Start at the top cause, ask why until you reach something a standard can fix.</p><ol class="nxt" id="fishWhy"></ol></div>
+      <div class="panel"><h3>Lean coach</h3><p class="hint">The matching fix, its status and what to do next.</p><div id="fishFix"></div></div>
     </div>
   </section>
 
@@ -1061,7 +1120,7 @@ function renderTab(m) {
   const fxm = PROPS.filter(p => p.m === m && S.fx[p.id]);
   const recent = [];
   for (let i = S.events.length - 1; i >= 0 && recent.length < 2; i--) { const e = S.events[i]; if (e.m === m && e.rec && !needsInput(S, e) && e.end != null) recent.push(e); }
-  const sig = [recent.map(e => e.id + ':' + e.rec.reason + ':' + e.rec.sub).join(','), S.n, bnmode, pend.slice(0, 3).map(e => e.id + ':' + (e.rec ? e.rec.reason : '') + ':' + (e.end == null ? 1 : 0)).join(','), Math.max(0, pend.length - 3), fxm.map(p => p.id + (S.checks[p.id] ? 1 : 0)).join(',')].join('|');
+  const sig = [ROLE, ASSET, recent.map(e => e.id + ':' + e.rec.reason + ':' + e.rec.sub).join(','), S.n, bnmode, pend.slice(0, 3).map(e => e.id + ':' + (e.rec ? e.rec.reason : '') + ':' + (e.end == null ? 1 : 0)).join(','), Math.max(0, pend.length - 3), fxm.map(p => p.id + (S.checks[p.id] ? 1 : 0)).join(',')].join('|');
   const tab = $('#tab' + m);
   tab.classList.toggle('bnmode', bnmode);
   if (UI.flash === m) { tab.classList.remove('flash'); void tab.offsetWidth; tab.classList.add('flash'); UI.flash = null; }
@@ -1070,7 +1129,11 @@ function renderTab(m) {
   $('#md' + m).textContent = bnmode ? 'Mode: bottleneck' : 'Mode: standard';
   let h = '';
   if (!pend.length) h += `<p class="calm">No open reports.${S.auto ? '' : ' When the machine stops, the question appears here.'}</p>`;
-  for (const ev of pend.slice(0, 3)) h += pendHTML(ev, bnmode);
+  if (ROLE === 'op' && m === ASSET) {
+    const open = pend.filter(e => !e.rec), rs = [...STOPR[m], ...(m === 'A' ? ['syrop'] : [])];
+    h += `<div class="stack"><span class="lbl">${open.length ? `Why did it stop? ${open.length > 1 ? open.length + ' stops waiting, oldest first' : 'from ' + clock(open[0].start)}` : 'No stop waiting for a reason'}</span><div class="opgrid">${rs.map(r => `<button type="button" data-act="q" data-m="${m}" data-r="${r}" ${open.length ? '' : 'disabled'}>${esc(REASONS[r].label)}</button>`).join('')}<button type="button" class="other" data-act="q" data-m="${m}" data-r="inne" ${open.length ? '' : 'disabled'}>Other</button></div></div>`;
+    for (const ev of pend.filter(e => e.rec).slice(0, 2)) h += pendHTML(ev, bnmode);
+  } else for (const ev of pend.slice(0, 3)) h += pendHTML(ev, bnmode);
   if (pend.length > 3) h += `<p class="more">${pend.length - 3} older reports still need a reason.</p>`;
   if (recent.length) h += `<div class="recent"><span class="lbl">Recent reports</span><ul>${recent.map(e => `<li><span class="mono">${clock(e.start)}</span><span>${esc(REASONS[e.rec.reason].short)}${e.rec.sub != null ? ' · ' + esc(SUBS[e.rec.reason][e.rec.sub][0]) : ''}</span><span class="mono">${Math.max(1, Math.round(((e.end == null ? S.t : e.end) - e.start) / 60))} min</span></li>`).join('')}</ul></div>`;
   if (fxm.length) {
@@ -1672,8 +1735,8 @@ function renderHistory(force) {
 const ROLES = {
   op:  { name: 'Operator', scope: 'op', tab: 'operatorzy', tabs: ['operatorzy'], strip: false },
   tl:  { name: 'Team leader', scope: 'tl', tab: 'linia', tabs: ['linia'], strip: false },
-  sm:  { name: 'Shift manager', scope: 'sm', tab: 'przeglad', tabs: ['przeglad', 'linia', 'zaloga', 'operatorzy', 'analiza', 'historia', 'dzialania', 'demo'], strip: true },
-  slt: { name: 'Site leadership', scope: 'slt', tab: 'historia', tabs: ['historia', 'dzialania', 'demo'], strip: true },
+  sm:  { name: 'Shift manager', scope: 'sm', tab: 'przeglad', tabs: ['przeglad', 'linia', 'zaloga', 'operatorzy', 'analiza', 'fishbone', 'historia', 'dzialania', 'flow', 'demo'], strip: true },
+  slt: { name: 'Site leadership / CI', scope: 'slt', tab: 'historia', tabs: ['historia', 'fishbone', 'dzialania', 'flow', 'demo'], strip: true },
 };
 let ROLE = 'sm', ASSET = 'A';
 try { const r = localStorage.getItem('bneck-role'); if (ROLES[r]) ROLE = r; const a = localStorage.getItem('bneck-asset'); if (MS.includes(a)) ASSET = a; } catch (e) {}
@@ -1763,8 +1826,163 @@ function renderDrawer() {
   $('#drBody').innerHTML = h;
 }
 
+// ---------- flow map ----------
+const FLOW = {
+  slt:  { band: 'strategy', name: 'Site leadership', where: 'Offices, weekly on the floor', looks: 'The month: plan attainment by week, OEE trend, which machine is the constraint', decides: 'Capital, staffing levels, which fix to fund, cross-training budget', cadence: 'Monthly review, weekly 15 min', up: 'Group / owners', view: 'slt' },
+  ci:   { band: 'strategy', name: 'CI / Lean', where: 'Floor and office', looks: 'Recurring problems at the bottleneck, fishbone, fixes that held or slipped', decides: 'Which fix next, the standard and the audit', cadence: 'Weekly check of each fix, daily walk', up: 'Site leadership', view: 'slt' },
+  sm:   { band: 'decision', name: 'Shift manager', where: 'Line office, on the floor every hour', looks: 'This shift: output vs plan, bottleneck, losses, help needed from other teams', decides: 'Who stands where, what to escalate, which fix to start next shift', cadence: 'Handover, hourly check, end of shift', up: 'Site leadership, CI', view: 'sm' },
+  tl:   { band: 'decision', name: 'Team leader', where: 'On the line', looks: 'The line now: which machine stopped, why, who is at it, open reports', decides: 'Move people, call maintenance, restart order', cadence: 'Continuous, 2 min every hour with the SM', up: 'Shift manager', view: 'tl' },
+  eng:  { band: 'decision', name: 'Engineering', ext: true, where: 'Workshop, called to the line', looks: 'Stops owned by machines: valve, knife, belt, guides', decides: 'Repair now or at changeover, spare parts, TPM checks', cadence: 'On call, weekly TPM review', up: 'Site leadership', escFor: ['zawor', 'noz', 'tor', 'zator'] },
+  wh:   { band: 'decision', name: 'Warehouse', ext: true, where: 'Stores, delivers to the mixer', looks: 'Ingredient waits at the mixer', decides: 'Kit timing, delivery route', cadence: 'Per batch', up: 'Site leadership', escFor: ['skladniki'] },
+  qa:   { band: 'decision', name: 'Quality', ext: true, where: 'Lab and line checks', looks: 'Rejects: brittle bars after cold syrup, burnt bars after oven stops', decides: 'Hold, release, rework, parameter limits', cadence: 'Hourly checks', up: 'Site leadership', escFor: ['rej'] },
+  pl:   { band: 'decision', name: 'Planning / HR', ext: true, where: 'Office', looks: 'Breaks without cover, changeover timing, skills gaps', decides: 'Rota, cover, flavour sequence', cadence: 'Weekly plan', up: 'Site leadership', escFor: ['przerwa', 'przezbrojenie'] },
+};
+let FSEL = 'sm';
+function buildFlow() {
+  const node = (k, o) => `<button type="button" class="fnode${o.ext ? ' ext' : ''}" data-fn="${k}" aria-pressed="false"><b>${esc(o.name)}</b><small>${esc(o.where)}</small></button>`;
+  const band = (cls, lbl, sub, inner) => `<div class="band ${cls}"><div class="bandl"><span>${sub}</span><b>${lbl}</b></div><div class="bandr">${inner}</div></div>`;
+  const prod = [`<button type="button" class="fnode buf" data-fn="in" aria-pressed="false"><b>Silo & stores</b><small>raw materials</small></button>`];
+  const chain = ['A', 'b0', 'B', 'b1', 'C'];
+  for (const c of chain) {
+    prod.push('<span class="farrow" aria-hidden="true">→</span>');
+    if (c[0] === 'b') { const i = +c[1]; prod.push(`<button type="button" class="fnode buf" data-fn="${c}" aria-pressed="false"><b>${BUF[i][0]}</b><small id="fb${i}">–</small></button>`); }
+    else prod.push(`<button type="button" class="fnode mach" data-fn="${c}" id="fm${c}" aria-pressed="false"><b>${c} · ${MACH[c].name}</b><span class="st" id="fs${c}">–</span><small id="fo${c}">–</small></button>`);
+  }
+  prod.push('<span class="farrow" aria-hidden="true">→</span>', `<button type="button" class="fnode buf" data-fn="out" aria-pressed="false"><b>Packing</b><small>customer</small></button>`);
+  const S_ = Object.entries(FLOW).filter(([, o]) => o.band === 'strategy'), D_ = Object.entries(FLOW).filter(([, o]) => o.band === 'decision');
+  $('#fmap').innerHTML = band('strat', 'Strategy', 'Y · month', S_.map(([k, o]) => node(k, o)).join(''))
+    + `<div class="vlink"><div><span>↑ <b>trends, problems, coach advice</b></span><span>↓ <b>budget, priorities, standards</b></span></div></div>`
+    + band('dec', 'Decisions', 'Y · shift', D_.map(([k, o]) => node(k, o)).join(''))
+    + `<div class="vlink"><div><span>↑ <b>stops, reasons, output</b></span><span>↓ <b>who stands where, fixes, escalations</b></span></div></div>`
+    + band('prod', 'Production', 'X · value stream', prod.join(''));
+}
+function flowDetail(k) {
+  if (FLOW[k]) {
+    const o = FLOW[k];
+    let live = '';
+    if (o.escFor) { const e = escData().find(x => x.k === k); live = e ? `This shift: <b>${fmt(e.min)} min</b> lost to their area${e.top ? ', mostly ' + esc(e.top) : ''}.` : 'Nothing owned by this team this shift.'; }
+    else if (k === 'sm') live = `This shift: <b>${S.t < 600 ? '–' : pct(goodOut(S) / (PLAN_RATE * S.t / 60))}</b> of plan, bottleneck <b>${S.focus ? mname(S.focus) : '–'}</b>.`;
+    else if (k === 'tl') { let open = 0; for (const ev of S.events) if (needsInput(S, ev)) open++; live = `Now: ${MS.filter(m => S[m].st === 'STOP' || S[m].st === 'SETUP').map(mname).join(', ') || 'nothing'} stopped, ${open} open reports.`; }
+    else if (k === 'slt' || k === 'ci') live = UI.hist.length ? `Month so far: <b>${pct(UI.hist.reduce((a, h) => a + h.pct, 0) / UI.hist.length)}</b> of plan over ${UI.hist.length} shifts.` : 'No finished shifts yet.';
+    return `<span class="lbl">${o.band === 'strategy' ? 'Strategy' : o.ext ? 'Supporting team' : 'Decisions'}</span><h3>${esc(o.name)}</h3>
+      <dl><dt>Sits</dt><dd>${esc(o.where)}</dd><dt>Looks at</dt><dd>${esc(o.looks)}</dd><dt>Decides</dt><dd>${esc(o.decides)}</dd><dt>Rhythm</dt><dd>${esc(o.cadence)}</dd><dt>Reports to</dt><dd>${esc(o.up)}</dd></dl>
+      <div class="live">${live}</div>${o.view ? `<div class="pact" style="margin-top:12px"><button type="button" class="btn primary" data-view="${o.view}">Open this view</button></div>` : ''}`;
+  }
+  if (MS.includes(k)) {
+    const x = S[k], p = opOf(S, k), o = oee(S, k);
+    return `<span class="lbl">Production · machine</span><h3>${k} · ${MACH[k].name}</h3>
+      <dl><dt>Operator</dt><dd>${p ? esc(p.name) + ' · ILUO ' + LVL[p.lvl[k]] : '–'}</dd><dt>Team leader</dt><dd>runs the line, moves people</dd><dt>Reports</dt><dd>stops and reasons on the tablet</dd><dt>Supported by</dt><dd>${Object.values(FLOW).filter(f => f.escFor && f.escFor.some(r => REASONS[r] && REASONS[r].m === k)).map(f => f.name).join(', ') || '–'}</dd></dl>
+      <div class="live">Now <b style="color:${x.st === 'RUN' ? 'var(--ink)' : `var(${STC[x.st]})`}">${STL[x.st]}</b> · OEE ${pct(o.oee)} · bottleneck ${pct(UI.bnSh.sh[k])} of shift</div>
+      <div class="pact" style="margin-top:12px"><button type="button" class="btn" data-mach-open="${k}">Machine detail</button><button type="button" class="btn" data-op-asset="${k}">Its tablet</button></div>`;
+  }
+  if (k[0] === 'b') { const i = +k[1], v = S[BUF[i][1]], c = S.P[BUF[i][2]]; return `<span class="lbl">Production · buffer</span><h3>${BUF[i][0]}</h3><dl><dt>Holds</dt><dd>${fmt(v)} of ${fmt(c)} pcs</dd><dt>Gives</dt><dd>${f1(v / BUF[i][3])} min to the next machine</dd><dt>Why it matters</dt><dd>A buffer before the bottleneck keeps it running when the machine before it stops.</dd></dl>`; }
+  return k === 'in' ? '<span class="lbl">Production · input</span><h3>Silo & stores</h3><dl><dt>Owner</dt><dd>Warehouse</dd><dt>Feeds</dt><dd>Mixer, by weighed kits</dd></dl>' : '<span class="lbl">Production · output</span><h3>Packing</h3><dl><dt>Owner</dt><dd>Next line, outside this demo</dd><dt>Receives</dt><dd>Baked bars from the oven</dd></dl>';
+}
+function renderFlow2() {
+  if ($('#p-flow').hidden) return;
+  for (const m of MS) { const x = S[m], st = $('#fs' + m); st.textContent = STL[x.st]; st.style.color = x.st === 'RUN' ? 'var(--ink)' : `var(${STC[x.st]})`; const p = opOf(S, m); $('#fo' + m).textContent = p ? p.name + ' · ' + LVL[p.lvl[m]] : '–'; $('#fm' + m).classList.toggle('is-bn', nowBn() === m); }
+  BUF.forEach((b, i) => { $('#fb' + i).textContent = fmt(S[b[1]]) + ' pcs'; });
+  const rel = { slt: ['ci', 'sm'], ci: ['slt', 'sm', 'A', 'B', 'C'], sm: ['tl', 'slt', 'ci', 'eng', 'wh', 'qa', 'pl', 'A', 'B', 'C'], tl: ['sm', 'A', 'b0', 'B', 'b1', 'C', 'eng'], eng: ['sm', 'tl', 'A', 'B', 'C'], wh: ['in', 'A', 'sm'], qa: ['B', 'C', 'sm'], pl: ['sm', 'B'] };
+  const keep = rel[FSEL] ? new Set([FSEL, ...rel[FSEL]]) : null;
+  document.querySelectorAll('[data-fn]').forEach(b => { b.setAttribute('aria-pressed', b.dataset.fn === FSEL ? 'true' : 'false'); b.classList.toggle('dim', !!keep && !keep.has(b.dataset.fn)); });
+  const h = flowDetail(FSEL); if (UI.sigs.fdet !== h) { UI.sigs.fdet = h; $('#fdet').innerHTML = h; }
+}
+document.addEventListener('click', e => {
+  const n = e.target.closest('[data-fn]'); if (n) { FSEL = n.dataset.fn; UI.sigs.fdet = null; renderFlow2(); return; }
+  const v = e.target.closest('[data-view]'); if (v) { setRole(v.dataset.view, true); return; }
+  const mo = e.target.closest('[data-mach-open]'); if (mo) { openDrawer(mo.dataset.machOpen); return; }
+  const oa = e.target.closest('[data-op-asset]'); if (oa) { ASSET = oa.dataset.opAsset; setAsset(ASSET); return; }
+});
+
+// ---------- escalations (SM) ----------
+UI.raised = {};
+function escData() {
+  const out = [];
+  for (const [k, f] of Object.entries(FLOW)) {
+    if (!f.escFor) continue;
+    let min = 0, top = null, tm = 0;
+    if (f.escFor.includes('rej')) { const r = S.rej.B + S.rej.C; min = r / PLAN_RATE; top = `${fmt(r)} rejected bars`; }
+    for (const r of Object.values(UI.rows)) if (f.escFor.includes(r.r)) { min += r.min; if (r.min > tm) { tm = r.min; top = `${mname(r.m).toLowerCase()}: ${rlabel(r.r).toLowerCase()}`; } }
+    out.push({ k, name: f.name, min, top });
+  }
+  return out.sort((a, b) => b.min - a.min);
+}
+function renderEsc() {
+  const rows = escData().filter(e => e.min >= 1);
+  const h = rows.length ? rows.map(e => { const key = S.n + ':' + e.k, done = UI.raised[key]; return `<div class="esc"><span>${esc(e.name)}<small>${esc(e.top || '')}</small></span><span class="mono">${fmt(e.min)} min</span>${done ? '<span class="queued">Raised</span>' : `<button type="button" class="btn" data-raise="${e.k}">Raise</button>`}</div>`; }).join('') : '<p class="calm">Nothing owned outside production yet this shift.</p>';
+  if (UI.sigs.esc !== h) { UI.sigs.esc = h; $('#esc').innerHTML = h; }
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-raise]'); if (!b) return; const k = b.dataset.raise, d = escData().find(x => x.k === k); UI.raised[S.n + ':' + k] = true; toast(`Raised to ${FLOW[k].name}: ${fmt(d.min)} min this shift${d.top ? ', mostly ' + d.top : ''}.`); renderEsc(); });
+
+// ---------- fishbone tab ----------
+let FKEY = null;
+function fishProblems() {
+  const agg = {};
+  const add = (m, r, sub, min, bn, shiftId) => { if (!r || r === 'inne' || !SUBS[r]) return; const k = m + '|' + r, o = agg[k] || (agg[k] = { k, m, r, min: 0, bn: 0, shifts: new Set(), subs: {}, n: 0 }); o.min += min; o.bn += bn; o.shifts.add(shiftId); o.n++; if (sub != null) o.subs[sub] = (o.subs[sub] || { n: 0, min: 0 }), o.subs[sub].n++, o.subs[sub].min += min; };
+  for (const h of UI.hist) {
+    for (const r of h.rows) add(r.m, r.r, null, 0, r.bn, h.n);
+    for (const ev of h.events) if (ev.reason && agg[ev.m + '|' + ev.reason]) { const o = agg[ev.m + '|' + ev.reason], d = (ev.end - ev.start) / 60; o.min += d; o.n++; if (ev.sub != null) { o.subs[ev.sub] = o.subs[ev.sub] || { n: 0, min: 0 }; o.subs[ev.sub].n++; o.subs[ev.sub].min += d; } }
+  }
+  for (const r of Object.values(UI.rows)) add(r.m, r.r, null, 0, r.bn, S.n);
+  for (const ev of S.events) if (ev.rec && agg[ev.m + '|' + ev.rec.reason]) { const o = agg[ev.m + '|' + ev.rec.reason], d = ((ev.end == null ? S.t : ev.end) - ev.start) / 60; o.min += d; o.n++; if (ev.rec.sub != null) { o.subs[ev.rec.sub] = o.subs[ev.rec.sub] || { n: 0, min: 0 }; o.subs[ev.rec.sub].n++; o.subs[ev.rec.sub].min += d; } }
+  return Object.values(agg).filter(o => o.bn >= 1).sort((a, b) => b.bn - a.bn);
+}
+function renderFishTab(force) {
+  if ($('#p-fishbone').hidden && !force) return;
+  const list = fishProblems(), sel = $('#fishSel');
+  const opts = list.map(o => `<option value="${o.k}">${mname(o.m)} · ${esc(REASONS[o.r].label)} · ${o.shifts.size} shifts · ${fmt(o.bn)} min at bottleneck</option>`).join('');
+  if (UI.sigs.fopts !== opts) { UI.sigs.fopts = opts; sel.innerHTML = opts || '<option value="">No recurring bottleneck problem yet</option>'; if (FKEY && list.some(o => o.k === FKEY)) sel.value = FKEY; else FKEY = list[0] ? list[0].k : null; }
+  const o = list.find(x => x.k === FKEY);
+  const svg = $('#fish');
+  if (!o) { $('#fishT').textContent = 'Ishikawa'; svg.innerHTML = '<text x="20" y="40" class="empty" font-size="13">Run a few shifts. Problems appear here once they cost bottleneck time.</text>'; $('#fishWhy').innerHTML = ''; $('#fishFix').innerHTML = ''; $('#fishMeta').textContent = ''; return; }
+  $('#fishMeta').textContent = `${o.n} reports in ${o.shifts.size} shifts · ${fmt(o.min)} min lost · ${fmt(o.bn)} at the bottleneck`;
+  const cats = { 'People': {}, 'Machine': {}, 'Method': {}, 'Material': {}, 'Measurement': {}, 'Environment': {} };
+  const L = SUBS[o.r];
+  L.forEach((s, i) => { const v = o.subs[i]; if (v) cats[s[1]][s[0]] = v; });
+  const noDetail = o.n - Object.values(o.subs).reduce((a, v) => a + v.n, 0);
+  if (noDetail > 0) cats['Measurement']['No detail given'] = { n: noDetail, min: -1 };
+  if (o.r === 'syrop') { const ns = nightShare('syrop'); if (ns.night >= 3) cats['Environment']['Mostly after 00:00 (this shift)'] = { n: ns.night, min: -1 }; }
+  $('#fishT').textContent = `Ishikawa: ${MACH[o.m].name} · ${REASONS[o.r].label}`;
+  const pos = [['People', 190, 'top'], ['Machine', 400, 'top'], ['Method', 610, 'top'], ['Material', 190, 'bot'], ['Measurement', 400, 'bot'], ['Environment', 610, 'bot']];
+  let h = `<line class="spine" x1="20" y1="150" x2="722" y2="150"/><rect class="head" x="724" y="96" width="192" height="108" rx="4"/>`;
+  h += `<text x="736" y="120" font-size="12" style="fill:var(--bn);font-weight:700">PROBLEM</text><text x="736" y="142" font-size="14" font-weight="600">${esc(REASONS[o.r].short)} · ${esc(mname(o.m))}</text>`;
+  h += `<text x="736" y="164" font-size="12">${o.shifts.size} shifts, ${o.n} reports</text><text x="736" y="182" font-size="12">${fmt(o.bn)} min at bottleneck</text>`;
+  for (const [cat, x, side] of pos) {
+    const yS = side === 'top' ? 34 : 266;
+    h += `<line class="bone" x1="${x}" y1="${yS}" x2="${x + 90}" y2="150"/><text class="cat" x="${x}" y="${side === 'top' ? 24 : 288}" text-anchor="middle">${cat.toUpperCase()}</text>`;
+    const items = Object.entries(cats[cat]).sort((a, b) => b[1].n - a[1].n).slice(0, 3);
+    if (!items.length) { h += `<text class="empty" x="${x + 20}" y="${side === 'top' ? 80 : 226}" font-size="12" text-anchor="end">–</text>`; continue; }
+    items.forEach(([label, v], i) => {
+      const y = side === 'top' ? 60 + i * 26 : 240 - i * 26, bx = x + 90 * (side === 'top' ? (y - 34) / 116 : (266 - y) / 116);
+      const lab = label.length > 28 ? label.slice(0, 27) + '…' : label;
+      h += `<text x="${bx - 8}" y="${y}" font-size="12" text-anchor="end">${esc(lab)}</text><text class="num" x="${bx - 8}" y="${y + 12}" text-anchor="end">${v.min < 0 ? v.n + ' cases' : v.n + '× · ' + fmt(v.min) + ' min'}</text>`;
+    });
+  }
+  svg.innerHTML = h;
+  const ranked = L.map((s, i) => ({ s, v: o.subs[i] || { n: 0, min: 0 } })).sort((a, b) => b.v.n - a.v.n);
+  const top = ranked[0];
+  const why = [
+    `Why does the ${mname(o.m).toLowerCase()} lose bottleneck time? <b>${esc(REASONS[o.r].label)}</b>, ${o.n} times in ${o.shifts.size} shifts.`,
+    top && top.v.n ? `Why does that happen? Most often <b>${esc(top.s[0])}</b> (${top.v.n} of ${o.n} reports, ${esc(top.s[1])}).` : 'Why does that happen? Operators have not given detail yet. Ask on the tablet.',
+    `Why is that not prevented? There is no standard for it on the tablet${PROPS.some(p => p.reasons && p.reasons.includes(o.r) && UI.appliedAt[p.id]) ? ' that is being kept' : ''}.`,
+    `What would stop it? Answer with the team at the machine; the coach suggestion is on the right.`,
+  ];
+  $('#fishWhy').innerHTML = why.map(w => `<li>${w}</li>`).join('');
+  const p = PROPS.find(x => x.reasons && x.reasons.includes(o.r));
+  let fx;
+  if (!p) fx = `<p class="calm">No fix in the catalogue for this cause yet. Use the 5 Why with the team and write the standard.</p>`;
+  else {
+    const at = UI.appliedAt[p.id], eff = S.fx[p.id] || 0, q = UI.queued[p.id];
+    const status = at ? `In place since day ${calOf(at).day}, ${pct(eff)} effect${eff < 0.95 ? '. Slipping or still ramping: audit it.' : '.'}` : q ? 'Scheduled from next shift.' : 'Not started.';
+    fx = `<div class="reco"><span class="tool">${esc(p.tool)} · ${esc(p.waste)}</span><h4>${esc(p.title)}</h4><p>${esc(p.what)}</p><p class="hint" style="margin:0">${esc(p.effect)} · ${status}</p>
+      <div class="pact">${at ? (eff < 0.95 ? `<button type="button" class="btn" data-audit="${p.id}">Audit now</button>` : '') : q ? '' : `<button type="button" class="btn primary" data-act="apply" data-k="${p.id}">Implement from next shift</button>`}</div></div>`;
+  }
+  if (UI.sigs.ffix !== fx) { UI.sigs.ffix = fx; $('#fishFix').innerHTML = fx; }
+}
+$('#fishSel').addEventListener('change', e => { FKEY = e.target.value; UI.sigs.ffix = null; renderFishTab(true); });
+
 // ---------- tabs ----------
-const TABS = ['przeglad', 'linia', 'zaloga', 'operatorzy', 'analiza', 'historia', 'dzialania', 'demo'];
+const TABS = ['flow', 'przeglad', 'linia', 'zaloga', 'operatorzy', 'analiza', 'fishbone', 'historia', 'dzialania', 'demo'];
 let TAB = 'przeglad';
 function showTab(id, focusTab) {
   if (!TABS.includes(id) || !ROLES[ROLE].tabs.includes(id)) id = ROLES[ROLE].tab;
@@ -1778,7 +1996,7 @@ function showTab(id, focusTab) {
   $('#t-' + id).scrollIntoView({ block: 'nearest', inline: 'nearest' });
   try { history.replaceState(null, '', '#' + id); } catch (e) {}
   const nav = $('.nav'); if (nav.getBoundingClientRect().top <= 1 && window.scrollY > nav.offsetTop) window.scrollTo({ top: nav.offsetTop });
-  renderAll(); if (id === 'historia') renderHistory(true);
+  renderAll(); if (id === 'historia') renderHistory(true); if (id === 'fishbone') renderFishTab(true); if (id === 'flow') renderFlow2();
 }
 $('.tablist').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab); });
 $('.tablist').addEventListener('keydown', e => {
@@ -1818,7 +2036,7 @@ function renderSlow() {
   if (!UI.presim && !S.done) updateFocus(false);
   UI.rows = lossRows();
   for (const m of MS) renderTab(m);
-  renderFlow(); renderPareto(); renderFish(); renderWaste(); renderPatterns(); renderProps(); renderOverview(); renderHistChart(); renderSide(); renderCrew(); renderHistory(false); renderRoleStrip(); if (DR) renderDrawer();
+  renderFlow(); renderPareto(); renderWaste(); renderPatterns(); renderProps(); renderOverview(); renderHistChart(); renderSide(); renderCrew(); renderHistory(false); renderRoleStrip(); renderEsc(); renderFlow2(); renderFishTab(false); if (DR) renderDrawer();
 }
 function renderAll(force) { if (force) UI.sigs = {}; renderSlow(); renderFast(); drawCum(); drawGantt(); if (force) renderHistory(true); }
 
@@ -1843,6 +2061,10 @@ function toast(msg) {
 // ---------- interactions ----------
 function act(el) {
   const a = el.dataset.act;
+  if (a === 'q') {
+    const m = el.dataset.m, ev = pending(m).filter(e => !e.rec).pop(); if (!ev) return;
+    ev.rec = { reason: el.dataset.r, sub: null, by: 'op' }; UI.sigs[m] = null; UI.rows = lossRows(); renderTab(m); tabDynamic(m); return;
+  }
   if (a === 'r' || a === 's' || a === 'k') {
     const ev = S.events.find(e => e.id === +el.dataset.ev); if (!ev) return;
     if (a === 'r') ev.rec = { reason: el.dataset.r, sub: null, by: 'op' };
@@ -1888,7 +2110,7 @@ $('#tAuto').addEventListener('change', e => { UI.auto = e.target.checked; S.auto
 
 // ---------- boot ----------
 $('#tabs').innerHTML = MS.map(tabShell).join('');
-buildLine(); readColors();
+buildLine(); readColors(); buildFlow();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readColors(); drawCum(); drawGantt(); });
 new MutationObserver(() => { readColors(); drawCum(); drawGantt(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 window.addEventListener('resize', () => { drawCum(); drawGantt(); renderHistory(false); });
