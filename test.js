@@ -1,0 +1,26 @@
+// Sprawdza silnik symulacji z index.html: 5 zmian, kolejne poprawki, % planu i wąskie gardło.
+// Uruchom: node test.js
+const fs = require('fs'), vm = require('vm');
+const html = fs.readFileSync(__dirname + '/index.html', 'utf8');
+const a = html.indexOf('/*ENGINE-START*/'), b = html.indexOf('/*ENGINE-END*/');
+if (a < 0 || b < 0) { console.error('Brak znaczników ENGINE-START/END w index.html'); process.exit(1); }
+const E = vm.runInNewContext(html.slice(a, b) + '\n;({ warmShift, newShift, step, bnMinutes, bnShares, autoOps, PLAN_TOTAL })');
+
+const stages = [
+  { fx: {}, expect: [0.45, 0.70], bn: 'A' },
+  { fx: { kitting: 1, syrop: 1 }, expect: [0.68, 0.85], bn: 'C' },
+  { fx: { kitting: 1, syrop: 1, tpm: 1, bufor: 1 }, expect: [0.84, 0.96], bn: 'B' },
+  { fx: { kitting: 1, syrop: 1, tpm: 1, bufor: 1, smed: 1, noz: 1, zastepstwo: 1 }, expect: [0.98, 1.15], bn: 'C' },
+  { fx: { kitting: 1, syrop: 1, tpm: 1, bufor: 1, smed: 1, noz: 1, zastepstwo: 1, prowadnice: 1 }, expect: [1.0, 1.15], bn: 'C' },
+];
+let fail = 0, prev = null;
+stages.forEach((st, i) => {
+  const s = E.warmShift(E.newShift(i + 1, st.fx, prev));
+  while (!s.done) { E.step(s); if (s.t % 10 === 0) E.autoOps(s); }
+  const sh = E.bnShares(E.bnMinutes(s)), p = s.out / E.PLAN_TOTAL;
+  const ok = p >= st.expect[0] && p <= st.expect[1] && sh.main === st.bn;
+  if (!ok) fail++;
+  console.log(`${ok ? 'OK  ' : 'FAIL'} zmiana ${i + 1}: ${(p * 100).toFixed(0)}% planu, wąskie gardło ${sh.main} (${(sh.sh[sh.main] * 100).toFixed(0)}%), poprawki: ${Object.keys(st.fx).join(', ') || 'brak'}`);
+  prev = sh.main;
+});
+process.exit(fail ? 1 : 0);

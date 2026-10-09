@@ -1,0 +1,1206 @@
+<title>BNECK Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: HMI-grey ground, colour reserved for abnormal machine states (ISA-101 idea), one magenta for the line constraint; stacked dashboard sections */
+:root {
+  --bg: #E6EAE8; --surface: #F3F5F4; --raised: #FFFFFF; --ink: #15201C; --muted: #536059; --line: #C1CBC6; --line2: #D7DED9;
+  --run: #5C8A7D; --slow: #B7863A; --starve: #C99300; --block: #BD5C1C; --stop: #C3352B; --setup: #3A69AD;
+  --bn: #A3195F; --bnsoft: #F6DEEA; --onbn: #FFFFFF; --ok: #2C7A57; --inv: rgba(21,32,28,.16);
+  --f-d: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --f-b: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-m: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1412; --surface: #161D1A; --raised: #1D2522; --ink: #E1E8E5; --muted: #93A29B; --line: #35423D; --line2: #26302C;
+    --run: #78A797; --slow: #D8A757; --starve: #E3B33A; --block: #E27F3D; --stop: #EF5D52; --setup: #6796DD;
+    --bn: #E35AA0; --bnsoft: #3C1A2C; --onbn: #1C0612; --ok: #55B78A; --inv: rgba(225,232,229,.18);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1412; --surface: #161D1A; --raised: #1D2522; --ink: #E1E8E5; --muted: #93A29B; --line: #35423D; --line2: #26302C;
+  --run: #78A797; --slow: #D8A757; --starve: #E3B33A; --block: #E27F3D; --stop: #EF5D52; --setup: #6796DD;
+  --bn: #E35AA0; --bnsoft: #3C1A2C; --onbn: #1C0612; --ok: #55B78A; --inv: rgba(225,232,229,.18);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-b); font-size: 14px; line-height: 1.45; }
+.mono { font-family: var(--f-m); font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--bn); outline-offset: 2px; }
+h2, h3, h4 { font-family: var(--f-d); text-wrap: balance; margin: 0; letter-spacing: .01em; }
+
+/* top bar */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--raised); border-bottom: 1px solid var(--line); }
+.top-in { max-width: 1280px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand svg { width: 26px; height: 26px; color: var(--ink); }
+.bname { font-family: var(--f-d); font-weight: 700; font-size: 26px; letter-spacing: .06em; line-height: 1; }
+.pill { font-family: var(--f-m); font-size: 10px; letter-spacing: .08em; padding: 2px 6px; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); }
+.plant { min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.plant b { font-weight: 600; }
+.plant span { color: var(--muted); font-size: 12px; }
+.clockbox { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.clk { font-family: var(--f-m); font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.clockbox small { display: block; color: var(--muted); font-size: 12px; }
+.prog { width: 110px; height: 4px; background: var(--line2); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+.prog i { display: block; height: 100%; width: 0; background: var(--ink); }
+.ctrl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); padding: 6px 12px; cursor: pointer; font-weight: 500; font-size: 13px; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn:disabled { opacity: .45; cursor: default; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.seg button { border: 0; background: var(--surface); padding: 6px 10px; cursor: pointer; font-family: var(--f-m); font-size: 12px; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.tog { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; user-select: none; }
+.tog input { width: 16px; height: 16px; accent-color: var(--bn); }
+.ctrl .spacer { flex: 1; }
+@media (max-width: 760px) { .top { position: static; } .clockbox { margin-left: 0; } }
+.endbar { width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 8px 12px; border-radius: var(--r); background: var(--bnsoft); }
+.endbar b { font-family: var(--f-d); font-size: 18px; }
+
+main { max-width: 1280px; margin: 0 auto; padding-inline: 16px; padding-block: 18px 40px; display: flex; flex-direction: column; gap: 34px; }
+.sh { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-bottom: 12px; }
+.sh h2 { font-size: 26px; font-weight: 700; }
+.sh p { margin: 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
+.panel { background: var(--surface); border: 1px solid var(--line2); border-radius: var(--r); padding: 14px 16px; min-width: 0; }
+.panel h3 { font-size: 19px; font-weight: 600; margin-bottom: 8px; }
+.lbl { font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+/* KPIs */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line2); border: 1px solid var(--line2); border-radius: var(--r); overflow: hidden; margin-bottom: 12px; }
+.kpi { background: var(--surface); padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kv { font-size: 24px; font-weight: 600; line-height: 1.15; }
+.kv.d { font-family: var(--f-d); font-size: 26px; }
+.ks { color: var(--muted); font-size: 12px; }
+.kpi.bnk .kv { color: var(--bn); }
+@media (max-width: 760px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* VSM */
+.vsm-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line2); border-radius: var(--r); }
+#vsm { display: block; width: 100%; min-width: 780px; height: auto; }
+#vsm text { fill: var(--ink); font-family: var(--f-b); }
+#vsm .t-d { font-family: var(--f-d); font-weight: 600; }
+#vsm .t-m { font-family: var(--f-m); font-variant-numeric: tabular-nums; }
+#vsm .mut { fill: var(--muted); }
+.vbox { fill: var(--raised); stroke: var(--line); stroke-width: 1; }
+.vhdr { fill: var(--line2); }
+.vdata { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+.vline { stroke: var(--line); stroke-width: 1; fill: none; }
+.vfac { fill: var(--raised); stroke: var(--muted); stroke-width: 1.5; }
+.tri { fill: var(--raised); stroke: var(--muted); stroke-width: 1.5; }
+.trifill { fill: var(--inv); }
+.arr { stroke: var(--line); stroke-width: 3; fill: none; }
+.arr.on { stroke: var(--muted); stroke-dasharray: 7 5; animation: dash .7s linear infinite; }
+.ahead { fill: var(--muted); }
+@keyframes dash { to { stroke-dashoffset: -12; } }
+.ladder { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.bnbadge rect { fill: var(--bn); }
+#vsm .bnbadge text { fill: var(--onbn); font-family: var(--f-d); font-weight: 700; letter-spacing: .05em; }
+
+/* charts */
+.charts { display: grid; gap: 10px; margin-top: 12px; }
+.chart { background: var(--surface); border: 1px solid var(--line2); border-radius: var(--r); padding: 10px 10px 6px; min-width: 0; }
+.chart canvas { display: block; width: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); padding: 6px 4px 2px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+/* operator tablets */
+.tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 980px) { .tabs { grid-template-columns: minmax(0, 1fr); } }
+.tab { background: var(--raised); border-radius: 12px; border: 1px solid var(--line); box-shadow: 0 0 0 5px var(--line2); padding: 12px 14px 10px; display: flex; flex-direction: column; gap: 10px; min-width: 0; transition: box-shadow .4s; }
+.tab.bnmode { box-shadow: 0 0 0 5px var(--bn); }
+.tab.flash { animation: flash 1.4s ease-out; }
+@keyframes flash { 0%, 40% { box-shadow: 0 0 0 10px var(--bn); } 100% { box-shadow: 0 0 0 5px var(--bn); } }
+.tab-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tab-h h3 { font-size: 21px; display: flex; align-items: center; gap: 8px; }
+.mid { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 4px; background: var(--ink); color: var(--bg); font-family: var(--f-m); font-size: 13px; font-weight: 600; }
+.mode { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.bnmode .mode { background: var(--bn); border-color: var(--bn); color: var(--onbn); }
+.tstate { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; padding: 8px 10px; border-radius: var(--r); background: var(--surface); border-left: 4px solid var(--run); }
+.tstate b { font-family: var(--f-d); font-size: 22px; font-weight: 700; letter-spacing: .02em; }
+.tstate span { font-family: var(--f-m); font-size: 12px; color: var(--muted); }
+.impact { margin: 0; font-size: 13px; color: var(--muted); }
+.bnmode .impact { color: var(--bn); font-weight: 600; }
+.tbody { display: flex; flex-direction: column; gap: 10px; }
+.calm { margin: 0; color: var(--muted); font-size: 13px; }
+.pend { border: 1px solid var(--line2); border-radius: var(--r); padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+.pend.live { border-color: var(--stop); }
+.pend-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-size: 13px; }
+.pend-h .mono { font-size: 12px; color: var(--muted); }
+.livepill { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--stop); }
+.q { font-size: 13px; font-weight: 600; }
+.rb { display: flex; flex-wrap: wrap; gap: 6px; }
+.rb button { border: 1px solid var(--line); background: var(--surface); border-radius: 5px; padding: 6px 10px; min-height: 34px; cursor: pointer; font-size: 13px; text-align: left; }
+.rb button:hover { border-color: var(--ink); }
+.bnmode .rb button { min-height: 44px; padding: 8px 12px; font-size: 14px; }
+.rb button.rare { min-height: 28px; padding: 3px 8px; font-size: 12px; color: var(--muted); border-style: dashed; }
+.bnmode .rb button.rare { min-height: 32px; font-size: 12px; }
+.rb .rl { width: 100%; font-size: 11px; color: var(--muted); }
+.more { margin: 0; font-size: 12px; color: var(--muted); }
+.recent ul { margin: 4px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; }
+.recent li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; font-size: 12px; }
+.recent li .mono { color: var(--muted); }
+.checks { display: flex; flex-direction: column; gap: 4px; padding-top: 8px; border-top: 1px dashed var(--line); }
+.chk { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.chk input { width: 18px; height: 18px; accent-color: var(--ok); flex: none; }
+.tfoot { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line2); padding-top: 8px; }
+
+/* analysis */
+.ana { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.ana .wide { grid-column: 1 / -1; }
+@media (max-width: 900px) { .ana { grid-template-columns: minmax(0, 1fr); } }
+.flow { display: flex; flex-direction: column; gap: 12px; }
+.fl { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 10px; align-items: start; }
+.chain { font-family: var(--f-m); font-size: 13px; font-weight: 600; padding: 3px 0; text-align: center; border: 1px solid var(--line); border-radius: 4px; background: var(--raised); }
+.fl p { margin: 0; }
+.fl small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.par { display: flex; flex-direction: column; gap: 8px; }
+.prow { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: 13px; }
+.prow .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pm { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 3px; background: var(--line2); font-family: var(--f-m); font-size: 11px; font-weight: 600; margin-right: 6px; }
+.ptrack { height: 12px; background: var(--line2); border-radius: 2px; position: relative; overflow: hidden; }
+.ptrack i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--muted); opacity: .45; }
+.ptrack b { position: absolute; left: 0; top: 0; bottom: 0; background: var(--bn); }
+.pv { font-family: var(--f-m); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+.pv em { font-style: normal; color: var(--bn); }
+.fish-wrap { overflow-x: auto; }
+#fish { display: block; width: 100%; min-width: 760px; height: auto; }
+#fish text { fill: var(--ink); font-family: var(--f-b); }
+#fish .cat { font-family: var(--f-d); font-weight: 700; font-size: 15px; letter-spacing: .04em; }
+#fish .num { font-family: var(--f-m); fill: var(--muted); font-size: 11px; }
+#fish .empty { fill: var(--muted); }
+#fish .bone { stroke: var(--muted); stroke-width: 1.5; }
+#fish .spine { stroke: var(--ink); stroke-width: 3; }
+#fish .head { fill: var(--bnsoft); stroke: var(--bn); stroke-width: 1.5; }
+.waste { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 560px) { .waste { grid-template-columns: minmax(0, 1fr); } }
+.wc { border: 1px solid var(--line2); border-radius: var(--r); background: var(--raised); padding: 10px 12px; min-width: 0; }
+.wc h4 { font-size: 20px; }
+.wc .wd { font-size: 12px; color: var(--muted); margin: 0 0 6px; }
+.wc .wn { font-family: var(--f-m); font-size: 20px; font-weight: 600; }
+.wc ul { margin: 6px 0 0; padding: 0; list-style: none; font-size: 12px; display: flex; flex-direction: column; gap: 2px; }
+.wc li { display: flex; justify-content: space-between; gap: 8px; }
+.wc li span:last-child { font-family: var(--f-m); color: var(--muted); white-space: nowrap; }
+.pat { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.pat li { padding-left: 12px; border-left: 3px solid var(--line); font-size: 13px; }
+.pat li.hot { border-left-color: var(--bn); }
+.pat small { display: block; color: var(--muted); font-family: var(--f-m); font-size: 11px; }
+
+/* proposals */
+.props { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.prop { background: var(--raised); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.prop.is-bn { border-color: var(--bn); border-width: 2px; }
+.prop.is-off { background: var(--surface); }
+.prop.is-off h4, .prop.is-off .what { color: var(--muted); }
+.ptop { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tool { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.first { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; background: var(--bn); color: var(--onbn); padding: 2px 6px; border-radius: 3px; }
+.prop h4 { font-size: 21px; font-weight: 700; }
+.what { margin: 0; font-size: 13px; }
+.prop dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; font-size: 12px; }
+.prop dt { color: var(--muted); }
+.prop dd { margin: 0; }
+.prop dd.gain { font-family: var(--f-m); font-weight: 600; }
+.prop .offnote { font-size: 12px; color: var(--muted); margin: 0; }
+.pact { margin-top: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding-top: 4px; }
+.queued { font-size: 12px; font-weight: 600; color: var(--ok); }
+.applied { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; align-items: center; }
+.chip { font-size: 12px; border: 1px solid var(--ok); color: var(--ok); border-radius: 999px; padding: 2px 10px; }
+.hist-wrap { overflow-x: auto; margin-top: 14px; }
+table.hist { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
+.hist th { text-align: left; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.hist td { padding: 8px; border-bottom: 1px solid var(--line2); vertical-align: middle; }
+.hist td.num { font-family: var(--f-m); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hbar { position: relative; height: 10px; background: var(--line2); border-radius: 2px; min-width: 120px; }
+.hbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink); border-radius: 2px; }
+.hbar s { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--bn); }
+.notes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 14px; }
+.notes p { margin: 4px 0 0; font-size: 13px; max-width: 65ch; }
+#toasts { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; flex-direction: column; gap: 8px; max-width: min(380px, calc(100vw - 32px)); }
+.toast { background: var(--ink); color: var(--bg); border-left: 4px solid var(--bn); padding: 10px 12px; border-radius: var(--r); font-size: 13px; box-shadow: 0 6px 18px rgba(0,0,0,.18); animation: tin .25s ease-out; }
+@keyframes tin { from { transform: translateY(8px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .arr.on, .tab.flash, .toast { animation: none; } }
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2.5h14v3.5l-5.2 6 5.2 6v3.5H5V18l5.2-6L5 6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="10.6" y="10" width="2.8" height="4" fill="var(--bn)"/></svg>
+      <span class="bname">BNECK</span><span class="pill">DEMO</span>
+    </div>
+    <div class="plant"><b>Oakmere Bar Co. · Linia 2</b><span>Batony owsiane 30 g · fabryka fikcyjna, dane z symulacji</span></div>
+    <div class="clockbox">
+      <div><span class="clk" id="clk">00:00</span></div>
+      <div><small id="shiftLbl">Zmiana 1 · noc 18:00–06:00</small><div class="prog"><i id="progBar"></i></div></div>
+    </div>
+    <div class="ctrl">
+      <button class="btn" id="bPlay" type="button">Pauza</button>
+      <div class="seg" role="group" aria-label="Tempo symulacji">
+        <button type="button" data-sp="60" aria-pressed="false" title="1 minuta zmiany na sekundę">×1</button>
+        <button type="button" data-sp="300" aria-pressed="true" title="5 minut zmiany na sekundę">×5</button>
+        <button type="button" data-sp="1200" aria-pressed="false" title="20 minut zmiany na sekundę">×20</button>
+      </div>
+      <button class="btn" id="bEnd" type="button">Do końca zmiany</button>
+      <label class="tog"><input type="checkbox" id="tAuto" checked> Operatorzy zgłaszają sami</label>
+      <span class="spacer"></span>
+      <button class="btn" id="bReset" type="button">Reset demo</button>
+    </div>
+    <div class="endbar" id="endBar" hidden>
+      <b id="endTxt">Zmiana zakończona</b><span id="endSub"></span>
+      <button class="btn primary" id="bNext" type="button">Następna zmiana</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="linia">
+    <div class="sh"><h2>Mapa strumienia wartości</h2><p>Trzy maszyny, dwa bufory. Czujnik przy każdej maszynie podaje cykle i stan. Magenta wskazuje wąskie gardło.</p></div>
+    <div class="kpis">
+      <div class="kpi"><span class="lbl">Produkcja</span><span class="kv mono" id="kOut">0</span><span class="ks" id="kOutS">plan do teraz 0</span></div>
+      <div class="kpi"><span class="lbl">Wykonanie planu</span><span class="kv mono" id="kPct">0%</span><span class="ks">cel zmiany 86 400 szt.</span></div>
+      <div class="kpi bnk"><span class="lbl">Wąskie gardło teraz</span><span class="kv d" id="kBn">–</span><span class="ks" id="kBnS">metoda okresów aktywnych</span></div>
+      <div class="kpi"><span class="lbl">Tempo linii, ost. 30 min</span><span class="kv mono" id="kRate">0</span><span class="ks">szt./min · plan 120</span></div>
+    </div>
+    <div class="vsm-wrap">
+      <svg id="vsm" viewBox="0 0 1000 384" role="img" aria-label="Mapa strumienia wartości linii 2">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path class="ahead" d="M0 0L10 5L0 10z"/></marker>
+          <clipPath id="ct1"><path d="M345 120 L374 174 L316 174 Z"/></clipPath>
+          <clipPath id="ct2"><path d="M625 120 L654 174 L596 174 Z"/></clipPath>
+        </defs>
+        <!-- production control -->
+        <rect class="vbox" x="380" y="6" width="240" height="56" rx="3"/>
+        <text class="t-d" x="500" y="24" text-anchor="middle" font-size="14">Plan produkcji</text>
+        <text class="t-m" x="500" y="40" text-anchor="middle" font-size="12">120 szt./min · takt 0,50 s</text>
+        <text class="mut" x="500" y="55" text-anchor="middle" font-size="11" id="vProd">Owies z miodem</text>
+        <!-- supplier -->
+        <path class="vfac" d="M14 186 V150 L32 138 V150 L50 138 V150 L68 138 V126 H84 V186 Z"/>
+        <text x="49" y="204" text-anchor="middle" font-size="11">Silos</text>
+        <text x="49" y="218" text-anchor="middle" font-size="11">i magazyn</text>
+        <!-- customer -->
+        <path class="vfac" d="M890 186 V150 L908 138 V150 L926 138 V150 L944 138 V126 H960 V186 Z"/>
+        <text x="925" y="204" text-anchor="middle" font-size="11">Pakowanie</text>
+        <text class="mut" x="925" y="218" text-anchor="middle" font-size="11">poza zakresem</text>
+        <!-- arrows -->
+        <path id="f0" class="arr" d="M88 160 H114" marker-end="url(#ah)"/>
+        <path id="f1" class="arr" d="M294 160 H312" marker-end="url(#ah)"/>
+        <path id="f2" class="arr" d="M378 160 H396" marker-end="url(#ah)"/>
+        <path id="f3" class="arr" d="M574 160 H592" marker-end="url(#ah)"/>
+        <path id="f4" class="arr" d="M658 160 H676" marker-end="url(#ah)"/>
+        <path id="f5" class="arr" d="M854 160 H884" marker-end="url(#ah)"/>
+        <!-- inventory triangles -->
+        <path class="tri" d="M345 120 L374 174 L316 174 Z"/>
+        <rect class="trifill" id="lv1" x="316" y="174" width="58" height="0" clip-path="url(#ct1)"/>
+        <text class="t-d" x="345" y="166" text-anchor="middle" font-size="16">I</text>
+        <text x="345" y="194" text-anchor="middle" font-size="11">Lej</text>
+        <text class="t-m" id="lt1" x="345" y="209" text-anchor="middle" font-size="11">0 / 5 000</text>
+        <text class="t-m mut" id="lm1" x="345" y="223" text-anchor="middle" font-size="11">≈ 0 min</text>
+        <path class="tri" d="M625 120 L654 174 L596 174 Z"/>
+        <rect class="trifill" id="lv2" x="596" y="174" width="58" height="0" clip-path="url(#ct2)"/>
+        <text class="t-d" x="625" y="166" text-anchor="middle" font-size="16">I</text>
+        <text x="625" y="194" text-anchor="middle" font-size="11" id="ln2">Bufor taśmy</text>
+        <text class="t-m" id="lt2" x="625" y="209" text-anchor="middle" font-size="11">0 / 800</text>
+        <text class="t-m mut" id="lm2" x="625" y="223" text-anchor="middle" font-size="11">≈ 0 min</text>
+        <g id="procs"></g>
+        <!-- lead time ladder -->
+        <path class="ladder" d="M120 346 H290 V318 H400 V346 H570 V318 H680 V346 H850"/>
+        <text class="t-m" x="205" y="364" text-anchor="middle" font-size="12">10,5 min</text>
+        <text class="t-m" id="ld1" x="345" y="310" text-anchor="middle" font-size="12">0 min</text>
+        <text class="t-m" x="485" y="364" text-anchor="middle" font-size="12">0,5 min</text>
+        <text class="t-m" id="ld2" x="625" y="310" text-anchor="middle" font-size="12">0 min</text>
+        <text class="t-m" x="765" y="364" text-anchor="middle" font-size="12">14 min</text>
+        <text class="mut" x="120" y="310" font-size="11">czekanie w buforach</text>
+        <text class="mut" x="120" y="380" font-size="11">wartość dodana: mieszanie, formowanie, pieczenie</text>
+        <text class="mut" x="870" y="318" font-size="11">Czas przejścia</text>
+        <text class="t-m" id="ldT" x="870" y="342" font-size="20" font-weight="600">0 min</text>
+        <text class="mut" x="870" y="362" font-size="11">wartość dodana 25 min</text>
+      </svg>
+    </div>
+    <div class="charts">
+      <div class="chart"><span class="lbl">Produkcja narastająco</span><canvas id="cum" height="150"></canvas>
+        <div class="legend"><span><i style="background:var(--ink)"></i>Ta zmiana</span><span><i style="background:var(--line)"></i>Plan 120 szt./min</span><span id="lgPrev" hidden><i style="background:var(--muted);opacity:.5"></i>Poprzednia zmiana</span></div>
+      </div>
+      <div class="chart"><span class="lbl">Stany maszyn w czasie</span><canvas id="gantt" height="140"></canvas>
+        <div class="legend"><span><i style="background:var(--run)"></i>Praca</span><span><i style="background:var(--slow)"></i>Wolny cykl</span><span><i style="background:var(--starve)"></i>Brak wsadu</span><span><i style="background:var(--block)"></i>Brak miejsca</span><span><i style="background:var(--stop)"></i>Postój</span><span><i style="background:var(--setup)"></i>Przezbrojenie</span><span><i style="background:var(--bn)"></i>Pasek pod maszyną: wąskie gardło</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="operatorzy">
+    <div class="sh"><h2>Tablety operatorów</h2><p>Czujnik wie, że maszyna stoi. Operator mówi dlaczego. Tablet przy wąskim gardle pyta o szczegóły, reszta ma szybkie przyciski. Po wdrożeniu poprawki rozwiązany powód schodzi niżej, a na tablecie pojawia się punkt standardu pracy. Odznacz „Operatorzy zgłaszają sami”, żeby odpowiadać za operatorów.</p></div>
+    <div class="tabs" id="tabs"></div>
+  </section>
+
+  <section id="analiza">
+    <div class="sh"><h2>Analiza BNECK</h2><p>Z danych czujników i zgłoszeń operatorów. Liczy się strata na wąskim gardle: tylko ona obniża produkcję linii.</p></div>
+    <div class="ana">
+      <div class="panel"><h3>Łańcuch przepływu</h3><div class="flow" id="flow"></div></div>
+      <div class="panel"><h3>Pareto strat</h3><p class="calm" style="margin:-4px 0 10px">Pełny pasek: minuty postoju. Magenta: minuty, gdy ta maszyna była wąskim gardłem.</p><div class="par" id="pareto"></div></div>
+      <div class="panel wide"><h3 id="fishT">Ishikawa</h3><div class="fish-wrap"><svg id="fish" viewBox="0 0 920 300" role="img" aria-label="Diagram Ishikawy dla wąskiego gardła"></svg></div></div>
+      <div class="panel"><h3>Muda · Mura · Muri</h3><div class="waste" id="waste"></div></div>
+      <div class="panel"><h3>Wzorce w danych</h3><ul class="pat" id="pat"></ul></div>
+    </div>
+  </section>
+
+  <section id="ci">
+    <div class="sh"><h2>Propozycje doskonalenia</h2><p>Kolejność według zysku na wąskim gardle. Poprawka działa od następnej zmiany, żeby było widać efekt w liczbach.</p></div>
+    <div class="props" id="props"></div>
+    <div class="applied" id="applied"></div>
+    <div class="hist-wrap"><table class="hist"><thead><tr><th>Zmiana</th><th>Poprawki w działaniu</th><th>Produkcja</th><th>Plan</th><th style="width:30%">Wykonanie</th><th>Wąskie gardło</th></tr></thead><tbody id="hist"></tbody></table></div>
+  </section>
+
+  <section id="jak">
+    <div class="sh"><h2>Jak działa demo</h2></div>
+    <div class="notes">
+      <div class="panel"><span class="lbl">Czujnik</span><p>Raspberry Pi przy każdej maszynie liczy cykle i rozpoznaje stan: praca, brak wsadu, brak miejsca, postój. W demo te sygnały daje symulacja z ustalonym ziarnem, więc każda zmiana jest powtarzalna.</p></div>
+      <div class="panel"><span class="lbl">Wąskie gardło</span><p>Metoda okresów aktywnych (Roser). W danej chwili wąskim gardłem jest maszyna z najdłuższym nieprzerwanym okresem pracy albo własnego postoju. Brak wsadu i brak miejsca przerywają okres, bo wtedy maszyna czeka na inną.</p></div>
+      <div class="panel"><span class="lbl">Propozycje</span><p>W demo silnik reguł lean: Pareto, Ishikawa, muda, mura, muri, SMED, TPM, poka-yoke. W produkcie lokalny model na serwerze w zakładzie. Dane nie wychodzą poza zakład.</p></div>
+      <div class="panel"><span class="lbl">Fabryka</span><p>Oakmere Bar Co. nie istnieje. Liczby, maszyny i awarie są wymyślone na potrzeby demo.</p></div>
+    </div>
+  </section>
+</main>
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+/*ENGINE-START*/
+const SHIFT_SEC = 43200, START_H = 18, PLAN_RATE = 120, PLAN_TOTAL = PLAN_RATE * 720, BATCH = 2500;
+const MS = ['A', 'B', 'C'];
+const ACTIVE = { RUN: 1, SLOW: 1, STOP: 1, SETUP: 1 };
+const REASONS = {
+  skladniki:     { m: 'A', label: 'Czekam na składniki', short: 'Składniki', cat: 'Metoda', waste: 'Muda', fix: 'kitting' },
+  syrop:         { m: 'A', label: 'Syrop za zimny', short: 'Zimny syrop', cat: 'Materiał', waste: 'Mura', fix: 'syrop' },
+  zawor:         { m: 'A', label: 'Zawór syropu zatkany', short: 'Zawór', cat: 'Maszyna', waste: 'Muda', fix: null },
+  przezbrojenie: { m: 'B', label: 'Przezbrojenie smaku', short: 'Przezbrojenie', cat: 'Metoda', waste: 'Muda', fix: 'smed' },
+  noz:           { m: 'B', label: 'Nóż się klei', short: 'Nóż', cat: 'Maszyna', waste: 'Muda', fix: 'noz' },
+  przerwa:       { m: 'B', label: 'Przerwa bez zastępstwa', short: 'Przerwa', cat: 'Człowiek', waste: 'Muri', fix: 'zastepstwo' },
+  tor:           { m: 'C', label: 'Taśma schodzi z toru', short: 'Tor taśmy', cat: 'Maszyna', waste: 'Muda', fix: 'tpm' },
+  zator:         { m: 'C', label: 'Zator na wejściu', short: 'Zator', cat: 'Metoda', waste: 'Mura', fix: 'prowadnice' },
+  inne:          { m: '*', label: 'Inne', short: 'Inne', cat: 'Pomiar', waste: null, fix: null },
+};
+const SUBS = {
+  skladniki:     [['Brak kitu, ważenie przy maszynie', 'Metoda', 5], ['Wózek z magazynu spóźniony', 'Metoda', 3], ['Partia bez etykiety', 'Materiał', 1]],
+  syrop:         [['Grzałka zbiornika za słaba', 'Maszyna', 3], ['Hala zimna w nocy', 'Środowisko', 1, 6], ['Brak pomiaru temp. przed dozowaniem', 'Pomiar', 3]],
+  zawor:         [['Syrop krystalizuje w zaworze', 'Materiał', 2], ['Brak płukania po partii', 'Metoda', 1]],
+  przezbrojenie: [['Czekam na części formatowe', 'Metoda', 4], ['Mycie formy na maszynie', 'Metoda', 3], ['Regulacja po starcie', 'Maszyna', 2]],
+  noz:           [['Masa za ciepła', 'Materiał', 3], ['Brak powłoki antyprzywierającej', 'Maszyna', 3], ['Brak planu czyszczenia', 'Metoda', 2]],
+  przerwa:       [['Brak rotacji przerw', 'Metoda', 3], ['Zastępca na innej linii', 'Człowiek', 2]],
+  tor:           [['Luźna prowadnica', 'Maszyna', 4], ['Nierówne napięcie taśmy', 'Maszyna', 3], ['Osad na rolce napędowej', 'Metoda', 2]],
+  zator:         [['Batony podawane grupami', 'Metoda', 3], ['Prowadnice wejścia rozregulowane', 'Maszyna', 3]],
+};
+
+function rng(seed) {
+  let a = seed >>> 0;
+  return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+const uni = (R, r) => r[0] + (r[1] - r[0]) * R();
+const hourOf = t => (((START_H + Math.floor(t / 3600)) % 24) + 24) % 24;
+const zst = () => ({ RUN: 0, SLOW: 0, STARVED: 0, BLOCKED: 0, STOP: 0, SETUP: 0 });
+let EVID = 0;
+
+function params(fx) {
+  return {
+    pWait: fx.kitting ? 0.05 : 0.65, waitDur: fx.kitting ? [2, 5] : [9, 17],
+    pColdNight: fx.syrop ? 0.06 : 0.9, pColdDay: fx.syrop ? 0.04 : 0.6, coldExtra: fx.syrop ? [3, 5] : [8, 15],
+    loadMin: 3.5, mixMin: 10.5, disMin: 3, zaworMTBF: 240, zaworDur: [6, 12],
+    setupDur: fx.smed ? [11, 15] : [40, 52], setupAt: [3 * 3600, 8 * 3600],
+    breaks: fx.zastepstwo ? [] : [[4.5 * 3600, 20], [9.5 * 3600, 20]],
+    nozMTBF: fx.noz ? 150 : 30, nozDur: [2, 4.5],
+    rateB: 150 / 60, beltCap: fx.bufor ? 3000 : 800,
+    torMTBF: fx.tpm ? 150 : 26, torDur: [4, 8],
+    zatorMTBF: fx.prowadnice ? 220 : 50, zatorDur: [1, 3],
+    rateC: 135 / 60, hopperCap: 2 * BATCH,
+  };
+}
+
+function pickSub(R, reason, t) {
+  const L = SUBS[reason]; if (!L) return null;
+  const night = hourOf(t) < 6; let tot = 0;
+  const w = L.map(x => { const v = (night && x[3] != null) ? x[3] : x[2]; tot += v; return v; });
+  let r = R() * tot;
+  for (let i = 0; i < L.length; i++) { r -= w[i]; if (r <= 0) return i; }
+  return L.length - 1;
+}
+
+function newShift(n, fx, prevMain) {
+  const P = params(fx);
+  return {
+    n, fx: { ...fx }, P, R: rng(9001 + n * 7919), R2: rng(424242 + n * 31),
+    t: 0, out: 0, outA: 0, outB: 0, hopper: BATCH, belt: Math.round(0.5 * P.beltCap),
+    A: { st: 'RUN', ph: 'start', pleft: 0, left: 0, ev: null, mixEl: 0, mixStd: 0, mixExtra: 0, cold: false, slowEv: null, batch: 0 },
+    B: { st: 'RUN', left: 0, ev: null, setupIdx: 0, breakIdx: 0 },
+    C: { st: 'RUN', left: 0, ev: null },
+    events: [], periods: { A: [], B: [], C: [] }, actStart: { A: 0, B: 0, C: 0 },
+    secs: { A: zst(), B: zst(), C: zst() }, minAcc: { A: zst(), B: zst(), C: zst() },
+    minState: { A: [], B: [], C: [] }, cum: [],
+    wait: { A: { starved: {}, blocked: {} }, B: { starved: {}, blocked: {} }, C: { starved: {}, blocked: {} } },
+    focus: prevMain || null, focusSince: 0, auto: true, checks: {}, done: false,
+  };
+}
+// Lines run continuously: warm the line up for 3 h with this shift's settings, then start recording at 18:00.
+function warmShift(s) {
+  s.t = -3 * 3600;
+  while (s.t < 0) step(s);
+  s.events = s.events.filter(ev => ev.end == null);
+  for (const ev of s.events) { ev.start = Math.max(ev.start, 0); ev.autoAt = Math.max(ev.autoAt, 30); }
+  s.out = s.outA = s.outB = 0;
+  for (const m of MS) { s.periods[m] = []; s.secs[m] = zst(); s.minAcc[m] = zst(); s.minState[m] = []; s.wait[m] = { starved: {}, blocked: {} }; }
+  s.cum = []; s.A.batch = 1;
+  return s;
+}
+
+function startStop(s, m, reason, durMin, st) {
+  st = st || 'STOP';
+  const ev = { id: ++EVID, m, type: st === 'SETUP' ? 'setup' : 'stop', reason, sub: pickSub(s.R, reason, s.t), start: s.t, end: null, rec: null, autoAt: s.t + 60 + Math.floor(s.R2() * 180) };
+  if (reason === 'przezbrojenie') ev.rec = { reason, sub: null, by: 'plan' };
+  s.events.push(ev);
+  const x = s[m]; x.st = st; x.left = Math.max(30, Math.round(durMin * 60)); x.ev = ev;
+}
+
+function stepA(s) {
+  const A = s.A, P = s.P, R = s.R, t = s.t;
+  if (A.st === 'STOP') {
+    if (--A.left <= 0) { A.ev.end = t; A.ev = null; A.st = 'RUN'; if (A.ph === 'wait') { A.ph = 'load'; A.pleft = Math.round(P.loadMin * 60); } }
+    return;
+  }
+  if (A.ph === 'start') {
+    A.batch++;
+    if (R() < P.pWait) { A.ph = 'wait'; startStop(s, 'A', 'skladniki', uni(R, P.waitDur)); return; }
+    A.ph = 'load'; A.pleft = Math.round(P.loadMin * 60);
+  }
+  if ((A.ph === 'load' || A.ph === 'mix') && R() < 1 / (P.zaworMTBF * 60)) { startStop(s, 'A', 'zawor', uni(R, P.zaworDur)); return; }
+  if (A.ph === 'load') {
+    A.st = 'RUN';
+    if (--A.pleft <= 0) {
+      A.cold = R() < (hourOf(t) < 6 ? P.pColdNight : P.pColdDay);
+      A.mixStd = Math.round(P.mixMin * 60);
+      A.mixExtra = A.cold ? Math.round(uni(R, P.coldExtra) * 60) : Math.round(R() * 50);
+      A.mixEl = 0; A.ph = 'mix';
+    }
+    return;
+  }
+  if (A.ph === 'mix') {
+    A.mixEl++;
+    A.st = A.mixEl > A.mixStd ? 'SLOW' : 'RUN';
+    if (A.mixEl === A.mixStd + 120 && A.mixExtra > 120 && !A.slowEv) {
+      const ev = { id: ++EVID, m: 'A', type: 'slow', reason: 'syrop', sub: pickSub(R, 'syrop', t), start: t - 120, end: null, rec: null, autoAt: t + 20 + Math.floor(s.R2() * 90) };
+      s.events.push(ev); A.slowEv = ev;
+    }
+    if (A.mixEl >= A.mixStd + A.mixExtra) { if (A.slowEv) { A.slowEv.end = t; A.slowEv = null; } A.ph = 'disWait'; }
+    return;
+  }
+  if (A.ph === 'disWait') {
+    if (P.hopperCap - s.hopper >= BATCH - 1e-6) { A.ph = 'dis'; A.pleft = Math.round(P.disMin * 60); }
+    else { A.st = 'BLOCKED'; return; }
+  }
+  if (A.ph === 'dis') {
+    A.st = 'RUN';
+    const q = BATCH / Math.round(P.disMin * 60);
+    s.hopper += q; s.outA += q;
+    if (--A.pleft <= 0) A.ph = 'start';
+  }
+}
+
+function causeKey(s, m) {
+  const x = s[m];
+  if (x.st === 'STOP' || x.st === 'SETUP') return m + ':' + x.ev.reason;
+  if (x.st === 'SLOW') return 'A:syrop';
+  if (m === 'A' && x.st === 'RUN') return 'A:cykl';
+  if (x.st === 'STARVED' && m !== 'A') return causeKey(s, m === 'C' ? 'B' : 'A');
+  if (x.st === 'BLOCKED' && m !== 'C') return causeKey(s, m === 'A' ? 'B' : 'C');
+  return m + ':tempo';
+}
+const inc = (o, k) => { o[k] = (o[k] || 0) + 1; };
+
+function step(s) {
+  const P = s.P, R = s.R, t = s.t;
+  const C = s.C;
+  if (C.st === 'STOP') { if (--C.left <= 0) { C.ev.end = t; C.ev = null; C.st = 'RUN'; } }
+  else {
+    if (C.st === 'RUN') {
+      if (R() < 1 / (P.torMTBF * 60)) startStop(s, 'C', 'tor', uni(R, P.torDur));
+      else if (R() < 1 / (P.zatorMTBF * 60)) startStop(s, 'C', 'zator', uni(R, P.zatorDur));
+    }
+    if (C.st !== 'STOP') { const amt = Math.min(P.rateC, s.belt); s.belt -= amt; s.out += amt; C.st = amt >= P.rateC - 1e-9 ? 'RUN' : 'STARVED'; }
+  }
+  const B = s.B;
+  if (B.st === 'STOP' || B.st === 'SETUP') { if (--B.left <= 0) { B.ev.end = t; B.ev = null; B.st = 'RUN'; } }
+  else {
+    if (B.setupIdx < P.setupAt.length && t >= P.setupAt[B.setupIdx]) { B.setupIdx++; startStop(s, 'B', 'przezbrojenie', uni(R, P.setupDur), 'SETUP'); }
+    else if (B.breakIdx < P.breaks.length && t >= P.breaks[B.breakIdx][0]) { const d = P.breaks[B.breakIdx][1]; B.breakIdx++; startStop(s, 'B', 'przerwa', d); }
+    else if (B.st === 'RUN' && R() < 1 / (P.nozMTBF * 60)) startStop(s, 'B', 'noz', uni(R, P.nozDur));
+    if (B.st !== 'STOP' && B.st !== 'SETUP') {
+      const free = P.beltCap - s.belt, av = s.hopper;
+      const amt = Math.min(P.rateB, av, free);
+      s.hopper -= amt; s.belt += amt; s.outB += amt;
+      B.st = amt >= P.rateB - 1e-9 ? 'RUN' : (av <= free ? 'STARVED' : 'BLOCKED');
+    }
+  }
+  stepA(s);
+  if (s.B.st === 'STARVED') inc(s.wait.B.starved, causeKey(s, 'A'));
+  if (s.B.st === 'BLOCKED') inc(s.wait.B.blocked, causeKey(s, 'C'));
+  if (s.C.st === 'STARVED') inc(s.wait.C.starved, causeKey(s, 'B'));
+  if (s.A.st === 'BLOCKED') inc(s.wait.A.blocked, causeKey(s, 'B'));
+  for (const m of MS) {
+    const st = s[m].st; s.secs[m][st]++; s.minAcc[m][st]++;
+    const act = !!ACTIVE[st];
+    if (act && s.actStart[m] == null) s.actStart[m] = t;
+    else if (!act && s.actStart[m] != null) { s.periods[m].push([s.actStart[m], t]); s.actStart[m] = null; }
+  }
+  s.t++;
+  if (s.t % 60 === 0) {
+    for (const m of MS) {
+      const a = s.minAcc[m]; let best = 'RUN', bv = -1;
+      for (const k in a) if (a[k] > bv) { bv = a[k]; best = k; }
+      s.minState[m].push(best); s.minAcc[m] = zst();
+    }
+    s.cum.push(s.out);
+  }
+  if (s.t >= SHIFT_SEC) {
+    s.done = true;
+    for (const ev of s.events) if (ev.end == null) ev.end = SHIFT_SEC;
+  }
+}
+
+// Momentary bottleneck per minute: active period method (Roser). Longest active period covering the minute wins.
+function bnMinutes(s) {
+  const mins = Math.floor(s.t / 60);
+  const res = new Array(mins).fill(null), best = new Float64Array(mins).fill(-1);
+  for (const m of MS) {
+    const per = s.periods[m].slice();
+    if (s.actStart[m] != null) per.push([s.actStart[m], s.t]);
+    for (const [a, b] of per) {
+      const len = b - a; if (len <= 0) continue;
+      const m0 = Math.max(0, Math.floor(a / 60)), m1 = Math.min(mins - 1, Math.floor((b - 1) / 60));
+      for (let k = m0; k <= m1; k++) if (len > best[k]) { best[k] = len; res[k] = m; }
+    }
+  }
+  return res;
+}
+function bnShares(bn) {
+  const c = { A: 0, B: 0, C: 0 }; let tot = 0;
+  for (const x of bn) if (x) { c[x]++; tot++; }
+  const sh = {}; for (const m of MS) sh[m] = tot ? c[m] / tot : 0;
+  let main = null, mv = -1; for (const m of MS) if (c[m] > mv) { mv = c[m]; main = c[m] ? m : main; }
+  return { sh, main, tot };
+}
+function needSub(s, ev) {
+  return ev.rec && ev.rec.reason !== 'inne' && ev.rec.sub == null && !ev.rec.skip && SUBS[ev.rec.reason] && ev.m === s.focus && ev.start >= s.focusSince;
+}
+function needsInput(s, ev) { return !ev.rec || needSub(s, ev); }
+function autoOps(s) {
+  if (!s.auto) return;
+  for (let i = s.events.length - 1; i >= 0; i--) {
+    const ev = s.events[i];
+    if (ev.start < s.t - 4 * 3600) break;
+    if (!ev.rec && s.t >= ev.autoAt) ev.rec = { reason: (ev.reason === 'zawor' || ev.reason === 'noz' || ev.reason === 'zator' || ev.reason === 'tor') && s.R2() < 0.08 ? 'inne' : ev.reason, sub: null, by: 'auto' };
+    if (needSub(s, ev) && s.t >= ev.autoAt + 40) { if (ev.rec.reason === ev.reason) ev.rec.sub = ev.sub; else ev.rec.skip = true; }
+  }
+}
+/*ENGINE-END*/
+
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const MACH = { A: { name: 'Mikser', short: 'Mikser' }, B: { name: 'Formierka', short: 'Formierka' }, C: { name: 'Piec tunelowy', short: 'Piec' } };
+const STL = { RUN: 'Pracuje', SLOW: 'Wolny cykl', STARVED: 'Brak wsadu', BLOCKED: 'Brak miejsca', STOP: 'Postój', SETUP: 'Przezbrojenie' };
+const STC = { RUN: '--run', SLOW: '--slow', STARVED: '--starve', BLOCKED: '--block', STOP: '--stop', SETUP: '--setup' };
+const FLAV = ['Owies z miodem', 'Owies z żurawiną', 'Owies z kakao'];
+const STOPR = { A: ['skladniki', 'zawor'], B: ['noz', 'przerwa'], C: ['tor', 'zator'] };
+const PROPS = [
+  { id: 'kitting', m: 'A', reasons: ['skladniki'], title: 'Kitting inkluzji przed zmianą', tool: 'Standard pracy · kitting', waste: 'Muda · oczekiwanie', what: 'Magazyn szykuje odważone kity na dwie partie do przodu. Operator miksera nie waży przy maszynie.', effect: 'Partie czekające na składniki: ok. 50% → 5%.', red: 0.9, check: 'Kit inkluzji na 2 partie gotowy' },
+  { id: 'syrop', m: 'A', reasons: ['syrop'], title: 'Poka-yoke temperatury syropu', tool: 'Poka-yoke · 5 Why', waste: 'Mura · zmienny czas mieszania', what: 'Czujnik blokuje dozowanie poniżej 45°C. Grzałka zbiornika na termostacie, start 30 min przed zmianą.', effect: 'Partie z wydłużonym mieszaniem: ok. 65% → 5%.', red: 0.9, check: 'Syrop ≥ 45°C przed dozowaniem' },
+  { id: 'tpm', m: 'C', reasons: ['tor'], title: 'TPM: przegląd toru taśmy co 2 h', tool: 'TPM · lista CIL', waste: 'Muda · awarie', what: 'Operator pieca co 2 h sprawdza prowadnicę, napięcie i rolkę. Znaczniki na ramie pokazują poprawne ustawienie.', effect: 'Zejścia z toru: co ok. 20 min → co ok. 2,5 h.', red: 0.85, check: 'Przegląd toru taśmy (co 2 h)' },
+  { id: 'bufor', m: 'C', special: 'bufor', title: 'Bufor przed piecem', tool: 'TOC · Drum-Buffer-Rope', waste: 'Muda · głodzenie wąskiego gardła', what: 'Stół akumulacyjny na 3 000 batonów przed piecem. Piec pracuje dalej, gdy formierka stoi na przezbrojeniu.', effect: 'Bufor: 800 → 3 000 szt., ok. 22 min pracy pieca.', red: 0.8, check: 'Bufor przed piecem pełny przed przezbrojeniem' },
+  { id: 'prowadnice', m: 'C', reasons: ['zator'], title: 'Prowadnice wejścia według szablonu', tool: 'Standaryzacja · poka-yoke', waste: 'Mura · nierówne podawanie', what: 'Szablon ustawienia prowadnic wejścia pieca. Batony wchodzą równym strumieniem, bez grup.', effect: 'Zatory na wejściu: co ok. 50 min → co ok. 4 h.', red: 0.75, check: 'Prowadnice wejścia według szablonu' },
+  { id: 'smed', m: 'B', reasons: ['przezbrojenie'], title: 'SMED przezbrojenia smaku', tool: 'SMED', waste: 'Muda · przezbrojenie', what: 'Czynności zewnętrzne poza postojem: części formatowe i druga, czysta forma czekają przy maszynie, zanim stanie.', effect: 'Przezbrojenie: ok. 45 min → ok. 13 min.', red: 0.7, check: 'Części formatowe gotowe przed przezbrojeniem' },
+  { id: 'noz', m: 'B', reasons: ['noz'], title: 'Nóż: powłoka i plan czyszczenia', tool: '5 Why · standard pracy', waste: 'Muda · mikropostoje', what: 'Nóż z powłoką antyprzywierającą. Czyszczenie co 2 h według planu, a nie po zatrzymaniu.', effect: 'Klejenie noża: co ok. 30 min → co ok. 2,5 h.', red: 0.8, check: 'Czyszczenie noża co 2 h' },
+  { id: 'zastepstwo', m: 'B', reasons: ['przerwa'], title: 'Rotacja przerw z zastępstwem', tool: 'Standard pracy · Yamazumi', waste: 'Muri · jeden operator bez zastępstwa', what: 'Grafik przerw z rotacją. Zastępca z linii 3 przejmuje formierkę na 20 min.', effect: 'Postój na przerwy: 40 min → 0.', red: 1, check: 'Zastępca na przerwę potwierdzony' },
+];
+const PROP = Object.fromEntries(PROPS.map(p => [p.id, p]));
+
+const nf = new Intl.NumberFormat('pl-PL');
+const fmt = n => nf.format(Math.round(n));
+const f1 = n => (Math.round(n * 10) / 10).toLocaleString('pl-PL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const pad = n => String(n).padStart(2, '0');
+const clock = t => { const x = (((START_H * 3600 + Math.floor(t)) % 86400) + 86400) % 86400; return pad(Math.floor(x / 3600)) + ':' + pad(Math.floor(x % 3600 / 60)); };
+const mmss = s => Math.floor(s / 60) + ':' + pad(Math.floor(s % 60));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const pct = x => Math.round(x * 100) + '%';
+const mname = m => MACH[m].short;
+
+const UI = { speed: 300, playing: true, auto: true, hist: [], queued: {}, appliedAt: {}, prevCum: null, prevMain: null, presim: false, bn: [], bnSh: { sh: { A: 0, B: 0, C: 0 }, main: null, tot: 0 }, rows: {}, sigs: {}, flash: null };
+let S = null;
+
+// ---------- sim control ----------
+function startShift(n) {
+  const fx = {}; for (const k in UI.appliedAt) fx[k] = 1;
+  S = warmShift(newShift(n, fx, UI.prevMain));
+  S.auto = UI.auto; S.focusSince = 0;
+  UI.sigs = {}; UI.bn = []; UI.bnSh = { sh: { A: 0, B: 0, C: 0 }, main: null, tot: 0 };
+  $('#endBar').hidden = true; $('#bPlay').disabled = false; $('#bEnd').disabled = false;
+}
+function updateFocus(silent) {
+  UI.bn = bnMinutes(S); UI.bnSh = bnShares(UI.bn);
+  if (S.t < 5400) return;
+  const win = bnShares(UI.bn.slice(-180)), main = win.main;
+  if (main && main !== S.focus && win.sh[main] >= 0.65) {
+    const old = S.focus; S.focus = main; S.focusSince = S.t;
+    if (!silent) {
+      toast(old ? `Wąskie gardło przesunęło się: ${mname(old)} → ${mname(main)}. Tablet: ${mname(main).toLowerCase()} przechodzi w tryb szczegółowy.` : `Wąskie gardło tej zmiany: ${mname(main)}. Tablet przechodzi w tryb szczegółowy.`);
+      UI.flash = main;
+    }
+  }
+}
+function advance(n) {
+  for (let i = 0; i < n && !S.done; i++) {
+    step(S);
+    if (S.t % 10 === 0) autoOps(S);
+    if (S.t === 600 && S.auto) for (const k in S.fx) S.checks[k] = true;
+    if (S.t % 300 === 0) updateFocus(UI.presim);
+  }
+  if (S.done && !S.summarized) endShift();
+}
+function endShift() {
+  S.summarized = true; updateFocus(true);
+  const main = UI.bnSh.main;
+  UI.hist.push({ n: S.n, out: S.out, pct: S.out / PLAN_TOTAL, main, share: main ? UI.bnSh.sh[main] : 0, fx: Object.keys(S.fx) });
+  UI.prevCum = S.cum.slice(); UI.prevMain = main; UI.playing = false;
+  $('#endTxt').textContent = `Zmiana ${S.n} zakończona: ${pct(S.out / PLAN_TOTAL)} planu`;
+  const q = Object.keys(UI.queued).length;
+  $('#endSub').textContent = `Wąskie gardło: ${main ? mname(main) + ' (' + pct(UI.bnSh.sh[main]) + ' zmiany)' : '–'}. ` + (q ? `Od następnej zmiany działa ${q} ${q === 1 ? 'nowa poprawka' : 'nowe poprawki'}.` : 'Wybierz poprawkę w propozycjach albo uruchom kolejną zmianę bez zmian.');
+  $('#endBar').hidden = false; $('#bPlay').disabled = true; $('#bEnd').disabled = true;
+  renderAll(true);
+}
+function nextShift() {
+  const n = S.n + 1;
+  for (const k in UI.queued) UI.appliedAt[k] = n;
+  UI.queued = {};
+  startShift(n); UI.playing = true; renderAll(true);
+}
+function resetDemo() {
+  UI.hist = []; UI.queued = {}; UI.appliedAt = {}; UI.prevCum = null; UI.prevMain = null;
+  startShift(1); UI.presim = true; advance(6 * 3600); UI.presim = false; updateFocus(true);
+  UI.playing = true; renderAll(true);
+}
+
+// ---------- derived data ----------
+function lossRows() {
+  const bn = UI.bn, rows = {};
+  for (const ev of S.events) {
+    const end = ev.end == null ? S.t : ev.end;
+    const r = ev.rec ? ev.rec.reason : '__none';
+    const key = ev.m + '|' + r;
+    const row = rows[key] || (rows[key] = { m: ev.m, r, n: 0, min: 0, bn: 0 });
+    row.n++; row.min += (end - ev.start) / 60;
+    const m0 = Math.floor(ev.start / 60), m1 = Math.min(bn.length - 1, Math.floor((end - 1) / 60));
+    for (let k = m0; k <= m1; k++) if (bn[k] === ev.m) row.bn += (Math.min(end, (k + 1) * 60) - Math.max(ev.start, k * 60)) / 60;
+  }
+  return rows;
+}
+const rlabel = r => r === '__none' ? 'Bez przyczyny' : REASONS[r].label;
+function causeLabel(k) {
+  if (k === 'A:cykl') return 'rytm partii mieszalnika';
+  if (k === 'C:tempo') return 'piec wolniejszy od formierki';
+  if (k === 'B:tempo') return 'tempo formierki';
+  const [m, r] = k.split(':');
+  return mname(m) + ': ' + (REASONS[r] ? REASONS[r].short.toLowerCase() : r);
+}
+function topCauses(o, n) {
+  return Object.entries(o).sort((a, b) => b[1] - a[1]).slice(0, n).filter(e => e[1] >= 60).map(([k, v]) => `${causeLabel(k)} ${fmt(v / 60)} min`).join(' · ');
+}
+const sum = o => Object.values(o).reduce((a, b) => a + b, 0);
+function nightShare(reason) {
+  let n = 0, night = 0;
+  for (const ev of S.events) if (ev.rec && ev.rec.reason === reason) { n++; if (hourOf(ev.start) < 6) night++; }
+  return { n, night };
+}
+function pending(m) {
+  const out = [];
+  for (let i = S.events.length - 1; i >= 0; i--) { const ev = S.events[i]; if (ev.m === m && needsInput(S, ev)) out.push(ev); }
+  return out;
+}
+
+// ---------- operator tablets ----------
+function tabShell(m) {
+  return `<article class="tab" id="tab${m}">
+    <div class="tab-h"><h3><span class="mid">${m}</span>${MACH[m].name}</h3><span class="mode" id="md${m}"></span></div>
+    <div class="tstate" id="ts${m}"><b id="sw${m}">Pracuje</b><span id="ss${m}"></span></div>
+    <p class="impact" id="im${m}"></p>
+    <div class="tbody" id="tb${m}"></div>
+    <div class="tfoot"><span id="tf${m}"></span><span id="tg${m}"></span></div>
+  </article>`;
+}
+function reasonBtns(ev, bnmode) {
+  const list = ev.type === 'slow' ? ['syrop'] : STOPR[ev.m];
+  const quick = [], rare = [];
+  for (const r of list) { const fx = REASONS[r].fix; (fx && S.fx[fx] ? rare : quick).push(r); }
+  let h = '';
+  for (const r of quick) h += `<button type="button" data-act="r" data-ev="${ev.id}" data-r="${r}">${esc(bnmode ? REASONS[r].label : REASONS[r].short)}</button>`;
+  h += `<button type="button" data-act="r" data-ev="${ev.id}" data-r="inne">Inne</button>`;
+  if (rare.length) {
+    h += `<span class="rl">Rozwiązane poprawką, rzadkie:</span>`;
+    for (const r of rare) h += `<button type="button" class="rare" data-act="r" data-ev="${ev.id}" data-r="${r}">${esc(REASONS[r].short)}</button>`;
+  }
+  return h;
+}
+function pendHTML(ev, bnmode) {
+  const live = ev.end == null;
+  const kind = ev.type === 'slow' ? 'Wolny cykl' : ev.type === 'setup' ? 'Przezbrojenie' : 'Postój';
+  let q, btns;
+  if (!ev.rec) {
+    q = ev.type === 'slow' ? 'Mieszanie dłuższe niż standard. Dlaczego?' : 'Dlaczego stoi?';
+    btns = reasonBtns(ev, bnmode);
+  } else {
+    q = ev.type === 'setup' ? 'Co wydłużyło przezbrojenie?' : `Co dokładnie? <span style="font-weight:400">${esc(REASONS[ev.rec.reason].label)}</span>`;
+    btns = SUBS[ev.rec.reason].map((s, i) => `<button type="button" data-act="s" data-ev="${ev.id}" data-i="${i}">${esc(s[0])}</button>`).join('') + `<button type="button" class="rare" data-act="k" data-ev="${ev.id}">Nie wiem</button>`;
+  }
+  return `<div class="pend${live ? ' live' : ''}">
+    <div class="pend-h"><b>${kind}</b><span class="mono">od ${clock(ev.start)}</span><span class="mono" data-dur="${ev.id}"></span>${live ? '<span class="livepill">trwa</span>' : ''}</div>
+    <div class="q">${q}</div><div class="rb">${btns}</div></div>`;
+}
+function renderTab(m) {
+  const bnmode = S.focus === m;
+  const pend = pending(m);
+  const fxm = PROPS.filter(p => p.m === m && S.fx[p.id]);
+  const recent = [];
+  for (let i = S.events.length - 1; i >= 0 && recent.length < 2; i--) { const e = S.events[i]; if (e.m === m && e.rec && !needsInput(S, e) && e.end != null) recent.push(e); }
+  const sig = [recent.map(e => e.id + ':' + e.rec.reason + ':' + e.rec.sub).join(','), S.n, bnmode, pend.slice(0, 3).map(e => e.id + ':' + (e.rec ? e.rec.reason : '') + ':' + (e.end == null ? 1 : 0)).join(','), Math.max(0, pend.length - 3), fxm.map(p => p.id + (S.checks[p.id] ? 1 : 0)).join(',')].join('|');
+  const tab = $('#tab' + m);
+  tab.classList.toggle('bnmode', bnmode);
+  if (UI.flash === m) { tab.classList.remove('flash'); void tab.offsetWidth; tab.classList.add('flash'); UI.flash = null; }
+  if (UI.sigs[m] === sig) return;
+  UI.sigs[m] = sig;
+  $('#md' + m).textContent = bnmode ? 'Tryb: wąskie gardło' : 'Tryb: standard';
+  let h = '';
+  if (!pend.length) h += `<p class="calm">Brak otwartych zgłoszeń.${S.auto ? '' : ' Gdy maszyna stanie, pytanie pojawi się tutaj.'}</p>`;
+  for (const ev of pend.slice(0, 3)) h += pendHTML(ev, bnmode);
+  if (pend.length > 3) h += `<p class="more">Jeszcze ${pend.length - 3} starszych zgłoszeń czeka na przyczynę.</p>`;
+  if (recent.length) h += `<div class="recent"><span class="lbl">Ostatnie zgłoszenia</span><ul>${recent.map(e => `<li><span class="mono">${clock(e.start)}</span><span>${esc(REASONS[e.rec.reason].short)}${e.rec.sub != null ? ' · ' + esc(SUBS[e.rec.reason][e.rec.sub][0]) : ''}</span><span class="mono">${Math.max(1, Math.round(((e.end == null ? S.t : e.end) - e.start) / 60))} min</span></li>`).join('')}</ul></div>`;
+  if (fxm.length) {
+    h += `<div class="checks"><span class="lbl">Standard pracy po poprawkach</span>`;
+    for (const p of fxm) h += `<label class="chk"><input type="checkbox" data-act="chk" data-k="${p.id}" ${S.checks[p.id] ? 'checked' : ''}> ${esc(p.check)}</label>`;
+    h += `</div>`;
+  }
+  $('#tb' + m).innerHTML = h;
+}
+function tabDynamic(m) {
+  const x = S[m], st = x.st;
+  const ts = $('#ts' + m);
+  ts.style.borderLeftColor = `var(${STC[st]})`;
+  const sw = $('#sw' + m);
+  sw.textContent = STL[st];
+  sw.style.color = st === 'RUN' ? 'var(--ink)' : `var(${STC[st]})`;
+  let sub = '';
+  if (m === 'A') {
+    const b = x.batch;
+    if (st === 'STOP') sub = `Partia ${b} · ${REASONS[x.ev.reason].short.toLowerCase()} ${mmss(S.t - x.ev.start)}`;
+    else if (x.ph === 'load') sub = `Partia ${b} · załadunek`;
+    else if (x.ph === 'mix') sub = `Partia ${b} · mieszanie ${mmss(x.mixEl)} / std ${mmss(x.mixStd)}`;
+    else if (x.ph === 'disWait') sub = `Partia ${b} gotowa · lej pełny`;
+    else if (x.ph === 'dis') sub = `Partia ${b} · wyładunek do leja`;
+    else sub = `Partia ${b}`;
+  } else if (m === 'B') {
+    sub = (st === 'STOP' || st === 'SETUP') ? `${REASONS[x.ev.reason].short} · ${mmss(S.t - x.ev.start)}` : `150 szt./min · lej ${fmt(S.hopper)} szt.`;
+  } else {
+    sub = st === 'STOP' ? `${REASONS[x.ev.reason].short} · ${mmss(S.t - x.ev.start)}` : `135 szt./min · bufor ${fmt(S.belt)} szt.`;
+  }
+  $('#ss' + m).textContent = sub;
+  const bnmode = S.focus === m;
+  let im;
+  if (bnmode) im = 'Wąskie gardło. Minuta postoju tutaj to ok. 120 batonów mniej na końcu linii.';
+  else if (m === 'A') im = `Lej daje formierce zapas na ${f1(S.hopper / 150)} min.`;
+  else if (m === 'B') im = `Bufor daje piecowi zapas na ${f1(S.belt / 135)} min.`;
+  else im = S.focus ? `Linię ogranicza teraz ${mname(S.focus).toLowerCase()}, nie piec.` : 'Koniec linii.';
+  $('#im' + m).textContent = im;
+  let n = 0, rec = 0, det = 0;
+  for (const ev of S.events) if (ev.m === m) { n++; if (ev.rec) { rec++; if (ev.rec.sub != null) det++; } }
+  $('#tf' + m).textContent = `Zgłoszone ${rec} z ${n}`;
+  $('#tg' + m).textContent = det ? `ze szczegółami ${det}` : (S.auto ? 'operator: symulacja' : 'operator: Ty');
+  for (const el of $('#tb' + m).querySelectorAll('[data-dur]')) {
+    const ev = S.events.find(e => e.id === +el.dataset.dur);
+    if (ev) el.textContent = Math.max(1, Math.round(((ev.end == null ? S.t : ev.end) - ev.start) / 60)) + ' min';
+  }
+}
+
+// ---------- VSM ----------
+const PX = { A: 120, B: 400, C: 680 };
+function buildProcs() {
+  let h = '';
+  const rows = { A: [['Partia', '2 500 szt.'], ['Cykl std', '17 min']], B: [['Tempo', '150 szt./min'], ['Przezbr.', '45 min']], C: [['Tempo', '135 szt./min'], ['Pieczenie', '14 min']] };
+  for (const m of MS) {
+    const x = PX[m];
+    h += `<g>
+      <g class="bnbadge" id="bb${m}" visibility="hidden"><rect x="${x}" y="72" width="170" height="22" rx="3"/><text x="${x + 85}" y="88" text-anchor="middle" font-size="13">WĄSKIE GARDŁO</text></g>
+      <rect class="vbox" id="vb${m}" x="${x}" y="100" width="170" height="80" rx="3"/>
+      <rect class="vhdr" x="${x + 1}" y="101" width="168" height="24"/>
+      <rect id="vs${m}" x="${x + 1}" y="125" width="168" height="4" style="fill:var(--run)"/>
+      <text class="t-d" x="${x + 10}" y="118" font-size="15">${m} · ${MACH[m].name}</text>
+      <text class="t-d" id="vw${m}" x="${x + 10}" y="154" font-size="21">Pracuje</text>
+      <text class="t-m mut" id="vx${m}" x="${x + 10}" y="172" font-size="11"></text>
+      <rect class="vdata" x="${x}" y="186" width="170" height="104" rx="3"/>
+      <text class="mut" x="${x + 10}" y="204" font-size="11">${rows[m][0][0]}</text><text class="t-m" x="${x + 160}" y="204" font-size="11" text-anchor="end">${rows[m][0][1]}</text>
+      <text class="mut" x="${x + 10}" y="221" font-size="11">${rows[m][1][0]}</text><text class="t-m" id="vr${m}" x="${x + 160}" y="221" font-size="11" text-anchor="end">${rows[m][1][1]}</text>
+      <text class="mut" x="${x + 10}" y="238" font-size="11">Wykonanie</text><text class="t-m" id="vp${m}" x="${x + 160}" y="238" font-size="11" text-anchor="end">0%</text>
+      <text class="mut" x="${x + 10}" y="255" font-size="11">Wąskie gardło</text><text class="t-m" id="vn${m}" x="${x + 160}" y="255" font-size="11" text-anchor="end">0%</text>
+      <g id="vbar${m}"></g>
+    </g>`;
+  }
+  $('#procs').innerHTML = h;
+  for (const m of MS) {
+    const g = $('#vbar' + m); let s = '';
+    for (const k of ['RUN', 'SLOW', 'STARVED', 'BLOCKED', 'STOP', 'SETUP']) s += `<rect id="vq${m}${k}" x="${PX[m] + 10}" y="268" width="0" height="10" style="fill:var(${STC[k]})"/>`;
+    g.innerHTML = s;
+  }
+}
+function nowBn() {
+  let best = null, bl = -1;
+  for (const m of MS) if (S.actStart[m] != null) { const l = S.t - S.actStart[m]; if (l > bl) { bl = l; best = m; } }
+  return best;
+}
+function renderVSM() {
+  const bnNow = nowBn();
+  const planNow = PLAN_RATE * S.t / 60 || 1;
+  const outs = { A: S.outA, B: S.outB, C: S.out };
+  for (const m of MS) {
+    const x = S[m], st = x.st;
+    const vb = $('#vb' + m);
+    if (bnNow === m) { vb.style.stroke = 'var(--bn)'; vb.style.strokeWidth = 3; }
+    else if (st === 'RUN') { vb.style.stroke = 'var(--line)'; vb.style.strokeWidth = 1; }
+    else { vb.style.stroke = `var(${STC[st]})`; vb.style.strokeWidth = 2; }
+    $('#vs' + m).style.fill = `var(${STC[st]})`;
+    const w = $('#vw' + m); w.textContent = STL[st]; w.style.fill = st === 'RUN' ? 'var(--ink)' : `var(${STC[st]})`;
+    $('#vx' + m).textContent = (st === 'STOP' || st === 'SETUP') ? REASONS[x.ev.reason].short + ' · ' + mmss(S.t - x.ev.start) : (m === 'A' && x.ph === 'mix' ? 'mieszanie ' + mmss(x.mixEl) : '');
+    $('#bb' + m).setAttribute('visibility', bnNow === m ? 'visible' : 'hidden');
+    $('#vp' + m).textContent = pct(Math.min(9.99, outs[m] / planNow)) + ' planu';
+    $('#vn' + m).textContent = pct(UI.bnSh.sh[m]) + ' zmiany';
+    let xx = PX[m] + 10; const tot = Math.max(1, S.t);
+    for (const k of ['RUN', 'SLOW', 'STARVED', 'BLOCKED', 'STOP', 'SETUP']) {
+      const w2 = 150 * S.secs[m][k] / tot; const r = $('#vq' + m + k);
+      r.setAttribute('x', xx); r.setAttribute('width', Math.max(0, w2)); xx += w2;
+    }
+  }
+  $('#vrB').textContent = S.fx.smed ? '13 min' : '45 min';
+  const P = S.P;
+  const l1 = S.hopper / P.hopperCap, l2 = S.belt / P.beltCap;
+  $('#lv1').setAttribute('y', 174 - 54 * l1); $('#lv1').setAttribute('height', 54 * l1);
+  $('#lv2').setAttribute('y', 174 - 54 * l2); $('#lv2').setAttribute('height', 54 * l2);
+  $('#lt1').textContent = fmt(S.hopper) + ' / ' + fmt(P.hopperCap);
+  $('#lt2').textContent = fmt(S.belt) + ' / ' + fmt(P.beltCap);
+  $('#ln2').textContent = S.fx.bufor ? 'Stół akumulacyjny' : 'Bufor taśmy';
+  const w1 = S.hopper / PLAN_RATE, w2 = S.belt / PLAN_RATE;
+  $('#lm1').textContent = '≈ ' + f1(w1) + ' min'; $('#lm2').textContent = '≈ ' + f1(w2) + ' min';
+  $('#ld1').textContent = f1(w1) + ' min'; $('#ld2').textContent = f1(w2) + ' min';
+  $('#ldT').textContent = fmt(w1 + w2 + 25) + ' min';
+  const on = { f0: S.A.ph === 'load' && S.A.st === 'RUN', f1: S.A.ph === 'dis', f2: S.B.st === 'RUN', f3: S.B.st === 'RUN', f4: S.C.st === 'RUN', f5: S.C.st === 'RUN' };
+  for (const k in on) $('#' + k).classList.toggle('on', on[k]);
+  let prod;
+  const su = S.P.setupAt;
+  if (S.B.st === 'SETUP') { const i = S.B.setupIdx; prod = `Przezbrojenie: ${FLAV[i - 1]} → ${FLAV[i]}`; }
+  else prod = FLAV[S.t < su[0] ? 0 : S.t < su[1] ? 1 : 2];
+  $('#vProd').textContent = prod;
+  return bnNow;
+}
+
+// ---------- canvases ----------
+let COL = {};
+function readColors() {
+  const cs = getComputedStyle(document.documentElement);
+  for (const k of ['run', 'slow', 'starve', 'block', 'stop', 'setup', 'bn', 'ink', 'muted', 'line', 'line2', 'surface']) COL[k] = cs.getPropertyValue('--' + k).trim();
+  const fam = cs.getPropertyValue('--f-m').trim(); COL.mono = fam; COL.body = cs.getPropertyValue('--f-b').trim();
+}
+const SCOL = { RUN: 'run', SLOW: 'slow', STARVED: 'starve', BLOCKED: 'block', STOP: 'stop', SETUP: 'setup' };
+function prep(c, H) {
+  const dpr = window.devicePixelRatio || 1, W = c.clientWidth;
+  if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); c.style.height = H + 'px'; }
+  const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  GL = W < 520 ? 90 : 104;
+  return { g, W };
+}
+let GL = 104; const GR = 12;
+function axisX(g, W, y) {
+  const pw = W - GL - GR, stepM = pw < 420 ? 240 : 120;
+  g.fillStyle = COL.muted; g.font = `11px ${COL.mono}`; g.textAlign = 'center';
+  for (let mn = 0; mn <= 720; mn += stepM) {
+    const x = GL + pw * mn / 720;
+    g.fillText(clock(mn * 60), Math.min(W - 18, Math.max(GL + 16, x)), y);
+  }
+}
+function drawGantt() {
+  const c = $('#gantt'), H = 140; const { g, W } = prep(c, H);
+  const pw = W - GL - GR, ppm = pw / 720, rowH = 22, gap = 12, top = 4;
+  g.font = `600 ${W < 520 ? 11 : 12}px ${COL.body}`; g.textBaseline = 'middle';
+  MS.forEach((m, i) => {
+    const y = top + i * (rowH + 4 + gap);
+    g.fillStyle = COL.ink; g.textAlign = 'left'; g.fillText(m + ' ' + mname(m), 4, y + rowH / 2);
+    g.fillStyle = COL.line2; g.fillRect(GL, y, pw, rowH);
+    const arr = S.minState[m]; let k = 0;
+    while (k < arr.length) {
+      let j = k; while (j < arr.length && arr[j] === arr[k]) j++;
+      g.fillStyle = COL[SCOL[arr[k]]]; g.fillRect(GL + k * ppm, y, (j - k) * ppm + 0.6, rowH);
+      k = j;
+    }
+    g.fillStyle = COL.bn; k = 0;
+    const bn = UI.bn;
+    while (k < bn.length) {
+      if (bn[k] !== m) { k++; continue; }
+      let j = k; while (j < bn.length && bn[j] === m) j++;
+      g.fillRect(GL + k * ppm, y + rowH + 1, (j - k) * ppm + 0.6, 4); k = j;
+    }
+  });
+  const nx = GL + pw * Math.min(1, S.t / SHIFT_SEC);
+  g.fillStyle = COL.ink; g.fillRect(nx - 0.75, 0, 1.5, top + 3 * (rowH + 4 + gap) - gap);
+  g.textBaseline = 'alphabetic'; axisX(g, W, H - 4);
+}
+function drawCum() {
+  const c = $('#cum'), H = 150; const { g, W } = prep(c, H);
+  const pw = W - GL - GR, T = 8, B = 22, ph = H - T - B;
+  const ymax = 100000;
+  const Y = v => T + ph * (1 - v / ymax), X = mn => GL + pw * mn / 720;
+  g.font = `11px ${COL.mono}`; g.textAlign = 'right'; g.textBaseline = 'middle';
+  for (let v = 0; v <= ymax; v += 25000) {
+    g.fillStyle = COL.line2; g.fillRect(GL, Y(v), pw, 1);
+    g.fillStyle = COL.muted; g.fillText(v ? fmt(v / 1000) + ' tys.' : '0', GL - 8, Y(v));
+  }
+  g.strokeStyle = COL.line; g.lineWidth = 2; g.setLineDash([6, 4]);
+  g.beginPath(); g.moveTo(X(0), Y(0)); g.lineTo(X(720), Y(PLAN_TOTAL)); g.stroke(); g.setLineDash([]);
+  const line = (arr, col, w, a) => {
+    if (!arr || !arr.length) return; g.globalAlpha = a; g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.moveTo(X(0), Y(0));
+    arr.forEach((v, i) => g.lineTo(X(i + 1), Y(v))); g.stroke(); g.globalAlpha = 1;
+  };
+  line(UI.prevCum, COL.muted, 1.5, 0.55);
+  line(S.cum, COL.ink, 2.25, 1);
+  if (S.cum.length) { g.fillStyle = COL.ink; g.beginPath(); g.arc(X(S.cum.length), Y(S.cum[S.cum.length - 1]), 3.5, 0, 7); g.fill(); }
+  $('#lgPrev').hidden = !UI.prevCum;
+  g.textBaseline = 'alphabetic'; axisX(g, W, H - 4);
+}
+
+// ---------- analysis ----------
+function renderFlow() {
+  const w = S.wait, items = [];
+  const planNow = PLAN_RATE * S.t / 60 || 1;
+  const bs = sum(w.B.starved), bb = sum(w.B.blocked), cs = sum(w.C.starved), ab = sum(w.A.blocked);
+  if (bs >= 120) items.push([bs, 'B ← A', `Formierka czekała na mikser <b class="mono">${fmt(bs / 60)} min</b>. Mikser ma ${pct(S.outA / planNow)} planu.`, topCauses(w.B.starved, 3)]);
+  if (bb >= 120) items.push([bb, 'B → C', `Formierka stała z braku miejsca <b class="mono">${fmt(bb / 60)} min</b>, bo piec nie odbierał.`, topCauses(w.B.blocked, 3)]);
+  if (cs >= 120) items.push([cs, 'C ← B', `Piec czekał na batony <b class="mono">${fmt(cs / 60)} min</b>. To czysta strata na końcu linii.`, topCauses(w.C.starved, 3)]);
+  if (ab >= 120) items.push([ab, 'A → B', `Mikser czekał z wyładunkiem <b class="mono">${fmt(ab / 60)} min</b>, bo lej był pełny.`, topCauses(w.A.blocked, 3)]);
+  items.sort((a, b) => b[0] - a[0]);
+  $('#flow').innerHTML = items.length ? items.map(i => `<div class="fl"><span class="chain">${i[1]}</span><p>${i[2]}<small>Przyczyny: ${esc(i[3] || 'za mało danych')}</small></p></div>`).join('') : '<p class="calm">Za mało danych. Maszyny jeszcze na siebie nie czekały.</p>';
+}
+function renderPareto() {
+  const rows = Object.values(UI.rows).sort((a, b) => b.min - a.min).slice(0, 8);
+  const mx = Math.max(1, ...rows.map(r => r.min));
+  $('#pareto').innerHTML = rows.length ? rows.map(r => `<div class="prow"><span class="nm"><span class="pm">${r.m}</span>${esc(rlabel(r.r))}</span><span class="ptrack"><i style="width:${100 * r.min / mx}%"></i><b style="width:${100 * r.bn / mx}%"></b></span><span class="pv">${fmt(r.min)} min · <em>${fmt(r.bn)}</em></span></div>`).join('') : '<p class="calm">Brak postojów.</p>';
+}
+function renderFish() {
+  const m = S.focus || UI.bnSh.main;
+  const svg = $('#fish');
+  if (!m) { $('#fishT').textContent = 'Ishikawa'; svg.innerHTML = '<text x="20" y="40" class="empty" font-size="13">Wąskie gardło jeszcze nie jest ustalone.</text>'; return; }
+  const cats = { 'Człowiek': {}, 'Maszyna': {}, 'Metoda': {}, 'Materiał': {}, 'Pomiar': {}, 'Środowisko': {} };
+  let bnLost = 0;
+  for (const ev of S.events) {
+    if (ev.m !== m) continue;
+    const d = ((ev.end == null ? S.t : ev.end) - ev.start) / 60;
+    let cat, label;
+    if (!ev.rec) { cat = 'Pomiar'; label = 'Postój bez przyczyny'; }
+    else if (ev.rec.reason === 'inne') { cat = 'Pomiar'; label = 'Zgłoszone jako „Inne”'; }
+    else if (ev.rec.sub != null) { const s = SUBS[ev.rec.reason][ev.rec.sub]; cat = s[1]; label = s[0]; }
+    else { cat = REASONS[ev.rec.reason].cat; label = REASONS[ev.rec.reason].label; }
+    const o = cats[cat][label] || (cats[cat][label] = { n: 0, min: 0 }); o.n++; o.min += d;
+  }
+  for (const r of Object.values(UI.rows)) if (r.m === m) bnLost += r.bn;
+  if (m === 'A') { const ns = nightShare('syrop'); if (ns.n >= 3 && ns.night / ns.n >= 0.6) cats['Środowisko']['Zimny syrop głównie po 00:00'] = { n: ns.night, min: -1 }; }
+  $('#fishT').textContent = `Ishikawa: ${MACH[m].name}, wąskie gardło zmiany`;
+  const pos = [['Człowiek', 190, 'top'], ['Maszyna', 400, 'top'], ['Metoda', 610, 'top'], ['Materiał', 190, 'bot'], ['Pomiar', 400, 'bot'], ['Środowisko', 610, 'bot']];
+  let h = `<line class="spine" x1="20" y1="150" x2="722" y2="150"/>`;
+  h += `<rect class="head" x="724" y="96" width="192" height="108" rx="4"/>`;
+  h += `<text x="736" y="120" font-size="12" style="fill:var(--bn);font-weight:700">PROBLEM</text>`;
+  h += `<text x="736" y="142" font-size="15" font-weight="600">${esc(mname(m))} ogranicza linię</text>`;
+  h += `<text x="736" y="164" font-size="12">wąskie gardło: ${pct(UI.bnSh.sh[m])} zmiany</text>`;
+  h += `<text x="736" y="182" font-size="12">${fmt(bnLost)} min własnych postojów</text>`;
+  for (const [cat, x, side] of pos) {
+    const yS = side === 'top' ? 34 : 266;
+    h += `<line class="bone" x1="${x}" y1="${yS}" x2="${x + 90}" y2="150"/>`;
+    h += `<text class="cat" x="${x}" y="${side === 'top' ? 24 : 288}" text-anchor="middle">${cat.toUpperCase()}</text>`;
+    const items = Object.entries(cats[cat]).sort((a, b) => b[1].min - a[1].min).slice(0, 3);
+    if (!items.length) { h += `<text class="empty" x="${x + 20}" y="${side === 'top' ? 80 : 226}" font-size="12" text-anchor="end">–</text>`; continue; }
+    items.forEach(([label, o], i) => {
+      const y = side === 'top' ? 60 + i * 26 : 240 - i * 26;
+      const bx = x + 90 * (side === 'top' ? (y - 34) / 116 : (266 - y) / 116);
+      const lab = label.length > 28 ? label.slice(0, 27) + '…' : label;
+      h += `<text x="${bx - 8}" y="${y}" font-size="12" text-anchor="end">${esc(lab)}</text>`;
+      h += `<text class="num" x="${bx - 8}" y="${y + 12}" text-anchor="end">${o.min < 0 ? o.n + ' przypadków' : o.n + '× · ' + fmt(o.min) + ' min'}</text>`;
+    });
+  }
+  svg.innerHTML = h;
+}
+function renderWaste() {
+  const W = { Muda: { d: 'marnotrawstwo: czekanie, awarie, przezbrojenia', t: 0, it: {} }, Mura: { d: 'nierówność: zmienny czas cyklu i podawanie', t: 0, it: {} }, Muri: { d: 'przeciążenie ludzi i maszyn', t: 0, it: {} } };
+  for (const r of Object.values(UI.rows)) {
+    if (r.r === '__none' || !REASONS[r.r].waste) continue;
+    const w = W[REASONS[r.r].waste]; w.t += r.min; w.it[mname(r.m) + ': ' + REASONS[r.r].short.toLowerCase()] = r.min;
+  }
+  let wait = 0; for (const m of MS) wait += S.secs[m].STARVED + S.secs[m].BLOCKED;
+  W.Muda.t += wait / 60; W.Muda.it['czekanie między maszynami'] = wait / 60;
+  $('#waste').innerHTML = Object.entries(W).map(([k, w]) => `<div class="wc"><h4>${k}</h4><p class="wd">${w.d}</p><span class="wn">${fmt(w.t)} min</span><ul>${Object.entries(w.it).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([l, v]) => `<li><span>${esc(l)}</span><span>${fmt(v)}</span></li>`).join('') || '<li><span>brak</span><span></span></li>'}</ul></div>`).join('');
+}
+function renderPatterns() {
+  const L = [];
+  const ns = nightShare('syrop');
+  if (ns.n >= 3 && ns.night >= 3) L.push([ns.night / ns.n >= 0.6, `${ns.night} z ${ns.n} wolnych cykli przez zimny syrop przypada na 00:00–06:00.${ns.night / ns.n >= 0.6 ? ' Hala stygnie w nocy.' : ''}`, 'Mikser · godzina zgłoszenia']);
+  const tor = S.events.filter(e => e.rec && e.rec.reason === 'tor').length;
+  if (tor >= 3) L.push([UI.bnSh.main === 'C', `Taśma pieca schodzi z toru średnio co ${fmt(S.t / 60 / tor)} min.`, `Piec · ${tor} zgłoszeń`]);
+  const su = S.events.filter(e => e.type === 'setup' && e.end != null);
+  if (su.length) { const av = su.reduce((a, e) => a + e.end - e.start, 0) / su.length / 60; L.push([UI.bnSh.main === 'B', `Przezbrojenie trwa średnio ${fmt(av)} min. Cel po SMED: poniżej 15 min.`, `Formierka · ${su.length} przezbrojeń`]); }
+  const noz = S.events.filter(e => e.rec && e.rec.reason === 'noz').length;
+  if (noz >= 3) L.push([false, `Nóż formierki klei się średnio co ${fmt(S.t / 60 / noz)} min.`, `Formierka · ${noz} zgłoszeń`]);
+  const bc = S.wait.B.blocked, cStopBlock = Object.entries(bc).filter(([k]) => k === 'C:tor' || k === 'C:zator').reduce((a, [, v]) => a + v, 0);
+  if (cStopBlock >= 600) L.push([UI.bnSh.main === 'C', `${pct(cStopBlock / Math.max(1, sum(bc)))} blokad formierki wynika z postojów pieca. Formierka nie jest tu winna.`, `Przepływ B → C · ${fmt(cStopBlock / 60)} min`]);
+  const ev = S.events.filter(e => e.type !== 'setup'), none = ev.filter(e => !e.rec).length, inn = ev.filter(e => e.rec && e.rec.reason === 'inne').length;
+  if (ev.length) L.push([none / ev.length > 0.25, `Bez przyczyny: ${none} z ${ev.length} zdarzeń. „Inne”: ${inn}.`, 'Jakość danych']);
+  $('#pat').innerHTML = L.length ? L.map(([hot, t, s]) => `<li class="${hot ? 'hot' : ''}">${esc(t)}<small>${esc(s)}</small></li>`).join('') : '<li>Za mało danych.</li>';
+}
+function renderProps() {
+  const rows = UI.rows, sh = UI.bnSh, scale = SHIFT_SEC / Math.max(S.t, 3600);
+  const list = [];
+  for (const p of PROPS) {
+    if (S.fx[p.id]) continue;
+    let min = 0, n = 0, bnm = 0, ev, gain;
+    if (p.special === 'bufor') {
+      let bm = 0; for (const k in S.wait.C.starved) if (k.startsWith('B:')) bm += S.wait.C.starved[k];
+      bm /= 60;
+      if (!(sh.sh.C >= 0.3 && bm >= 10) && !UI.queued[p.id]) continue;
+      ev = `Piec był głodzony ${fmt(bm)} min przez postoje formierki.`; gain = bm * p.red * 135 * scale; min = bm;
+    } else {
+      for (const r of p.reasons) { const row = rows[p.m + '|' + r]; if (row) { min += row.min; n += row.n; bnm += row.bn; } }
+      if (min < 8 && !UI.queued[p.id]) continue;
+      ev = `${n} zgłoszeń · ${fmt(min)} min · ${fmt(bnm)} min na wąskim gardle`;
+      if (p.id === 'syrop') { const ns = nightShare('syrop'); if (ns.night >= 3) ev += ` · ${ns.night} z ${ns.n} po 00:00`; }
+      gain = bnm * p.red * PLAN_RATE * scale;
+    }
+    list.push({ p, min, gain, ev, isBn: sh.main === p.m });
+  }
+  list.sort((a, b) => b.gain - a.gain || b.min - a.min);
+  const evs = S.events.filter(e => e.type !== 'setup'), none = evs.filter(e => !e.rec).length;
+  let h = '';
+  if (evs.length >= 4 && none / evs.length >= 0.25) h += `<article class="prop is-bn"><div class="ptop"><span class="tool">Andon · standard zgłaszania</span><span class="first">Najpierw dane</span></div><h4>Dane niepełne</h4><p class="what">${none} z ${evs.length} zdarzeń nie ma przyczyny. Bez tego BNECK widzi, gdzie linia traci, ale nie wie dlaczego.</p><p class="offnote">Zgłoś przyczyny na tabletach albo włącz „Operatorzy zgłaszają sami”.</p></article>`;
+  list.forEach((o, i) => {
+    const p = o.p, q = !!UI.queued[p.id];
+    const g = o.gain >= 500 ? `do +${fmt(Math.round(o.gain / 100) * 100)} szt. na zmianę` : 'ok. 0 teraz';
+    h += `<article class="prop ${o.isBn ? 'is-bn' : 'is-off'}">
+      <div class="ptop"><span class="pm">${p.m}</span><span class="tool">${esc(p.tool)}</span>${i === 0 && o.gain >= 500 ? '<span class="first">Najpierw to</span>' : ''}</div>
+      <h4>${esc(p.title)}</h4><p class="what">${esc(p.what)}</p>
+      <dl><dt>Dowód</dt><dd>${esc(o.ev)}</dd><dt>Strata</dt><dd>${esc(p.waste)}</dd><dt>Efekt</dt><dd>${esc(p.effect)}</dd><dt>Szacunek</dt><dd class="gain">${g}</dd></dl>${o.gain >= 500 ? '<p class="offnote">Górna granica. Po poprawce wąskie gardło może się przesunąć.</p>' : ''}
+      ${o.isBn ? '' : `<p class="offnote">${mname(p.m)} nie jest wąskim gardłem. Poprawa teraz nie podniesie produkcji linii.</p>`}
+      <div class="pact">${q ? `<span class="queued">Zaplanowane od zmiany ${S.n + 1}</span><button type="button" class="btn" data-act="undo" data-k="${p.id}">Cofnij</button>` : `<button type="button" class="btn${o.isBn ? ' primary' : ''}" data-act="apply" data-k="${p.id}">Wdroż od zmiany ${S.n + 1}</button>`}</div>
+    </article>`;
+  });
+  if (!h) h = '<p class="calm">Brak propozycji. Linia ma zapas względem planu albo brakuje danych.</p>';
+  if (UI.sigs.props !== h) { UI.sigs.props = h; $('#props').innerHTML = h; }
+  const ap = Object.entries(UI.appliedAt);
+  $('#applied').innerHTML = ap.length ? '<span class="lbl">Działa:</span>' + ap.map(([k, n]) => `<span class="chip">${esc(PROP[k].title)} · od zmiany ${n}</span>`).join('') : '';
+}
+function renderHist() {
+  const rows = UI.hist.map(h => `<tr><td class="num">${h.n}</td><td>${h.fx.length ? h.fx.map(k => esc(PROP[k].title)).join(', ') : 'brak'}</td><td class="num">${fmt(h.out)}</td><td class="num">${fmt(PLAN_TOTAL)}</td><td><div class="hbar"><i style="width:${Math.min(100, h.pct / 1.2 * 100)}%"></i><s style="left:${100 / 1.2}%"></s></div><span class="mono" style="font-size:12px">${pct(h.pct)}</span></td><td>${h.main ? mname(h.main) + ' <span class="mono" style="color:var(--muted);font-size:12px">' + pct(h.share) + '</span>' : '–'}</td></tr>`);
+  if (!S.done) rows.push(`<tr><td class="num">${S.n}</td><td>${Object.keys(S.fx).length ? Object.keys(S.fx).map(k => esc(PROP[k].title)).join(', ') : 'brak'}</td><td class="num">${fmt(S.out)}</td><td class="num">${fmt(PLAN_TOTAL)}</td><td><span class="mono" style="font-size:12px;color:var(--muted)">w toku, ${clock(S.t)}</span></td><td>${UI.bnSh.main ? mname(UI.bnSh.main) : '–'}</td></tr>`);
+  $('#hist').innerHTML = rows.join('');
+}
+
+// ---------- render loop ----------
+function renderFast() {
+  $('#clk').textContent = clock(S.t);
+  $('#shiftLbl').textContent = `Zmiana ${S.n} · noc 18:00–06:00`;
+  $('#progBar').style.width = (100 * S.t / SHIFT_SEC) + '%';
+  const planNow = PLAN_RATE * S.t / 60;
+  $('#kOut').textContent = fmt(S.out);
+  $('#kOutS').textContent = 'plan do teraz ' + fmt(planNow);
+  $('#kPct').textContent = planNow ? pct(S.out / planNow) : '–';
+  const bn = renderVSM();
+  $('#kBn').textContent = bn ? MACH[bn].name : '–';
+  $('#kBnS').textContent = UI.bnSh.main ? `zmiana: ${mname(UI.bnSh.main)} ${pct(UI.bnSh.sh[UI.bnSh.main])}` : 'metoda okresów aktywnych';
+  const c = S.cum, k = Math.min(30, c.length);
+  $('#kRate').textContent = k ? fmt((c[c.length - 1] - (c.length > k ? c[c.length - 1 - k] : 0)) / k) : '–';
+  for (const m of MS) tabDynamic(m);
+  $('#bPlay').textContent = UI.playing ? 'Pauza' : 'Start';
+}
+function renderSlow() {
+  if (!UI.presim && !S.done) updateFocus(false);
+  UI.rows = lossRows();
+  for (const m of MS) renderTab(m);
+  renderFlow(); renderPareto(); renderFish(); renderWaste(); renderPatterns(); renderProps(); renderHist();
+}
+function renderAll(force) { if (force) UI.sigs = {}; renderSlow(); renderFast(); drawCum(); drawGantt(); }
+
+let last = performance.now(), acc = 0, tFast = 0, tSlow = 0, tCanvas = 0;
+function frame(now) {
+  const dt = Math.min(0.25, (now - last) / 1000); last = now;
+  if (UI.playing && !S.done) { acc += dt * UI.speed; const n = Math.floor(acc); acc -= n; if (n) advance(n); }
+  if (now - tSlow > 700) { tSlow = now; renderSlow(); }
+  if (now - tFast > 90) { tFast = now; renderFast(); }
+  if (now - tCanvas > 250) { tCanvas = now; drawCum(); drawGantt(); }
+  requestAnimationFrame(frame);
+}
+
+// ---------- toasts ----------
+function toast(msg) {
+  const el = document.createElement('div'); el.className = 'toast'; el.textContent = msg;
+  $('#toasts').appendChild(el);
+  setTimeout(() => el.remove(), 5200);
+  const all = $('#toasts').children; if (all.length > 3) all[0].remove();
+}
+
+// ---------- interactions ----------
+function act(el) {
+  const a = el.dataset.act;
+  if (a === 'r' || a === 's' || a === 'k') {
+    const ev = S.events.find(e => e.id === +el.dataset.ev); if (!ev) return;
+    if (a === 'r') ev.rec = { reason: el.dataset.r, sub: null, by: 'op' };
+    else if (a === 's') { ev.rec.sub = +el.dataset.i; ev.rec.by = 'op'; }
+    else ev.rec.skip = true;
+    UI.sigs[ev.m] = null; UI.rows = lossRows(); renderTab(ev.m); tabDynamic(ev.m);
+  } else if (a === 'apply') {
+    UI.queued[el.dataset.k] = true; renderProps();
+    toast(`${PROP[el.dataset.k].title}: działa od zmiany ${S.n + 1}.`);
+    if (S.done) $('#endSub').textContent = `Od następnej zmiany działa ${Object.keys(UI.queued).length} ${Object.keys(UI.queued).length === 1 ? 'nowa poprawka' : 'nowe poprawki'}.`;
+  } else if (a === 'undo') { delete UI.queued[el.dataset.k]; renderProps(); }
+}
+document.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  const el = e.target.closest('button[data-act]'); if (!el) return;
+  e.preventDefault(); act(el);
+});
+document.addEventListener('click', e => {
+  if (e.detail !== 0) return;
+  const el = e.target.closest('button[data-act]'); if (el) act(el);
+});
+document.addEventListener('change', e => {
+  const el = e.target.closest('input[data-act="chk"]'); if (!el) return;
+  S.checks[el.dataset.k] = el.checked;
+});
+$('#bPlay').addEventListener('click', () => { if (!S.done) UI.playing = !UI.playing; renderFast(); });
+document.querySelectorAll('[data-sp]').forEach(b => b.addEventListener('click', () => {
+  UI.speed = +b.dataset.sp; document.querySelectorAll('[data-sp]').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+}));
+$('#bEnd').addEventListener('click', () => { if (!S.done) { UI.presim = true; advance(SHIFT_SEC); UI.presim = false; renderAll(true); } });
+$('#bNext').addEventListener('click', nextShift);
+$('#bReset').addEventListener('click', resetDemo);
+$('#tAuto').addEventListener('change', e => { UI.auto = e.target.checked; S.auto = UI.auto; UI.sigs = {}; renderAll(); });
+
+// ---------- boot ----------
+$('#tabs').innerHTML = MS.map(tabShell).join('');
+buildProcs(); readColors();
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readColors(); drawCum(); drawGantt(); });
+new MutationObserver(() => { readColors(); drawCum(); drawGantt(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+window.addEventListener('resize', () => { drawCum(); drawGantt(); });
+if (document.fonts) document.fonts.ready.then(() => { drawCum(); drawGantt(); });
+resetDemo();
+requestAnimationFrame(frame);
+})();
+</script>
