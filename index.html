@@ -659,18 +659,65 @@ const IDEAL = { A: BATCH / (17 * 60), B: 150 / 60, C: 135 / 60 };
 // ILUO: 1 = I (learning), 2 = L (supervised), 3 = U (independent), 4 = O (trains others). Multiplier on own-stop duration.
 const LVL = ['', 'I', 'L', 'U', 'O'];
 const LVLFAC = [0, 1.45, 1.15, 1.0, 0.8];
-const CREW = [
-  { id: 'kasia', name: 'Kate', lvl: { A: 2, B: 4, C: 1 } },
-  { id: 'marek', name: 'Mark', lvl: { A: 1, B: 4, C: 3 } },
-  { id: 'jan',   name: 'John',   lvl: { A: 2, B: 2, C: 3 } },
-  { id: 'tomek', name: 'Tom', lvl: { A: 4, B: 3, C: 2 } },
-  { id: 'ewa',   name: 'Eve',   lvl: { A: 1, B: 2, C: 2 } },
-  { id: 'piotr', name: 'Pete', lvl: { A: 3, B: 3, C: 4 } },
+// Demo roster: four crews of four on a fixed rota. home = the machine a person is fixed to, null = floater who covers
+// any gap. Crew 1 keeps the original demo staffing (Kate A, Mark B, John C), so test.js results do not move.
+const ROSTER = [
+  { id: 'kasia', name: 'Kate', crew: 1, home: 'A', lvl: { A: 2, B: 4, C: 1 } },
+  { id: 'marek', name: 'Mark', crew: 1, home: 'B', lvl: { A: 1, B: 4, C: 3 } },
+  { id: 'jan',   name: 'John', crew: 1, home: 'C', lvl: { A: 2, B: 2, C: 3 } },
+  { id: 'tomek', name: 'Tom',  crew: 1, home: null, lvl: { A: 4, B: 3, C: 2 } },
+  { id: 'anna',  name: 'Ann',  crew: 2, home: 'A', lvl: { A: 3, B: 1, C: 2 } },
+  { id: 'sam',   name: 'Sam',  crew: 2, home: 'B', lvl: { A: 2, B: 3, C: 1 } },
+  { id: 'piotr', name: 'Pete', crew: 2, home: 'C', lvl: { A: 3, B: 3, C: 4 } },
+  { id: 'ewa',   name: 'Eve',  crew: 2, home: null, lvl: { A: 1, B: 2, C: 2 } },
+  { id: 'lucy',  name: 'Lucy', crew: 3, home: 'A', lvl: { A: 4, B: 2, C: 2 } },
+  { id: 'raj',   name: 'Raj',  crew: 3, home: 'B', lvl: { A: 1, B: 3, C: 2 } },
+  { id: 'ola',   name: 'Ola',  crew: 3, home: 'C', lvl: { A: 2, B: 2, C: 3 } },
+  { id: 'ben',   name: 'Ben',  crew: 3, home: null, lvl: { A: 3, B: 3, C: 3 } },
+  { id: 'nina',  name: 'Nina', crew: 4, home: 'A', lvl: { A: 3, B: 2, C: 1 } },
+  { id: 'dan',   name: 'Dan',  crew: 4, home: 'B', lvl: { A: 2, B: 4, C: 2 } },
+  { id: 'iza',   name: 'Iza',  crew: 4, home: 'C', lvl: { A: 1, B: 2, C: 3 } },
+  { id: 'leo',   name: 'Leo',  crew: 4, home: null, lvl: { A: 2, B: 1, C: 2 } },
 ];
-const CREW_BY = Object.fromEntries(CREW.map(p => [p.id, p]));
+const CREW = ROSTER;
+const CREW_BY = Object.fromEntries(ROSTER.map(p => [p.id, p]));
+const CREWS = [1, 2, 3, 4];
 const DEFAULT_ASSIGN = { A: 'kasia', B: 'marek', C: 'jan' };
-function opOf(s, m) { return CREW_BY[s.assign[m]]; }
-function skillFac(s, m) { const p = opOf(s, m); return p ? LVLFAC[p.lvl[m]] : 1; }
+function opOf(s, m) { const id = s.assign[m]; return id ? CREW_BY[id] || null : null; }
+function skillFac(s, m) { const p = opOf(s, m); return p ? LVLFAC[p.lvl[m]] : s.P.unstaffedFac; }
+
+// Rota: crews 1 and 2 work Mon-Wed, crews 3 and 4 Thu-Sat; who has days and who has nights swaps every week.
+function crewOf(n) {
+  const c = calOf(n), d = (c.day - 1) % 7, w = (weekOf(n) - 1) % 2, pair = d < 3 ? [1, 2] : [3, 4];
+  return c.type === 'day' ? pair[w] : pair[1 - w];
+}
+// Absences per person-shift. ASSUMED 12%: UK statutory holiday is 5.6 weeks a year (about 11% of shifts) plus
+// some sickness. Seeded per shift, so every month has the same gaps.
+const ABSENCE = 0.12;
+function absentOn(n) {
+  const R = rng(77 + n * 104729), crew = crewOf(n), out = {};
+  for (const p of ROSTER) { const a = R(), k = R(); if (p.crew === crew && a < ABSENCE) out[p.id] = k < 0.7 ? 'HOL' : 'SICK'; }
+  return out;
+}
+// Shift plan: fixed people go to their machine. Open machines are filled by floaters, best level first (the pair of
+// machine and floater with the highest level goes first). With no floater left the machine is unstaffed and the next
+// machine's operator covers it.
+function planShift(n, status) {
+  const crew = crewOf(n), st = status || absentOn(n);
+  const present = ROSTER.filter(p => p.crew === crew && !st[p.id]);
+  const assign = {}, used = new Set();
+  for (const m of MS) { const p = present.find(x => x.home === m); if (p) { assign[m] = p.id; used.add(p.id); } else assign[m] = null; }
+  for (;;) {
+    let best = null;
+    for (const m of MS) {
+      if (assign[m]) continue;
+      for (const p of present) if (!used.has(p.id) && p.home == null && (!best || p.lvl[m] > best.p.lvl[m])) best = { m, p };
+    }
+    if (!best) break;
+    assign[best.m] = best.p.id; used.add(best.p.id);
+  }
+  return { n, crew, status: st, assign, open: MS.filter(m => !assign[m]), spare: present.filter(p => !used.has(p.id)).map(p => p.id) };
+}
 const REASONS = {
   skladniki:     { m: 'A', label: 'Waiting for ingredients', short: 'Ingredients', cat: 'Method', waste: 'Muda', fix: 'kitting' },
   syrop:         { m: 'A', label: 'Syrup too cold', short: 'Cold syrup', cat: 'Material', waste: 'Mura', fix: 'syrop' },
@@ -678,6 +725,7 @@ const REASONS = {
   przezbrojenie: { m: 'B', label: 'Flavour changeover', short: 'Changeover', cat: 'Method', waste: 'Muda', fix: 'smed' },
   noz:           { m: 'B', label: 'Knife sticking', short: 'Knife', cat: 'Machine', waste: 'Muda', fix: 'noz' },
   przerwa:       { m: 'B', label: 'Break with no cover', short: 'Break', cat: 'People', waste: 'Muri', fix: 'zastepstwo' },
+  obsada:        { m: '*', label: 'No operator at the machine', short: 'No operator', cat: 'People', waste: 'Muri', fix: 'pula' },
   tor:           { m: 'C', label: 'Belt tracking off', short: 'Belt tracking', cat: 'Machine', waste: 'Muda', fix: 'tpm' },
   zator:         { m: 'C', label: 'Jam at infeed', short: 'Jam', cat: 'Method', waste: 'Mura', fix: 'prowadnice' },
   inne:          { m: '*', label: 'Other', short: 'Other', cat: 'Measurement', waste: null, fix: null },
@@ -689,6 +737,7 @@ const SUBS = {
   przezbrojenie: [['Waiting for format parts', 'Method', 4], ['Washing mould on the machine', 'Method', 3], ['Adjustment after start', 'Machine', 2]],
   noz:           [['Mass too warm', 'Material', 3], ['No non-stick coating', 'Machine', 3], ['No cleaning schedule', 'Method', 2]],
   przerwa:       [['No break rotation', 'Method', 3], ['Cover on another line', 'People', 2]],
+  obsada:        [['Absence not covered', 'People', 3], ['No floater trained on this machine', 'People', 3], ['Shift plan made too late', 'Method', 2]],
   tor:           [['Loose guide', 'Machine', 4], ['Uneven belt tension', 'Machine', 3], ['Build-up on drive roller', 'Method', 2]],
   zator:         [['Bars fed in clumps', 'Method', 3], ['Infeed guides out of adjustment', 'Machine', 3]],
 };
@@ -706,7 +755,7 @@ let EVID = 0;
 // fx[k] is the effectiveness of fix k in 0..1 (1 = fully in place). Base values: ASSUMED for a mid-size bar line, see README.
 function params(fx) {
   const E = k => Math.max(0, Math.min(1, +fx[k] || 0));
-  const kit = E('kitting'), syr = E('syrop'), smed = E('smed'), zas = E('zastepstwo'), noz = E('noz'), buf = E('bufor'), tpm = E('tpm'), pro = E('prowadnice');
+  const kit = E('kitting'), syr = E('syrop'), smed = E('smed'), zas = E('zastepstwo'), noz = E('noz'), buf = E('bufor'), tpm = E('tpm'), pro = E('prowadnice'), pula = E('pula');
   return {
     pWait: lerp(0.65, 0.05, kit), waitDur: [lerp(9, 2, kit), lerp(17, 5, kit)],
     pColdNight: lerp(0.9, 0.06, syr), pColdDay: lerp(0.6, 0.04, syr), coldExtra: [lerp(8, 3, syr), lerp(15, 5, syr)],
@@ -718,6 +767,9 @@ function params(fx) {
     torMTBF: lerp(26, 150, tpm), torDur: [4, 8],
     zatorMTBF: lerp(50, 220, pro), zatorDur: [1, 3],
     rateC: 135 / 60, hopperCap: 2 * BATCH,
+    // Unstaffed machine, ASSUMED: the next machine's operator covers it. Own stops last 1.6x longer (nobody there when
+    // it stops, between L and I) and every ~45 min the shared operator is away 4-9 min. A floater cover plan removes it.
+    unstaffedFac: lerp(1.6, 1.0, pula), shareEvery: lerp(45, 480, pula), shareDur: [lerp(4, 1, pula), lerp(9, 2, pula)],
   };
 }
 
@@ -744,6 +796,7 @@ function newShift(n, fx, prevMain, assign) {
     minState: { A: [], B: [], C: [] }, cum: [], hourly: [],
     wait: { A: { starved: {}, blocked: {} }, B: { starved: {}, blocked: {} }, C: { starved: {}, blocked: {} } },
     focus: prevMain || null, focusSince: 0, auto: true, checks: {}, done: false,
+    share: Object.fromEntries(MS.map((m, i) => [m, Math.round(P.shareEvery * 60 * (0.4 + 0.2 * i))])),
   };
 }
 // Lines run continuously: warm the line up for 3 h with this shift's settings, then start recording at 18:00.
@@ -760,8 +813,8 @@ function warmShift(s) {
 
 function startStop(s, m, reason, durMin, st) {
   st = st || 'STOP';
-  const fac = skillFac(s, m), lvl = opOf(s, m) ? opOf(s, m).lvl[m] : 3;
-  const ev = { id: ++EVID, m, type: st === 'SETUP' ? 'setup' : 'stop', reason, sub: pickSub(s.R, reason, s.t), start: s.t, end: null, rec: null, op: s.assign[m], autoAt: s.t + Math.round((60 + s.R2() * 180) * (lvl >= 4 ? 0.5 : lvl === 1 ? 1.6 : 1)) };
+  const fac = skillFac(s, m), lvl = opOf(s, m) ? opOf(s, m).lvl[m] : 1;
+  const ev = { id: ++EVID, m, type: st === 'SETUP' ? 'setup' : 'stop', reason, sub: pickSub(s.R, reason, s.t), start: s.t, end: null, rec: null, op: s.assign[m] || null, autoAt: s.t + Math.round((60 + s.R2() * 180) * (lvl >= 4 ? 0.5 : lvl === 1 ? 1.6 : 1)) };
   if (reason === 'przezbrojenie') ev.rec = { reason, sub: null, by: 'plan' };
   s.events.push(ev);
   const x = s[m]; x.st = st; x.left = Math.max(30, Math.round(durMin * 60 * fac)); x.ev = ev;
@@ -822,8 +875,20 @@ function causeKey(s, m) {
 }
 const inc = (o, k) => { o[k] = (o[k] || 0) + 1; };
 
+// A machine without an operator stops while the shared operator is at the other machine.
+function shareStops(s) {
+  for (const m of MS) {
+    if (s.assign[m] || s.t < s.share[m]) continue;
+    const x = s[m];
+    if (x.st !== 'RUN' && x.st !== 'SLOW') continue;
+    startStop(s, m, 'obsada', uni(s.R, s.P.shareDur));
+    s.share[m] = s.t + Math.round(s.P.shareEvery * 60);
+  }
+}
+
 function step(s) {
   const P = s.P, R = s.R, t = s.t;
+  if (s.t >= 0) shareStops(s);
   const C = s.C;
   if (C.st === 'STOP') { if (--C.left <= 0) { C.ev.end = t; s.rej.C += C.ev.reason === 'tor' ? Math.min(200, Math.round((t - C.ev.start) / 60 * 25)) : 20; C.ev = null; C.st = 'RUN'; } }
   else {
@@ -926,7 +991,7 @@ const MACH = { A: { name: 'Mixer', short: 'Mixer' }, B: { name: 'Former', short:
 const STL = { RUN: 'Running', SLOW: 'Slow cycle', STARVED: 'Starved', BLOCKED: 'Blocked', STOP: 'Stopped', SETUP: 'Changeover' };
 const STC = { RUN: '--run', SLOW: '--slow', STARVED: '--starve', BLOCKED: '--block', STOP: '--stop', SETUP: '--setup' };
 const FLAV = ['Oat & honey', 'Oat & cranberry', 'Oat & cocoa'];
-const STOPR = { A: ['skladniki', 'zawor'], B: ['noz', 'przerwa'], C: ['tor', 'zator'] };
+const STOPR = { A: ['skladniki', 'zawor'], B: ['noz', 'przerwa'], C: ['tor', 'zator'] };  // + 'obsada' while a machine has no operator
 const PROPS = [
   { id: 'kitting', m: 'A', reasons: ['skladniki'], title: 'Inclusion kitting before the shift', tool: 'Standard work · kitting', waste: 'Muda · waiting', what: 'The warehouse prepares weighed kits two batches ahead. The mixer operator no longer weighs at the machine.', effect: 'Batches waiting for ingredients: ~65% → 5%.', red: 0.9, check: 'Inclusion kit for 2 batches ready' },
   { id: 'syrop', m: 'A', reasons: ['syrop'], title: 'Syrup temperature poka-yoke', tool: 'Poka-yoke · 5 Why', waste: 'Mura · variable mixing time', what: 'A sensor blocks dosing below 45°C. Tank heater on a thermostat, started 30 min before the shift.', effect: 'Batches with extended mixing: ~75% → 5%.', red: 0.9, check: 'Syrup ≥ 45°C before dosing' },
@@ -935,6 +1000,7 @@ const PROPS = [
   { id: 'prowadnice', m: 'C', reasons: ['zator'], title: 'Infeed guides set by template', tool: 'Standardisation · poka-yoke', waste: 'Mura · uneven feeding', what: 'A template for setting the oven infeed guides. Bars enter in an even stream, no clumps.', effect: 'Infeed jams: every ~50 min → every ~4 h.', red: 0.75, check: 'Infeed guides set by template' },
   { id: 'smed', m: 'B', reasons: ['przezbrojenie'], title: 'SMED for flavour changeover', tool: 'SMED', waste: 'Muda · changeover', what: 'External tasks moved out of the stop: format parts and a second, clean mould wait at the machine before it stops.', effect: 'Changeover: ~45 min → ~13 min.', red: 0.7, check: 'Format parts ready before changeover' },
   { id: 'noz', m: 'B', reasons: ['noz'], title: 'Knife: coating and cleaning schedule', tool: '5 Why · standard work', waste: 'Muda · minor stops', what: 'Non-stick coated knife. Cleaning every 2 h on a schedule, not after a stop.', effect: 'Knife sticking: every ~30 min → every ~2.5 h.', red: 0.8, check: 'Knife cleaned every 2 h' },
+  { id: 'pula', m: '*', reasons: ['obsada'], title: 'Floater cover plan before the shift', tool: 'Skills matrix (ILUO) · standard work', waste: 'Muri · one person on two machines', what: 'Before each shift the shift manager books a named floater for every gap from the rota and absences. Each crew keeps two floaters trained to U on every machine.', effect: 'Stops for a missing operator: every ~45 min → every ~8 h.', red: 0.9, check: 'Every machine has a named operator' },
   { id: 'zastepstwo', m: 'B', reasons: ['przerwa'], title: 'Break rotation with cover', tool: 'Standard work · Yamazumi', waste: 'Muri · one operator, no cover', what: 'Break schedule with rotation. Cover from line 3 takes the former for 20 min.', effect: 'Stops for breaks: 40 min → 0.', red: 1, check: 'Break cover confirmed' },
 ];
 const PROP = Object.fromEntries(PROPS.map(p => [p.id, p]));
@@ -1087,7 +1153,7 @@ function tabShell(m) {
   </article>`;
 }
 function reasonBtns(ev, bnmode) {
-  const list = ev.type === 'slow' ? ['syrop'] : STOPR[ev.m];
+  const list = ev.type === 'slow' ? ['syrop'] : STOPR[ev.m].concat(!S.assign[ev.m] || ev.reason === 'obsada' ? ['obsada'] : []);
   const quick = [], rare = [];
   for (const r of list) { const fx = REASONS[r].fix; (fx && S.fx[fx] ? rare : quick).push(r); }
   let h = '';
@@ -1477,20 +1543,25 @@ function computeProps() {
   const list = [];
   for (const p of PROPS) {
     if (S.fx[p.id]) continue;
-    let min = 0, n = 0, bnm = 0, ev, gain;
+    let min = 0, n = 0, bnm = 0, ev, gain, pm = p.m;
     if (p.special === 'bufor') {
       let bm = 0; for (const k in S.wait.C.starved) if (k.startsWith('B:')) bm += S.wait.C.starved[k];
       bm /= 60;
       if (!(sh.sh.C >= 0.3 && bm >= 10) && !UI.queued[p.id]) continue;
       ev = `The oven was starved ${fmt(bm)} min by former stops.`; gain = bm * p.red * 135 * scale; min = bm;
     } else {
-      for (const r of p.reasons) { const row = rows[p.m + '|' + r]; if (row) { min += row.min; n += row.n; bnm += row.bn; } }
+      if (pm === '*') {
+        let bv = 0; pm = null;
+        for (const m of MS) { let v = 0; for (const r of p.reasons) { const row = rows[m + '|' + r]; if (row) v += row.min; } if (v > bv) { bv = v; pm = m; } }
+        if (!pm) { if (!UI.queued[p.id]) continue; pm = sh.main || 'A'; }
+      }
+      for (const r of p.reasons) { const row = rows[pm + '|' + r]; if (row) { min += row.min; n += row.n; bnm += row.bn; } }
       if (min < 8 && !UI.queued[p.id]) continue;
       ev = `${n} reports · ${fmt(min)} min · ${fmt(bnm)} min at the bottleneck`;
       if (p.id === 'syrop') { const ns = nightShare('syrop'); if (ns.night >= 3) ev += ` · ${ns.night} of ${ns.n} after 00:00`; }
       gain = bnm * p.red * PLAN_RATE * scale;
     }
-    list.push({ p, min, gain, ev, isBn: sh.main === p.m });
+    list.push({ p, m: pm, min, gain, ev, isBn: sh.main === pm });
   }
   list.sort((a, b) => b.gain - a.gain || b.min - a.min);
   return list;
@@ -1504,10 +1575,10 @@ function renderProps() {
     const p = o.p, q = !!UI.queued[p.id];
     const g = o.gain >= 500 ? `up to +${fmt(Math.round(o.gain / 100) * 100)} pcs per shift` : 'about 0 now';
     h += `<article class="prop ${o.isBn ? 'is-bn' : 'is-off'}">
-      <div class="ptop"><span class="pm">${p.m}</span><span class="tool">${esc(p.tool)}</span>${i === 0 && o.gain >= 500 ? '<span class="first">Do this first</span>' : ''}</div>
+      <div class="ptop"><span class="pm">${o.m}</span><span class="tool">${esc(p.tool)}</span>${i === 0 && o.gain >= 500 ? '<span class="first">Do this first</span>' : ''}</div>
       <h4>${esc(p.title)}</h4><p class="what">${esc(p.what)}</p>
       <dl><dt>Evidence</dt><dd>${esc(o.ev)}</dd><dt>Waste</dt><dd>${esc(p.waste)}</dd><dt>Effect</dt><dd>${esc(p.effect)}</dd><dt>Estimate</dt><dd class="gain">${g}</dd></dl>${o.gain >= 500 ? '<p class="offnote">Upper bound. After the fix the bottleneck may move.</p>' : ''}
-      ${o.isBn ? '' : `<p class="offnote">The ${mname(p.m).toLowerCase()} is not the bottleneck. Fixing it now will not raise line output.</p>`}
+      ${o.isBn ? '' : `<p class="offnote">The ${mname(o.m).toLowerCase()} is not the bottleneck. Fixing it now will not raise line output.</p>`}
       <div class="pact">${q ? `<span class="queued">Scheduled from next shift</span><button type="button" class="btn" data-act="undo" data-k="${p.id}">Undo</button>` : `<button type="button" class="btn${o.isBn ? ' primary' : ''}" data-act="apply" data-k="${p.id}">Implement from next shift</button>`}</div>
     </article>`;
   });
@@ -1541,7 +1612,7 @@ function renderOverview() {
   const h = L.map(x => `<li>${x}</li>`).join('');
   if (UI.sigs.ov !== h) { UI.sigs.ov = h; $('#oSum').innerHTML = h; }
   const nx = computeProps().slice(0, 3);
-  const nh = nx.length ? nx.map(o => `<li><b>${esc(o.p.title)}</b> <span class="mono">${o.gain >= 500 ? 'up to +' + fmt(Math.round(o.gain / 100) * 100) + ' pcs' : 'about 0 now'}</span><small>${esc(o.p.tool)} · ${mname(o.p.m)}${o.isBn ? '' : ', not the bottleneck'}</small></li>`).join('') : '<li>No proposal with a clear gain yet.</li>';
+  const nh = nx.length ? nx.map(o => `<li><b>${esc(o.p.title)}</b> <span class="mono">${o.gain >= 500 ? 'up to +' + fmt(Math.round(o.gain / 100) * 100) + ' pcs' : 'about 0 now'}</span><small>${esc(o.p.tool)} · ${mname(o.m)}${o.isBn ? '' : ', not the bottleneck'}</small></li>`).join('') : '<li>No proposal with a clear gain yet.</li>';
   if (UI.sigs.onext !== nh) { UI.sigs.onext = nh; $('#oNext').innerHTML = nh; }
 }
 function renderHistChart() {
@@ -1671,7 +1742,7 @@ function insights() {
   }
   // recurring
   const recent = H.slice(-12), cnt = {}, mins = {};
-  const fixedReasons = new Set(); for (const k in UI.appliedAt) if (PROP[k].reasons && (S.fx[k] || 0) >= 0.9) for (const r of PROP[k].reasons) fixedReasons.add(PROP[k].m + '|' + r);
+  const fixedReasons = new Set(); for (const k in UI.appliedAt) if (PROP[k].reasons && (S.fx[k] || 0) >= 0.9) for (const r of PROP[k].reasons) for (const m of (PROP[k].m === '*' ? MS : [PROP[k].m])) fixedReasons.add(m + '|' + r);
   for (const h of recent) for (const r of h.rows) if (r.r !== '__none' && r.r !== 'inne' && r.r !== 'przezbrojenie') { const k = r.m + '|' + r.r; cnt[k] = (cnt[k] || 0) + 1; mins[k] = (mins[k] || 0) + r.min; }
   const rec = Object.keys(cnt).filter(k => cnt[k] >= recent.length * 0.8 && recent.length >= 6 && mins[k] / recent.length >= 10 && !fixedReasons.has(k)).sort((a, b) => mins[b] - mins[a]).slice(0, 3);
   for (const k of rec) L.push([false, `${name(k)} appears in ${cnt[k]} of the last ${recent.length} shifts, ${fmt(mins[k] / recent.length)} min per shift. Chronic, not random: a standard, not a repair.`, 'Recurring']);
@@ -1686,7 +1757,7 @@ function insights() {
   for (const k in UI.appliedAt) {
     const p = PROP[k], at = UI.appliedAt[k], before = H.filter(h => h.n < at), after = H.filter(h => h.n >= at + 6);
     if (!before.length || after.length < 3 || !p.reasons) continue;
-    const f = list => list.reduce((a, h) => a + h.rows.filter(r => r.m === p.m && p.reasons.includes(r.r)).reduce((x, r) => x + r.min, 0), 0) / list.length;
+    const f = list => list.reduce((a, h) => a + h.rows.filter(r => (p.m === '*' || r.m === p.m) && p.reasons.includes(r.r)).reduce((x, r) => x + r.min, 0), 0) / list.length;
     const b = f(before), a = f(after); if (b < 5) continue;
     const held = a <= b * 0.5;
     L.push([!held, `${p.title}: ${fmt(b)} → ${fmt(a)} min per shift (${held ? 'held' : 'did not hold'}). ${held ? 'Keep it on the weekly audit.' : 'Back to Plan: check the standard and the 5 Why.'}`, `Fix check · ${after.length} shifts after ramp`]);
@@ -1705,7 +1776,7 @@ function renderDecisions() {
   const H = UI.hist; if (ROLE !== 'slt') return;
   const D = [];
   const props = computeProps().filter(o => o.gain >= 500);
-  if (props[0]) D.push(`<li><b>Approve: ${esc(props[0].p.title)}</b> <span class="mono">up to +${fmt(Math.round(props[0].gain / 100) * 100)} pcs per shift</span><small>${esc(props[0].p.tool)} · ${mname(props[0].p.m)} · effort ${props[0].p.id === 'bufor' ? 'M, capital' : 'S, standard work'}</small></li>`);
+  if (props[0]) D.push(`<li><b>Approve: ${esc(props[0].p.title)}</b> <span class="mono">up to +${fmt(Math.round(props[0].gain / 100) * 100)} pcs per shift</span><small>${esc(props[0].p.tool)} · ${mname(props[0].m)} · effort ${props[0].p.id === 'bufor' ? 'M, capital' : 'S, standard work'}</small></li>`);
   const slip = Object.keys(UI.appliedAt).filter(k => (S.fx[k] || 0) < 0.95);
   if (slip.length) D.push(`<li><b>Hold the line on ${slip.length} slipping ${slip.length === 1 ? 'fix' : 'fixes'}</b><small>${slip.map(k => esc(PROP[k].title)).join(', ')}: ask for the weekly audit, not a new project.</small></li>`);
   for (const m of MS) { const n = CREW.filter(c => c.lvl[m] >= 3).length; if (n <= 2) { D.push(`<li><b>Fund cross-training on the ${mname(m).toLowerCase()}</b><small>Only ${n} people at U or O. One absence drops the line to level L. Target: 4 within a quarter.</small></li>`); break; } }
