@@ -415,7 +415,7 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
       <button class="btn" id="bTheme" type="button" title="Light or dark">Dark</button>
       <div class="seg" role="group" aria-label="Simulation speed">
         <button type="button" data-sp="60" aria-pressed="false" title="1 shift minute per second">×1</button>
-        <button type="button" data-sp="150" aria-pressed="true" title="2.5 shift minutes per second">×2.5</button>
+        <button type="button" data-sp="112" aria-pressed="true" title="1.9 shift minutes per second (base pace)">×1.9</button>
         <button type="button" data-sp="600" aria-pressed="false" title="10 shift minutes per second">×10</button>
         <button type="button" data-sp="3600" aria-pressed="false" title="1 shift hour per second">×60</button>
       </div>
@@ -890,7 +890,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 const pct = x => Math.round(x * 100) + '%';
 const mname = m => MACH[m].short;
 
-const UI = { speed: 150, assign: { ...DEFAULT_ASSIGN }, playing: true, auto: true, hist: [], queued: {}, appliedAt: {}, fixState: {}, runTo: 0, monthDone: false, prevCum: null, prevMain: null, presim: false, bn: [], bnSh: { sh: { A: 0, B: 0, C: 0 }, main: null, tot: 0 }, rows: {}, sigs: {}, flash: null };
+const UI = { speed: 112, assign: { ...DEFAULT_ASSIGN }, playing: true, auto: true, hist: [], queued: {}, appliedAt: {}, fixState: {}, runTo: 0, monthDone: false, prevCum: null, prevMain: null, presim: false, bn: [], bnSh: { sh: { A: 0, B: 0, C: 0 }, main: null, tot: 0 }, rows: {}, sigs: {}, flash: null };
 let S = null;
 
 // ---------- sim control ----------
