@@ -345,133 +345,133 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2.5h14v3.5l-5.2 6 5.2 6v3.5H5V18l5.2-6L5 6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="10.6" y="10" width="2.8" height="4" fill="var(--bn)"/></svg>
       <span class="bname">BNECK</span><span class="pill">DEMO</span>
     </div>
-    <div class="plant"><b>Oakmere Bar Co. · Linia 2</b><span>Batony owsiane 30 g · fabryka fikcyjna, dane z symulacji</span></div>
+    <div class="plant"><b>Oakmere Bar Co. · Line 2</b><span>30 g oat bars · fictional plant, simulated data</span></div>
     <div class="ctrl">
-      <div class="seg" role="group" aria-label="Tempo symulacji">
-        <button type="button" data-sp="60" aria-pressed="false" title="1 minuta zmiany na sekundę">×1</button>
-        <button type="button" data-sp="150" aria-pressed="true" title="2,5 minuty zmiany na sekundę">×2,5</button>
-        <button type="button" data-sp="600" aria-pressed="false" title="10 minut zmiany na sekundę">×10</button>
+      <div class="seg" role="group" aria-label="Simulation speed">
+        <button type="button" data-sp="60" aria-pressed="false" title="1 shift minute per second">×1</button>
+        <button type="button" data-sp="150" aria-pressed="true" title="2.5 shift minutes per second">×2.5</button>
+        <button type="button" data-sp="600" aria-pressed="false" title="10 shift minutes per second">×10</button>
       </div>
-      <button class="btn" id="bEnd" type="button">Do końca zmiany</button>
-      <label class="tog"><input type="checkbox" id="tAuto" checked> Operatorzy zgłaszają sami</label>
+      <button class="btn" id="bEnd" type="button">Run to end of shift</button>
+      <label class="tog"><input type="checkbox" id="tAuto" checked> Operators report automatically</label>
       <button class="btn" id="bReset" type="button">Reset demo</button>
     </div>
   </div>
 </header>
 
-<nav class="nav" aria-label="Widoki">
+<nav class="nav" aria-label="Views">
   <div class="nav-in">
-    <div class="tablist" role="tablist" aria-label="Widoki BNECK">
-      <button type="button" role="tab" id="t-przeglad" aria-controls="p-przeglad" aria-selected="true" data-tab="przeglad">Przegląd</button>
-      <button type="button" role="tab" id="t-linia" aria-controls="p-linia" aria-selected="false" tabindex="-1" data-tab="linia">Linia</button>
-      <button type="button" role="tab" id="t-zaloga" aria-controls="p-zaloga" aria-selected="false" tabindex="-1" data-tab="zaloga">Załoga</button>
-      <button type="button" role="tab" id="t-operatorzy" aria-controls="p-operatorzy" aria-selected="false" tabindex="-1" data-tab="operatorzy">Operatorzy<span class="badge" id="tbBadge" hidden>0</span></button>
-      <button type="button" role="tab" id="t-analiza" aria-controls="p-analiza" aria-selected="false" tabindex="-1" data-tab="analiza">Analiza</button>
-      <button type="button" role="tab" id="t-dzialania" aria-controls="p-dzialania" aria-selected="false" tabindex="-1" data-tab="dzialania">Działania</button>
-      <button type="button" role="tab" id="t-demo" aria-controls="p-demo" aria-selected="false" tabindex="-1" data-tab="demo">O demo</button>
+    <div class="tablist" role="tablist" aria-label="BNECK views">
+      <button type="button" role="tab" id="t-przeglad" aria-controls="p-przeglad" aria-selected="true" data-tab="przeglad">Overview</button>
+      <button type="button" role="tab" id="t-linia" aria-controls="p-linia" aria-selected="false" tabindex="-1" data-tab="linia">Line</button>
+      <button type="button" role="tab" id="t-zaloga" aria-controls="p-zaloga" aria-selected="false" tabindex="-1" data-tab="zaloga">Crew</button>
+      <button type="button" role="tab" id="t-operatorzy" aria-controls="p-operatorzy" aria-selected="false" tabindex="-1" data-tab="operatorzy">Operators<span class="badge" id="tbBadge" hidden>0</span></button>
+      <button type="button" role="tab" id="t-analiza" aria-controls="p-analiza" aria-selected="false" tabindex="-1" data-tab="analiza">Analysis</button>
+      <button type="button" role="tab" id="t-dzialania" aria-controls="p-dzialania" aria-selected="false" tabindex="-1" data-tab="dzialania">Actions</button>
+      <button type="button" role="tab" id="t-demo" aria-controls="p-demo" aria-selected="false" tabindex="-1" data-tab="demo">About</button>
     </div>
     <div class="live">
-      <button class="btn playb" id="bPlay" type="button">Pauza</button>
+      <button class="btn playb" id="bPlay" type="button">Pause</button>
       <span class="clk" id="clk">00:00</span>
-      <span class="lmeta" id="shiftLbl">Zmiana 1</span>
-      <span class="lchip" id="nPct">0% planu</span>
-      <span class="lchip bn" id="nBn">WG: –</span>
+      <span class="lmeta" id="shiftLbl">Shift 1</span>
+      <span class="lchip" id="nPct">0% of plan</span>
+      <span class="lchip bn" id="nBn">BN: –</span>
     </div>
   </div>
   <div class="nprog"><i id="progBar"></i></div>
   <div class="endwrap"><div class="endbar" id="endBar" hidden>
-    <b id="endTxt">Zmiana zakończona</b><span id="endSub"></span>
-    <button class="btn primary" id="bNext" type="button">Następna zmiana</button>
+    <b id="endTxt">Shift finished</b><span id="endSub"></span>
+    <button class="btn primary" id="bNext" type="button">Next shift</button>
   </div></div>
 </nav>
 
 <main>
   <section class="tp" id="p-przeglad" role="tabpanel" aria-labelledby="t-przeglad">
-    <div class="sh"><h2>Przegląd zmiany</h2><p>Dla kierownika: wynik, co ogranicza linię i co zrobić najpierw. Produkcja liczona w dobrych sztukach.</p></div>
+    <div class="sh"><h2>Shift overview</h2><p>For the manager: the result, what limits the line and what to do first. Output counted in good units.</p></div>
     <div class="kpis">
-      <div class="kpi"><span class="lbl">Produkcja</span><span class="kv mono" id="kOut">0</span><span class="ks" id="kOutS">plan do teraz 0</span></div>
-      <div class="kpi"><span class="lbl">Wykonanie planu</span><span class="kv mono" id="kPct">0%</span><span class="ks" id="kPctS">cel zmiany 86 400 szt.</span></div>
-      <div class="kpi bnk"><span class="lbl">Wąskie gardło zmiany</span><span class="kv d" id="kBn">–</span><span class="ks" id="kBnS">metoda okresów aktywnych</span></div>
-      <div class="kpi"><span class="lbl">OEE linii</span><span class="kv mono" id="kOee">0%</span><span class="ks" id="kOeeS">dobre sztuki / plan</span></div>
+      <div class="kpi"><span class="lbl">Output</span><span class="kv mono" id="kOut">0</span><span class="ks" id="kOutS">plan to now 0</span></div>
+      <div class="kpi"><span class="lbl">Plan attainment</span><span class="kv mono" id="kPct">0%</span><span class="ks" id="kPctS">shift target 86,400 pcs</span></div>
+      <div class="kpi bnk"><span class="lbl">Shift bottleneck</span><span class="kv d" id="kBn">–</span><span class="ks" id="kBnS">active period method</span></div>
+      <div class="kpi"><span class="lbl">Line OEE</span><span class="kv mono" id="kOee">0%</span><span class="ks" id="kOeeS">good units / plan</span></div>
     </div>
     <div class="ov">
-      <div class="panel ovsum"><h3>Podsumowanie</h3><ol class="sum" id="oSum"></ol>
-        <div class="ovbtns"><button type="button" class="btn" data-go="analiza">Pełna analiza</button><button type="button" class="btn primary" data-go="dzialania">Propozycje działań</button></div></div>
-      <div class="panel"><h3>Straty na wąskim gardle</h3><p class="hint">Tylko te minuty obniżają produkcję linii.</p><div class="par" id="oTop"></div></div>
-      <div class="chart"><span class="lbl">Produkcja narastająco</span><canvas id="cum" height="150"></canvas>
-        <div class="legend"><span><i style="background:var(--ink)"></i>Ta zmiana</span><span><i style="background:var(--line)"></i>Plan 120 szt./min</span><span id="lgPrev" hidden><i style="background:var(--muted);opacity:.5"></i>Poprzednia zmiana</span></div>
+      <div class="panel ovsum"><h3>Summary</h3><ol class="sum" id="oSum"></ol>
+        <div class="ovbtns"><button type="button" class="btn" data-go="analiza">Full analysis</button><button type="button" class="btn primary" data-go="dzialania">Proposed actions</button></div></div>
+      <div class="panel"><h3>Losses at the bottleneck</h3><p class="hint">Only these minutes reduce line output.</p><div class="par" id="oTop"></div></div>
+      <div class="chart"><span class="lbl">Cumulative output</span><canvas id="cum" height="150"></canvas>
+        <div class="legend"><span><i style="background:var(--ink)"></i>This shift</span><span><i style="background:var(--line)"></i>Plan 120 pcs/min</span><span id="lgPrev" hidden><i style="background:var(--muted);opacity:.5"></i>Previous shift</span></div>
       </div>
-      <div class="panel"><h3>Wyniki kolejnych zmian</h3><p class="hint">Słupek: wykonanie planu. Linia przerywana: 100%. Pod słupkiem: wąskie gardło zmiany.</p><div class="hc" id="oHist"></div></div>
+      <div class="panel"><h3>Shift results</h3><p class="hint">Bar: plan attainment. Dashed line: 100%. Below the bar: shift bottleneck.</p><div class="hc" id="oHist"></div></div>
     </div>
   </section>
 
   <section class="tp" id="p-linia" role="tabpanel" aria-labelledby="t-linia" hidden>
-    <div class="sh"><h2>Linia na żywo</h2><p>Dla shift managera. Strumień płynie z góry na dół. Po prawej: wąskie gardło, OEE i straty.</p></div>
-    <div class="slegend"><span><i style="background:var(--run)"></i>Praca</span><span><i style="background:var(--slow)"></i>Wolny cykl</span><span><i style="background:var(--starve)"></i>Brak wsadu</span><span><i style="background:var(--block)"></i>Brak miejsca</span><span><i style="background:var(--stop)"></i>Postój</span><span><i style="background:var(--setup)"></i>Przezbrojenie</span></div>
+    <div class="sh"><h2>Live line</h2><p>For the shift manager. The stream flows top to bottom. On the right: bottleneck, OEE and losses.</p></div>
+    <div class="slegend"><span><i style="background:var(--run)"></i>Running</span><span><i style="background:var(--slow)"></i>Slow cycle</span><span><i style="background:var(--starve)"></i>Starved</span><span><i style="background:var(--block)"></i>Blocked</span><span><i style="background:var(--stop)"></i>Stopped</span><span><i style="background:var(--setup)"></i>Changeover</span></div>
     <div class="lineg">
       <div class="vflow" id="vflow"></div>
       <aside class="side">
-        <div class="panel"><h3>Wąskie gardło</h3><div class="bnnow"><b id="sBnNow">–</b><span>w tej chwili</span></div><div class="stack" id="sBnRows"></div><p class="hint" style="margin:12px 0 0">Udział w czasie zmiany, metoda okresów aktywnych.</p></div>
-        <div class="panel"><h3>OEE</h3><p class="hint">Dostępność × Wydajność × Jakość. Brak wsadu i brak miejsca liczą się do wydajności.</p><table class="oee"><thead><tr><th>Maszyna</th><th>D</th><th>W</th><th>J</th><th>OEE</th></tr></thead><tbody id="sOee"></tbody></table></div>
-        <div class="panel"><h3>Straty</h3><div class="stack" id="sWaste"></div><ul class="wlist" id="sWasteTop"></ul></div>
-        <div class="panel"><h3>Czas przejścia</h3><div class="leadt" id="sLead"></div></div>
+        <div class="panel"><h3>Bottleneck</h3><div class="bnnow"><b id="sBnNow">–</b><span>right now</span></div><div class="stack" id="sBnRows"></div><p class="hint" style="margin:12px 0 0">Share of shift time, active period method.</p></div>
+        <div class="panel"><h3>OEE</h3><p class="hint">Availability × Performance × Quality. Starved and blocked time counts against performance.</p><table class="oee"><thead><tr><th>Machine</th><th>A</th><th>P</th><th>Q</th><th>OEE</th></tr></thead><tbody id="sOee"></tbody></table></div>
+        <div class="panel"><h3>Losses</h3><div class="stack" id="sWaste"></div><ul class="wlist" id="sWasteTop"></ul></div>
+        <div class="panel"><h3>Lead time</h3><div class="leadt" id="sLead"></div></div>
       </aside>
     </div>
     <div class="charts">
-      <div class="chart"><span class="lbl">Stany maszyn w czasie</span><canvas id="gantt" height="140"></canvas>
-        <div class="legend"><span><i style="background:var(--run)"></i>Praca</span><span><i style="background:var(--slow)"></i>Wolny cykl</span><span><i style="background:var(--starve)"></i>Brak wsadu</span><span><i style="background:var(--block)"></i>Brak miejsca</span><span><i style="background:var(--stop)"></i>Postój</span><span><i style="background:var(--setup)"></i>Przezbrojenie</span><span><i style="background:var(--bn)"></i>Pasek pod maszyną: wąskie gardło</span></div>
+      <div class="chart"><span class="lbl">Machine states over time</span><canvas id="gantt" height="140"></canvas>
+        <div class="legend"><span><i style="background:var(--run)"></i>Running</span><span><i style="background:var(--slow)"></i>Slow cycle</span><span><i style="background:var(--starve)"></i>Starved</span><span><i style="background:var(--block)"></i>Blocked</span><span><i style="background:var(--stop)"></i>Stopped</span><span><i style="background:var(--setup)"></i>Changeover</span><span><i style="background:var(--bn)"></i>Bar under machine: bottleneck</span></div>
       </div>
     </div>
   </section>
 
   <section class="tp" id="p-zaloga" role="tabpanel" aria-labelledby="t-zaloga" hidden>
-    <div class="sh"><h2>Załoga</h2><p>Kto stoi przy której maszynie i co umie. Poziomy ILUO z matrycy umiejętności (w produkcie: z Crewmap). Zmiana obsady działa od razu.</p></div>
+    <div class="sh"><h2>Crew</h2><p>Who runs which machine and what they can do. ILUO levels from the skills matrix (in the product: from Crewmap). A crew change takes effect immediately.</p></div>
     <div class="crewg">
       <div class="stack">
-        <div class="panel"><h3>Obsada linii</h3><p class="hint">Wybierz osobę do stanowiska. Poziom przy maszynie zmienia czas usuwania postojów.</p><div id="crewPos"></div></div>
+        <div class="panel"><h3>Line staffing</h3><p class="hint">Pick a person for each position. The level at a machine changes how fast stops are cleared.</p><div id="crewPos"></div></div>
         <div id="crewReco"></div>
       </div>
       <div class="stack">
-        <div class="panel"><h3>Matryca ILUO</h3><p class="hint">Ramka: obecne stanowisko. Wiersz na dole: ile osób ma U albo O na maszynie.</p><div style="overflow-x:auto"><table class="iluo" id="iluo"></table></div>
-          <div class="ilegend"><span><i class="lv lv1" style="display:inline-grid;width:18px;height:18px;font-size:11px">I</i> uczy się, postoje ×1,45</span><span><i class="lv lv2" style="display:inline-grid;width:18px;height:18px;font-size:11px">L</i> pod nadzorem, ×1,15</span><span><i class="lv lv3" style="display:inline-grid;width:18px;height:18px;font-size:11px">U</i> samodzielnie, ×1,0</span><span><i class="lv lv4" style="display:inline-grid;width:18px;height:18px;font-size:11px">O</i> uczy innych, ×0,8</span></div></div>
-        <div class="panel"><h3>Ryzyko obsady</h3><div class="stack" id="crewRisk"></div></div>
+        <div class="panel"><h3>ILUO matrix</h3><p class="hint">Outline: current position. Bottom row: how many people hold U or O on the machine.</p><div style="overflow-x:auto"><table class="iluo" id="iluo"></table></div>
+          <div class="ilegend"><span><i class="lv lv1" style="display:inline-grid;width:18px;height:18px;font-size:11px">I</i> learning, stops ×1.45</span><span><i class="lv lv2" style="display:inline-grid;width:18px;height:18px;font-size:11px">L</i> supervised, ×1.15</span><span><i class="lv lv3" style="display:inline-grid;width:18px;height:18px;font-size:11px">U</i> independent, ×1.0</span><span><i class="lv lv4" style="display:inline-grid;width:18px;height:18px;font-size:11px">O</i> trains others, ×0.8</span></div></div>
+        <div class="panel"><h3>Staffing risk</h3><div class="stack" id="crewRisk"></div></div>
       </div>
     </div>
   </section>
 
   <section class="tp" id="p-operatorzy" role="tabpanel" aria-labelledby="t-operatorzy" hidden>
-    <div class="sh"><h2>Tablety operatorów</h2><p>Czujnik wie, że maszyna stoi. Operator mówi dlaczego. Tablet przy wąskim gardle pyta o szczegóły, reszta ma szybkie przyciski. Odznacz „Operatorzy zgłaszają sami” na górze, żeby odpowiadać za operatorów.</p></div>
+    <div class="sh"><h2>Operator tablets</h2><p>The sensor knows the machine stopped. The operator says why. The tablet at the bottleneck asks for detail, the others have quick buttons. Untick “Operators report automatically” at the top to answer for the operators yourself.</p></div>
     <div class="tabs" id="tabs"></div>
   </section>
 
   <section class="tp" id="p-analiza" role="tabpanel" aria-labelledby="t-analiza" hidden>
-    <div class="sh"><h2>Analiza</h2><p>Z czujników i zgłoszeń operatorów. Liczy się strata na wąskim gardle.</p></div>
+    <div class="sh"><h2>Analysis</h2><p>From sensors and operator reports. What counts is loss at the bottleneck.</p></div>
     <div class="ana">
-      <div class="panel"><h3>Łańcuch przepływu</h3><p class="hint">Kto na kogo czekał i dlaczego.</p><div class="flow" id="flow"></div></div>
-      <div class="panel"><h3>Pareto strat</h3><p class="hint">Pełny pasek: minuty postoju. Magenta: minuty, gdy ta maszyna była wąskim gardłem.</p><div class="par" id="pareto"></div></div>
-      <div class="panel wide"><h3 id="fishT">Ishikawa</h3><p class="hint">Przyczyny strat wąskiego gardła według 6M, z odpowiedzi operatorów.</p><div class="fish-wrap"><svg id="fish" viewBox="0 0 920 300" role="img" aria-label="Diagram Ishikawy dla wąskiego gardła"></svg></div></div>
-      <div class="panel"><h3>Muda · Mura · Muri</h3><p class="hint">Minuty strat według rodzaju marnotrawstwa.</p><div class="waste" id="waste"></div></div>
-      <div class="panel"><h3>Wzorce w danych</h3><p class="hint">Powtarzalne zjawiska z tej zmiany.</p><ul class="pat" id="pat"></ul></div>
+      <div class="panel"><h3>Flow chain</h3><p class="hint">Who waited for whom, and why.</p><div class="flow" id="flow"></div></div>
+      <div class="panel"><h3>Loss Pareto</h3><p class="hint">Full bar: stop minutes. Magenta: minutes while this machine was the bottleneck.</p><div class="par" id="pareto"></div></div>
+      <div class="panel wide"><h3 id="fishT">Ishikawa</h3><p class="hint">Causes of bottleneck losses by 6M, from operator answers.</p><div class="fish-wrap"><svg id="fish" viewBox="0 0 920 300" role="img" aria-label="Ishikawa diagram for the bottleneck"></svg></div></div>
+      <div class="panel"><h3>Muda · Mura · Muri</h3><p class="hint">Loss minutes by type of waste.</p><div class="waste" id="waste"></div></div>
+      <div class="panel"><h3>Patterns in the data</h3><p class="hint">Recurring effects seen this shift.</p><ul class="pat" id="pat"></ul></div>
     </div>
   </section>
 
   <section class="tp" id="p-dzialania" role="tabpanel" aria-labelledby="t-dzialania" hidden>
-    <div class="sh"><h2>Działania</h2><p>Propozycje według zysku na wąskim gardle. Poprawka działa od następnej zmiany, żeby było widać efekt w liczbach.</p></div>
+    <div class="sh"><h2>Actions</h2><p>Proposals ranked by gain at the bottleneck. A fix takes effect from the next shift, so the result shows in the numbers.</p></div>
     <div class="props" id="props"></div>
     <div class="applied" id="applied"></div>
-    <h3 class="subh">Historia zmian</h3>
-    <div class="hist-wrap"><table class="hist"><thead><tr><th>Zmiana</th><th>Poprawki w działaniu</th><th>Produkcja</th><th>Plan</th><th style="width:30%">Wykonanie</th><th>Wąskie gardło</th></tr></thead><tbody id="hist"></tbody></table></div>
+    <h3 class="subh">Shift history</h3>
+    <div class="hist-wrap"><table class="hist"><thead><tr><th>Shift</th><th>Fixes in place</th><th>Output</th><th>Plan</th><th style="width:30%">Attainment</th><th>Bottleneck</th></tr></thead><tbody id="hist"></tbody></table></div>
   </section>
 
   <section class="tp" id="p-demo" role="tabpanel" aria-labelledby="t-demo" hidden>
-    <div class="sh"><h2>Jak działa demo</h2></div>
+    <div class="sh"><h2>How the demo works</h2></div>
     <div class="notes">
-      <div class="panel"><span class="lbl">Czujnik</span><p>Raspberry Pi przy każdej maszynie liczy cykle i rozpoznaje stan: praca, brak wsadu, brak miejsca, postój. W demo te sygnały daje symulacja z ustalonym ziarnem, więc każda zmiana jest powtarzalna.</p></div>
-      <div class="panel"><span class="lbl">OEE</span><p>Dostępność = czas bez własnych postojów i przezbrojeń. Wydajność = produkcja wobec tempa idealnego w czasie dostępnym, więc czekanie na inną maszynę obniża wydajność. Jakość = dobre sztuki.</p></div>
-      <div class="panel"><span class="lbl">Wąskie gardło</span><p>Metoda okresów aktywnych (Roser). W danej chwili wąskim gardłem jest maszyna z najdłuższym nieprzerwanym okresem pracy albo własnego postoju. Brak wsadu i brak miejsca przerywają okres, bo wtedy maszyna czeka na inną.</p></div>
-      <div class="panel"><span class="lbl">Propozycje</span><p>W demo silnik reguł lean: Pareto, Ishikawa, muda, mura, muri, SMED, TPM, poka-yoke. W produkcie lokalny model na serwerze w zakładzie. Dane nie wychodzą poza zakład.</p></div>
-      <div class="panel"><span class="lbl">Załoga</span><p>Poziomy ILUO zmieniają czas usuwania postojów. W produkcie obsada i matryca przychodzą z Crewmap, tu są wbudowane.</p></div>
-      <div class="panel"><span class="lbl">Fabryka</span><p>Oakmere Bar Co. nie istnieje. Liczby, maszyny i awarie są wymyślone na potrzeby demo.</p></div>
+      <div class="panel"><span class="lbl">Sensor</span><p>A Raspberry Pi at each machine counts cycles and detects the state: running, starved, blocked, stopped. In the demo these signals come from a seeded simulation, so every shift is repeatable.</p></div>
+      <div class="panel"><span class="lbl">OEE</span><p>Availability = time without own stops and changeovers. Performance = output against ideal rate in available time, so waiting for another machine lowers performance. Quality = good units.</p></div>
+      <div class="panel"><span class="lbl">Bottleneck</span><p>Active period method (Roser). At any moment the bottleneck is the machine with the longest uninterrupted period of running or own stoppage. Starved and blocked states end the period, because the machine is waiting for another one.</p></div>
+      <div class="panel"><span class="lbl">Proposals</span><p>In the demo: a lean rule engine (Pareto, Ishikawa, muda, mura, muri, SMED, TPM, poka-yoke). In the product: a local model on a server inside the plant. Data never leaves the site.</p></div>
+      <div class="panel"><span class="lbl">Crew</span><p>ILUO levels change how fast stops are cleared. In the product, staffing and the matrix come from Crewmap; here they are built in.</p></div>
+      <div class="panel"><span class="lbl">Plant</span><p>Oakmere Bar Co. does not exist. Numbers, machines and failures are invented for this demo.</p></div>
     </div>
   </section>
 </main>
@@ -483,41 +483,41 @@ const SHIFT_SEC = 43200, START_H = 18, PLAN_RATE = 120, PLAN_TOTAL = PLAN_RATE *
 const MS = ['A', 'B', 'C'];
 const ACTIVE = { RUN: 1, SLOW: 1, STOP: 1, SETUP: 1 };
 const IDEAL = { A: BATCH / (17 * 60), B: 150 / 60, C: 135 / 60 };
-// ILUO: 1 = I (uczy się), 2 = L (pod nadzorem), 3 = U (samodzielnie), 4 = O (uczy innych). Mnożnik czasu własnych postojów.
+// ILUO: 1 = I (learning), 2 = L (supervised), 3 = U (independent), 4 = O (trains others). Multiplier on own-stop duration.
 const LVL = ['', 'I', 'L', 'U', 'O'];
 const LVLFAC = [0, 1.45, 1.15, 1.0, 0.8];
 const CREW = [
-  { id: 'kasia', name: 'Kasia', lvl: { A: 2, B: 4, C: 1 } },
-  { id: 'marek', name: 'Marek', lvl: { A: 1, B: 4, C: 3 } },
-  { id: 'jan',   name: 'Jan',   lvl: { A: 2, B: 2, C: 3 } },
-  { id: 'tomek', name: 'Tomek', lvl: { A: 4, B: 3, C: 2 } },
-  { id: 'ewa',   name: 'Ewa',   lvl: { A: 1, B: 2, C: 2 } },
-  { id: 'piotr', name: 'Piotr', lvl: { A: 3, B: 3, C: 4 } },
+  { id: 'kasia', name: 'Kate', lvl: { A: 2, B: 4, C: 1 } },
+  { id: 'marek', name: 'Mark', lvl: { A: 1, B: 4, C: 3 } },
+  { id: 'jan',   name: 'John',   lvl: { A: 2, B: 2, C: 3 } },
+  { id: 'tomek', name: 'Tom', lvl: { A: 4, B: 3, C: 2 } },
+  { id: 'ewa',   name: 'Eve',   lvl: { A: 1, B: 2, C: 2 } },
+  { id: 'piotr', name: 'Pete', lvl: { A: 3, B: 3, C: 4 } },
 ];
 const CREW_BY = Object.fromEntries(CREW.map(p => [p.id, p]));
 const DEFAULT_ASSIGN = { A: 'kasia', B: 'marek', C: 'jan' };
 function opOf(s, m) { return CREW_BY[s.assign[m]]; }
 function skillFac(s, m) { const p = opOf(s, m); return p ? LVLFAC[p.lvl[m]] : 1; }
 const REASONS = {
-  skladniki:     { m: 'A', label: 'Czekam na składniki', short: 'Składniki', cat: 'Metoda', waste: 'Muda', fix: 'kitting' },
-  syrop:         { m: 'A', label: 'Syrop za zimny', short: 'Zimny syrop', cat: 'Materiał', waste: 'Mura', fix: 'syrop' },
-  zawor:         { m: 'A', label: 'Zawór syropu zatkany', short: 'Zawór', cat: 'Maszyna', waste: 'Muda', fix: null },
-  przezbrojenie: { m: 'B', label: 'Przezbrojenie smaku', short: 'Przezbrojenie', cat: 'Metoda', waste: 'Muda', fix: 'smed' },
-  noz:           { m: 'B', label: 'Nóż się klei', short: 'Nóż', cat: 'Maszyna', waste: 'Muda', fix: 'noz' },
-  przerwa:       { m: 'B', label: 'Przerwa bez zastępstwa', short: 'Przerwa', cat: 'Człowiek', waste: 'Muri', fix: 'zastepstwo' },
-  tor:           { m: 'C', label: 'Taśma schodzi z toru', short: 'Tor taśmy', cat: 'Maszyna', waste: 'Muda', fix: 'tpm' },
-  zator:         { m: 'C', label: 'Zator na wejściu', short: 'Zator', cat: 'Metoda', waste: 'Mura', fix: 'prowadnice' },
-  inne:          { m: '*', label: 'Inne', short: 'Inne', cat: 'Pomiar', waste: null, fix: null },
+  skladniki:     { m: 'A', label: 'Waiting for ingredients', short: 'Ingredients', cat: 'Method', waste: 'Muda', fix: 'kitting' },
+  syrop:         { m: 'A', label: 'Syrup too cold', short: 'Cold syrup', cat: 'Material', waste: 'Mura', fix: 'syrop' },
+  zawor:         { m: 'A', label: 'Syrup valve blocked', short: 'Valve', cat: 'Machine', waste: 'Muda', fix: null },
+  przezbrojenie: { m: 'B', label: 'Flavour changeover', short: 'Changeover', cat: 'Method', waste: 'Muda', fix: 'smed' },
+  noz:           { m: 'B', label: 'Knife sticking', short: 'Knife', cat: 'Machine', waste: 'Muda', fix: 'noz' },
+  przerwa:       { m: 'B', label: 'Break with no cover', short: 'Break', cat: 'People', waste: 'Muri', fix: 'zastepstwo' },
+  tor:           { m: 'C', label: 'Belt tracking off', short: 'Belt tracking', cat: 'Machine', waste: 'Muda', fix: 'tpm' },
+  zator:         { m: 'C', label: 'Jam at infeed', short: 'Jam', cat: 'Method', waste: 'Mura', fix: 'prowadnice' },
+  inne:          { m: '*', label: 'Other', short: 'Other', cat: 'Measurement', waste: null, fix: null },
 };
 const SUBS = {
-  skladniki:     [['Brak kitu, ważenie przy maszynie', 'Metoda', 5], ['Wózek z magazynu spóźniony', 'Metoda', 3], ['Partia bez etykiety', 'Materiał', 1]],
-  syrop:         [['Grzałka zbiornika za słaba', 'Maszyna', 3], ['Hala zimna w nocy', 'Środowisko', 1, 6], ['Brak pomiaru temp. przed dozowaniem', 'Pomiar', 3]],
-  zawor:         [['Syrop krystalizuje w zaworze', 'Materiał', 2], ['Brak płukania po partii', 'Metoda', 1]],
-  przezbrojenie: [['Czekam na części formatowe', 'Metoda', 4], ['Mycie formy na maszynie', 'Metoda', 3], ['Regulacja po starcie', 'Maszyna', 2]],
-  noz:           [['Masa za ciepła', 'Materiał', 3], ['Brak powłoki antyprzywierającej', 'Maszyna', 3], ['Brak planu czyszczenia', 'Metoda', 2]],
-  przerwa:       [['Brak rotacji przerw', 'Metoda', 3], ['Zastępca na innej linii', 'Człowiek', 2]],
-  tor:           [['Luźna prowadnica', 'Maszyna', 4], ['Nierówne napięcie taśmy', 'Maszyna', 3], ['Osad na rolce napędowej', 'Metoda', 2]],
-  zator:         [['Batony podawane grupami', 'Metoda', 3], ['Prowadnice wejścia rozregulowane', 'Maszyna', 3]],
+  skladniki:     [['No kit, weighing at the machine', 'Method', 5], ['Warehouse trolley late', 'Method', 3], ['Batch without label', 'Material', 1]],
+  syrop:         [['Tank heater too weak', 'Machine', 3], ['Hall cold at night', 'Environment', 1, 6], ['No temp. check before dosing', 'Measurement', 3]],
+  zawor:         [['Syrup crystallises in valve', 'Material', 2], ['No flush after batch', 'Method', 1]],
+  przezbrojenie: [['Waiting for format parts', 'Method', 4], ['Washing mould on the machine', 'Method', 3], ['Adjustment after start', 'Machine', 2]],
+  noz:           [['Mass too warm', 'Material', 3], ['No non-stick coating', 'Machine', 3], ['No cleaning schedule', 'Method', 2]],
+  przerwa:       [['No break rotation', 'Method', 3], ['Cover on another line', 'People', 2]],
+  tor:           [['Loose guide', 'Machine', 4], ['Uneven belt tension', 'Machine', 3], ['Build-up on drive roller', 'Method', 2]],
+  zator:         [['Bars fed in clumps', 'Method', 3], ['Infeed guides out of adjustment', 'Machine', 3]],
 };
 
 function rng(seed) {
@@ -743,26 +743,26 @@ function autoOps(s) {
 (() => {
 'use strict';
 const $ = s => document.querySelector(s);
-const MACH = { A: { name: 'Mikser', short: 'Mikser' }, B: { name: 'Formierka', short: 'Formierka' }, C: { name: 'Piec tunelowy', short: 'Piec' } };
-const STL = { RUN: 'Pracuje', SLOW: 'Wolny cykl', STARVED: 'Brak wsadu', BLOCKED: 'Brak miejsca', STOP: 'Postój', SETUP: 'Przezbrojenie' };
+const MACH = { A: { name: 'Mixer', short: 'Mixer' }, B: { name: 'Former', short: 'Former' }, C: { name: 'Tunnel oven', short: 'Oven' } };
+const STL = { RUN: 'Running', SLOW: 'Slow cycle', STARVED: 'Starved', BLOCKED: 'Blocked', STOP: 'Stopped', SETUP: 'Changeover' };
 const STC = { RUN: '--run', SLOW: '--slow', STARVED: '--starve', BLOCKED: '--block', STOP: '--stop', SETUP: '--setup' };
-const FLAV = ['Owies z miodem', 'Owies z żurawiną', 'Owies z kakao'];
+const FLAV = ['Oat & honey', 'Oat & cranberry', 'Oat & cocoa'];
 const STOPR = { A: ['skladniki', 'zawor'], B: ['noz', 'przerwa'], C: ['tor', 'zator'] };
 const PROPS = [
-  { id: 'kitting', m: 'A', reasons: ['skladniki'], title: 'Kitting inkluzji przed zmianą', tool: 'Standard pracy · kitting', waste: 'Muda · oczekiwanie', what: 'Magazyn szykuje odważone kity na dwie partie do przodu. Operator miksera nie waży przy maszynie.', effect: 'Partie czekające na składniki: ok. 65% → 5%.', red: 0.9, check: 'Kit inkluzji na 2 partie gotowy' },
-  { id: 'syrop', m: 'A', reasons: ['syrop'], title: 'Poka-yoke temperatury syropu', tool: 'Poka-yoke · 5 Why', waste: 'Mura · zmienny czas mieszania', what: 'Czujnik blokuje dozowanie poniżej 45°C. Grzałka zbiornika na termostacie, start 30 min przed zmianą.', effect: 'Partie z wydłużonym mieszaniem: ok. 75% → 5%.', red: 0.9, check: 'Syrop ≥ 45°C przed dozowaniem' },
-  { id: 'tpm', m: 'C', reasons: ['tor'], title: 'TPM: przegląd toru taśmy co 2 h', tool: 'TPM · lista CIL', waste: 'Muda · awarie', what: 'Operator pieca co 2 h sprawdza prowadnicę, napięcie i rolkę. Znaczniki na ramie pokazują poprawne ustawienie.', effect: 'Zejścia z toru: co ok. 25 min → co ok. 2,5 h.', red: 0.85, check: 'Przegląd toru taśmy (co 2 h)' },
-  { id: 'bufor', m: 'C', special: 'bufor', title: 'Bufor przed piecem', tool: 'TOC · Drum-Buffer-Rope', waste: 'Muda · głodzenie wąskiego gardła', what: 'Stół akumulacyjny na 3 000 batonów przed piecem. Piec pracuje dalej, gdy formierka stoi na przezbrojeniu.', effect: 'Bufor: 800 → 3 000 szt., ok. 22 min pracy pieca.', red: 0.8, check: 'Bufor przed piecem pełny przed przezbrojeniem' },
-  { id: 'prowadnice', m: 'C', reasons: ['zator'], title: 'Prowadnice wejścia według szablonu', tool: 'Standaryzacja · poka-yoke', waste: 'Mura · nierówne podawanie', what: 'Szablon ustawienia prowadnic wejścia pieca. Batony wchodzą równym strumieniem, bez grup.', effect: 'Zatory na wejściu: co ok. 50 min → co ok. 4 h.', red: 0.75, check: 'Prowadnice wejścia według szablonu' },
-  { id: 'smed', m: 'B', reasons: ['przezbrojenie'], title: 'SMED przezbrojenia smaku', tool: 'SMED', waste: 'Muda · przezbrojenie', what: 'Czynności zewnętrzne poza postojem: części formatowe i druga, czysta forma czekają przy maszynie, zanim stanie.', effect: 'Przezbrojenie: ok. 45 min → ok. 13 min.', red: 0.7, check: 'Części formatowe gotowe przed przezbrojeniem' },
-  { id: 'noz', m: 'B', reasons: ['noz'], title: 'Nóż: powłoka i plan czyszczenia', tool: '5 Why · standard pracy', waste: 'Muda · mikropostoje', what: 'Nóż z powłoką antyprzywierającą. Czyszczenie co 2 h według planu, a nie po zatrzymaniu.', effect: 'Klejenie noża: co ok. 30 min → co ok. 2,5 h.', red: 0.8, check: 'Czyszczenie noża co 2 h' },
-  { id: 'zastepstwo', m: 'B', reasons: ['przerwa'], title: 'Rotacja przerw z zastępstwem', tool: 'Standard pracy · Yamazumi', waste: 'Muri · jeden operator bez zastępstwa', what: 'Grafik przerw z rotacją. Zastępca z linii 3 przejmuje formierkę na 20 min.', effect: 'Postój na przerwy: 40 min → 0.', red: 1, check: 'Zastępca na przerwę potwierdzony' },
+  { id: 'kitting', m: 'A', reasons: ['skladniki'], title: 'Inclusion kitting before the shift', tool: 'Standard work · kitting', waste: 'Muda · waiting', what: 'The warehouse prepares weighed kits two batches ahead. The mixer operator no longer weighs at the machine.', effect: 'Batches waiting for ingredients: ~65% → 5%.', red: 0.9, check: 'Inclusion kit for 2 batches ready' },
+  { id: 'syrop', m: 'A', reasons: ['syrop'], title: 'Syrup temperature poka-yoke', tool: 'Poka-yoke · 5 Why', waste: 'Mura · variable mixing time', what: 'A sensor blocks dosing below 45°C. Tank heater on a thermostat, started 30 min before the shift.', effect: 'Batches with extended mixing: ~75% → 5%.', red: 0.9, check: 'Syrup ≥ 45°C before dosing' },
+  { id: 'tpm', m: 'C', reasons: ['tor'], title: 'TPM: belt tracking check every 2 h', tool: 'TPM · CIL checklist', waste: 'Muda · breakdowns', what: 'The oven operator checks guide, tension and roller every 2 h. Marks on the frame show the correct setting.', effect: 'Tracking failures: every ~25 min → every ~2.5 h.', red: 0.85, check: 'Belt tracking check (every 2 h)' },
+  { id: 'bufor', m: 'C', special: 'bufor', title: 'Buffer before the oven', tool: 'TOC · Drum-Buffer-Rope', waste: 'Muda · starving the bottleneck', what: 'Accumulation table for 3,000 bars before the oven. The oven keeps running while the former is in changeover.', effect: 'Buffer: 800 → 3,000 pcs, ~22 min of oven run time.', red: 0.8, check: 'Oven buffer full before changeover' },
+  { id: 'prowadnice', m: 'C', reasons: ['zator'], title: 'Infeed guides set by template', tool: 'Standardisation · poka-yoke', waste: 'Mura · uneven feeding', what: 'A template for setting the oven infeed guides. Bars enter in an even stream, no clumps.', effect: 'Infeed jams: every ~50 min → every ~4 h.', red: 0.75, check: 'Infeed guides set by template' },
+  { id: 'smed', m: 'B', reasons: ['przezbrojenie'], title: 'SMED for flavour changeover', tool: 'SMED', waste: 'Muda · changeover', what: 'External tasks moved out of the stop: format parts and a second, clean mould wait at the machine before it stops.', effect: 'Changeover: ~45 min → ~13 min.', red: 0.7, check: 'Format parts ready before changeover' },
+  { id: 'noz', m: 'B', reasons: ['noz'], title: 'Knife: coating and cleaning schedule', tool: '5 Why · standard work', waste: 'Muda · minor stops', what: 'Non-stick coated knife. Cleaning every 2 h on a schedule, not after a stop.', effect: 'Knife sticking: every ~30 min → every ~2.5 h.', red: 0.8, check: 'Knife cleaned every 2 h' },
+  { id: 'zastepstwo', m: 'B', reasons: ['przerwa'], title: 'Break rotation with cover', tool: 'Standard work · Yamazumi', waste: 'Muri · one operator, no cover', what: 'Break schedule with rotation. Cover from line 3 takes the former for 20 min.', effect: 'Stops for breaks: 40 min → 0.', red: 1, check: 'Break cover confirmed' },
 ];
 const PROP = Object.fromEntries(PROPS.map(p => [p.id, p]));
 
-const nf = new Intl.NumberFormat('pl-PL');
+const nf = new Intl.NumberFormat('en-GB');
 const fmt = n => nf.format(Math.round(n));
-const f1 = n => (Math.round(n * 10) / 10).toLocaleString('pl-PL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const f1 = n => (Math.round(n * 10) / 10).toLocaleString('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const pad = n => String(n).padStart(2, '0');
 const clock = t => { const x = (((START_H * 3600 + Math.floor(t)) % 86400) + 86400) % 86400; return pad(Math.floor(x / 3600)) + ':' + pad(Math.floor(x % 3600 / 60)); };
 const mmss = s => Math.floor(s / 60) + ':' + pad(Math.floor(s % 60));
@@ -788,7 +788,7 @@ function updateFocus(silent) {
   if (main && main !== S.focus && win.sh[main] >= 0.65) {
     const old = S.focus; S.focus = main; S.focusSince = S.t;
     if (!silent) {
-      toast(old ? `Wąskie gardło przesunęło się: ${mname(old)} → ${mname(main)}. Tablet: ${mname(main).toLowerCase()} przechodzi w tryb szczegółowy.` : `Wąskie gardło tej zmiany: ${mname(main)}. Tablet przechodzi w tryb szczegółowy.`);
+      toast(old ? `Bottleneck moved: ${mname(old)} → ${mname(main)}. The ${mname(main).toLowerCase()} tablet switches to detail mode.` : `This shift's bottleneck: ${mname(main)}. Its tablet switches to detail mode.`);
       UI.flash = main;
     }
   }
@@ -807,9 +807,9 @@ function endShift() {
   const main = UI.bnSh.main;
   UI.hist.push({ n: S.n, out: goodOut(S), pct: goodOut(S) / PLAN_TOTAL, main, share: main ? UI.bnSh.sh[main] : 0, fx: Object.keys(S.fx) });
   UI.prevCum = S.cum.slice(); UI.prevMain = main; UI.playing = false;
-  $('#endTxt').textContent = `Zmiana ${S.n} zakończona: ${pct(goodOut(S) / PLAN_TOTAL)} planu`;
+  $('#endTxt').textContent = `Shift ${S.n} finished: ${pct(goodOut(S) / PLAN_TOTAL)} of plan`;
   const q = Object.keys(UI.queued).length;
-  $('#endSub').textContent = `Wąskie gardło: ${main ? mname(main) + ' (' + pct(UI.bnSh.sh[main]) + ' zmiany)' : '–'}. ` + (q ? `Od następnej zmiany działa ${q} ${q === 1 ? 'nowa poprawka' : 'nowe poprawki'}.` : 'Wybierz poprawkę w propozycjach albo uruchom kolejną zmianę bez zmian.');
+  $('#endSub').textContent = `Bottleneck: ${main ? mname(main) + ' (' + pct(UI.bnSh.sh[main]) + ' of shift)' : '–'}. ` + (q ? `${q} new ${q === 1 ? 'fix takes' : 'fixes take'} effect next shift.` : 'Pick a fix under Actions, or run the next shift unchanged.');
   $('#endBar').hidden = false; $('#bPlay').disabled = true; $('#bEnd').disabled = true;
   renderAll(true);
 }
@@ -839,11 +839,11 @@ function lossRows() {
   }
   return rows;
 }
-const rlabel = r => r === '__none' ? 'Bez przyczyny' : REASONS[r].label;
+const rlabel = r => r === '__none' ? 'No reason given' : REASONS[r].label;
 function causeLabel(k) {
-  if (k === 'A:cykl') return 'rytm partii mieszalnika';
-  if (k === 'C:tempo') return 'piec wolniejszy od formierki';
-  if (k === 'B:tempo') return 'tempo formierki';
+  if (k === 'A:cykl') return 'mixer batch rhythm';
+  if (k === 'C:tempo') return 'oven slower than former';
+  if (k === 'B:tempo') return 'former rate';
   const [m, r] = k.split(':');
   return mname(m) + ': ' + (REASONS[r] ? REASONS[r].short.toLowerCase() : r);
 }
@@ -878,26 +878,26 @@ function reasonBtns(ev, bnmode) {
   for (const r of list) { const fx = REASONS[r].fix; (fx && S.fx[fx] ? rare : quick).push(r); }
   let h = '';
   for (const r of quick) h += `<button type="button" data-act="r" data-ev="${ev.id}" data-r="${r}">${esc(bnmode ? REASONS[r].label : REASONS[r].short)}</button>`;
-  h += `<button type="button" data-act="r" data-ev="${ev.id}" data-r="inne">Inne</button>`;
+  h += `<button type="button" data-act="r" data-ev="${ev.id}" data-r="inne">Other</button>`;
   if (rare.length) {
-    h += `<span class="rl">Rozwiązane poprawką, rzadkie:</span>`;
+    h += `<span class="rl">Fixed, now rare:</span>`;
     for (const r of rare) h += `<button type="button" class="rare" data-act="r" data-ev="${ev.id}" data-r="${r}">${esc(REASONS[r].short)}</button>`;
   }
   return h;
 }
 function pendHTML(ev, bnmode) {
   const live = ev.end == null;
-  const kind = ev.type === 'slow' ? 'Wolny cykl' : ev.type === 'setup' ? 'Przezbrojenie' : 'Postój';
+  const kind = ev.type === 'slow' ? 'Slow cycle' : ev.type === 'setup' ? 'Changeover' : 'Stop';
   let q, btns;
   if (!ev.rec) {
-    q = ev.type === 'slow' ? 'Mieszanie dłuższe niż standard. Dlaczego?' : 'Dlaczego stoi?';
+    q = ev.type === 'slow' ? 'Mixing longer than standard. Why?' : 'Why is it stopped?';
     btns = reasonBtns(ev, bnmode);
   } else {
-    q = ev.type === 'setup' ? 'Co wydłużyło przezbrojenie?' : `Co dokładnie? <span style="font-weight:400">${esc(REASONS[ev.rec.reason].label)}</span>`;
-    btns = SUBS[ev.rec.reason].map((s, i) => `<button type="button" data-act="s" data-ev="${ev.id}" data-i="${i}">${esc(s[0])}</button>`).join('') + `<button type="button" class="rare" data-act="k" data-ev="${ev.id}">Nie wiem</button>`;
+    q = ev.type === 'setup' ? 'What made the changeover longer?' : `What exactly? <span style="font-weight:400">${esc(REASONS[ev.rec.reason].label)}</span>`;
+    btns = SUBS[ev.rec.reason].map((s, i) => `<button type="button" data-act="s" data-ev="${ev.id}" data-i="${i}">${esc(s[0])}</button>`).join('') + `<button type="button" class="rare" data-act="k" data-ev="${ev.id}">Don’t know</button>`;
   }
   return `<div class="pend${live ? ' live' : ''}">
-    <div class="pend-h"><b>${kind}</b><span class="mono">od ${clock(ev.start)}</span><span class="mono" data-dur="${ev.id}"></span>${live ? '<span class="livepill">trwa</span>' : ''}</div>
+    <div class="pend-h"><b>${kind}</b><span class="mono">from ${clock(ev.start)}</span><span class="mono" data-dur="${ev.id}"></span>${live ? '<span class="livepill">ongoing</span>' : ''}</div>
     <div class="q">${q}</div><div class="rb">${btns}</div></div>`;
 }
 function renderTab(m) {
@@ -912,14 +912,14 @@ function renderTab(m) {
   if (UI.flash === m) { tab.classList.remove('flash'); void tab.offsetWidth; tab.classList.add('flash'); UI.flash = null; }
   if (UI.sigs[m] === sig) return;
   UI.sigs[m] = sig;
-  $('#md' + m).textContent = bnmode ? 'Tryb: wąskie gardło' : 'Tryb: standard';
+  $('#md' + m).textContent = bnmode ? 'Mode: bottleneck' : 'Mode: standard';
   let h = '';
-  if (!pend.length) h += `<p class="calm">Brak otwartych zgłoszeń.${S.auto ? '' : ' Gdy maszyna stanie, pytanie pojawi się tutaj.'}</p>`;
+  if (!pend.length) h += `<p class="calm">No open reports.${S.auto ? '' : ' When the machine stops, the question appears here.'}</p>`;
   for (const ev of pend.slice(0, 3)) h += pendHTML(ev, bnmode);
-  if (pend.length > 3) h += `<p class="more">Jeszcze ${pend.length - 3} starszych zgłoszeń czeka na przyczynę.</p>`;
-  if (recent.length) h += `<div class="recent"><span class="lbl">Ostatnie zgłoszenia</span><ul>${recent.map(e => `<li><span class="mono">${clock(e.start)}</span><span>${esc(REASONS[e.rec.reason].short)}${e.rec.sub != null ? ' · ' + esc(SUBS[e.rec.reason][e.rec.sub][0]) : ''}</span><span class="mono">${Math.max(1, Math.round(((e.end == null ? S.t : e.end) - e.start) / 60))} min</span></li>`).join('')}</ul></div>`;
+  if (pend.length > 3) h += `<p class="more">${pend.length - 3} older reports still need a reason.</p>`;
+  if (recent.length) h += `<div class="recent"><span class="lbl">Recent reports</span><ul>${recent.map(e => `<li><span class="mono">${clock(e.start)}</span><span>${esc(REASONS[e.rec.reason].short)}${e.rec.sub != null ? ' · ' + esc(SUBS[e.rec.reason][e.rec.sub][0]) : ''}</span><span class="mono">${Math.max(1, Math.round(((e.end == null ? S.t : e.end) - e.start) / 60))} min</span></li>`).join('')}</ul></div>`;
   if (fxm.length) {
-    h += `<div class="checks"><span class="lbl">Standard pracy po poprawkach</span>`;
+    h += `<div class="checks"><span class="lbl">Standard work after fixes</span>`;
     for (const p of fxm) h += `<label class="chk"><input type="checkbox" data-act="chk" data-k="${p.id}" ${S.checks[p.id] ? 'checked' : ''}> ${esc(p.check)}</label>`;
     h += `</div>`;
   }
@@ -935,29 +935,29 @@ function tabDynamic(m) {
   let sub = '';
   if (m === 'A') {
     const b = x.batch;
-    if (st === 'STOP') sub = `Partia ${b} · ${REASONS[x.ev.reason].short.toLowerCase()} ${mmss(S.t - x.ev.start)}`;
-    else if (x.ph === 'load') sub = `Partia ${b} · załadunek`;
-    else if (x.ph === 'mix') sub = `Partia ${b} · mieszanie ${mmss(x.mixEl)} / std ${mmss(x.mixStd)}`;
-    else if (x.ph === 'disWait') sub = `Partia ${b} gotowa · lej pełny`;
-    else if (x.ph === 'dis') sub = `Partia ${b} · wyładunek do leja`;
-    else sub = `Partia ${b}`;
+    if (st === 'STOP') sub = `Batch ${b} · ${REASONS[x.ev.reason].short.toLowerCase()} ${mmss(S.t - x.ev.start)}`;
+    else if (x.ph === 'load') sub = `Batch ${b} · loading`;
+    else if (x.ph === 'mix') sub = `Batch ${b} · mixing ${mmss(x.mixEl)} / std ${mmss(x.mixStd)}`;
+    else if (x.ph === 'disWait') sub = `Batch ${b} ready · hopper full`;
+    else if (x.ph === 'dis') sub = `Batch ${b} · discharging to hopper`;
+    else sub = `Batch ${b}`;
   } else if (m === 'B') {
-    sub = (st === 'STOP' || st === 'SETUP') ? `${REASONS[x.ev.reason].short} · ${mmss(S.t - x.ev.start)}` : `150 szt./min · lej ${fmt(S.hopper)} szt.`;
+    sub = (st === 'STOP' || st === 'SETUP') ? `${REASONS[x.ev.reason].short} · ${mmss(S.t - x.ev.start)}` : `150 pcs/min · hopper ${fmt(S.hopper)} pcs`;
   } else {
-    sub = st === 'STOP' ? `${REASONS[x.ev.reason].short} · ${mmss(S.t - x.ev.start)}` : `135 szt./min · bufor ${fmt(S.belt)} szt.`;
+    sub = st === 'STOP' ? `${REASONS[x.ev.reason].short} · ${mmss(S.t - x.ev.start)}` : `135 pcs/min · buffer ${fmt(S.belt)} pcs`;
   }
   $('#ss' + m).textContent = sub;
   const bnmode = S.focus === m;
   let im;
-  if (bnmode) im = 'Wąskie gardło. Minuta postoju tutaj to ok. 120 batonów mniej na końcu linii.';
-  else if (m === 'A') im = `Lej daje formierce zapas na ${f1(S.hopper / 150)} min.`;
-  else if (m === 'B') im = `Bufor daje piecowi zapas na ${f1(S.belt / 135)} min.`;
-  else im = S.focus ? `Linię ogranicza teraz ${mname(S.focus).toLowerCase()}, nie piec.` : 'Koniec linii.';
+  if (bnmode) im = 'Bottleneck. One minute stopped here is about 120 bars fewer at the end of the line.';
+  else if (m === 'A') im = `The hopper gives the former ${f1(S.hopper / 150)} min of stock.`;
+  else if (m === 'B') im = `The buffer gives the oven ${f1(S.belt / 135)} min of stock.`;
+  else im = S.focus ? `The line is limited by the ${mname(S.focus).toLowerCase()} now, not the oven.` : 'End of line.';
   $('#im' + m).textContent = im;
   let n = 0, rec = 0, det = 0;
   for (const ev of S.events) if (ev.m === m) { n++; if (ev.rec) { rec++; if (ev.rec.sub != null) det++; } }
-  $('#tf' + m).textContent = `Zgłoszone ${rec} z ${n}`;
-  $('#tg' + m).textContent = det ? `ze szczegółami ${det}` : (S.auto ? 'operator: symulacja' : 'operator: Ty');
+  $('#tf' + m).textContent = `Reported ${rec} of ${n}`;
+  $('#tg' + m).textContent = det ? `with detail ${det}` : (S.auto ? 'operator: simulation' : 'operator: you');
   for (const el of $('#tb' + m).querySelectorAll('[data-dur]')) {
     const ev = S.events.find(e => e.id === +el.dataset.dur);
     if (ev) el.textContent = Math.max(1, Math.round(((ev.end == null ? S.t : ev.end) - ev.start) / 60)) + ' min';
@@ -965,13 +965,13 @@ function tabDynamic(m) {
 }
 
 // ---------- line view ----------
-const BUF = [['Lej', 'hopper', 'hopperCap', 150], ['Bufor taśmy', 'belt', 'beltCap', 135]];
+const BUF = [['Hopper', 'hopper', 'hopperCap', 150], ['Belt buffer', 'belt', 'beltCap', 135]];
 function machShell(m) {
-  const rows = { A: [['Partia', '2 500 szt.'], ['Cykl std', '17 min']], B: [['Tempo', '150 szt./min'], ['Przezbr.', '45 min']], C: [['Tempo', '135 szt./min'], ['Pieczenie', '14 min']] }[m];
+  const rows = { A: [['Batch', '2,500 pcs'], ['Std cycle', '17 min']], B: [['Rate', '150 pcs/min'], ['Changeover', '45 min']], C: [['Rate', '135 pcs/min'], ['Baking', '14 min']] }[m];
   return `<article class="mach" id="mach${m}">
-    <div class="mh"><h3><span class="mid">${m}</span>${MACH[m].name}</h3><span class="bntag" id="mbt${m}" hidden>WĄSKIE GARDŁO</span><span class="opchip" id="mop${m}"></span></div>
+    <div class="mh"><h3><span class="mid">${m}</span>${MACH[m].name}</h3><span class="bntag" id="mbt${m}" hidden>BOTTLENECK</span><span class="opchip" id="mop${m}"></span></div>
     <div class="mstate"><b id="mst${m}">Pracuje</b><span id="msx${m}"></span></div>
-    <dl class="mstats"><dt>${rows[0][0]}</dt><dd>${rows[0][1]}</dd><dt>${rows[1][0]}</dt><dd id="mr${m}">${rows[1][1]}</dd><dt>Wykonanie</dt><dd id="mp${m}">0%</dd><dt>Wąskie gardło</dt><dd class="bnv" id="mn${m}">0%</dd></dl>
+    <dl class="mstats"><dt>${rows[0][0]}</dt><dd>${rows[0][1]}</dd><dt>${rows[1][0]}</dt><dd id="mr${m}">${rows[1][1]}</dd><dt>Attainment</dt><dd id="mp${m}">0%</dd><dt>Bottleneck</dt><dd class="bnv" id="mn${m}">0%</dd></dl>
     <div class="mbar" id="mbar${m}">${['RUN','SLOW','STARVED','BLOCKED','STOP','SETUP'].map(k => `<i id="mq${m}${k}" style="background:var(${STC[k]});width:0"></i>`).join('')}</div>
   </article>`;
 }
@@ -981,17 +981,17 @@ function bufShell(i) {
     <div class="bv"><span id="bv${i}">0 / 0</span><small id="bm${i}">≈ 0 min</small></div></div>`;
 }
 function buildLine() {
-  $('#vflow').innerHTML = `<div class="endcap"><b>Plan</b> 120 szt./min · takt 0,50 s · <span id="vProd">Owies z miodem</span></div><div class="varrow" id="va0"></div>`
+  $('#vflow').innerHTML = `<div class="endcap"><b>Plan</b> 120 pcs/min · takt 0.50 s · <span id="vProd">Oat & honey</span></div><div class="varrow" id="va0"></div>`
     + machShell('A') + `<div class="varrow" id="va1"></div>` + bufShell(0) + `<div class="varrow" id="va2"></div>`
     + machShell('B') + `<div class="varrow" id="va3"></div>` + bufShell(1) + `<div class="varrow" id="va4"></div>`
-    + machShell('C') + `<div class="varrow" id="va5"></div><div class="endcap"><b>Pakowanie</b> poza zakresem demo</div>`;
+    + machShell('C') + `<div class="varrow" id="va5"></div><div class="endcap"><b>Packing</b> outside demo scope</div>`;
 }
 function nowBn() {
   let best = null, bl = -1;
   for (const m of MS) if (S.actStart[m] != null) { const l = S.t - S.actStart[m]; if (l > bl) { bl = l; best = m; } }
   return best;
 }
-function opChip(m) { const p = opOf(S, m); return p ? `<span class="lv lv${p.lvl[m]}">${LVL[p.lvl[m]]}</span>${esc(p.name)}` : 'brak obsady'; }
+function opChip(m) { const p = opOf(S, m); return p ? `<span class="lv lv${p.lvl[m]}">${LVL[p.lvl[m]]}</span>${esc(p.name)}` : 'unstaffed'; }
 function renderLine() {
   const bnNow = nowBn(), planNow = PLAN_RATE * S.t / 60 || 1, outs = { A: S.outA, B: S.outB, C: S.out }, tot = Math.max(1, S.t);
   for (const m of MS) {
@@ -1000,7 +1000,7 @@ function renderLine() {
     el.style.borderColor = bnNow === m ? '' : st === 'RUN' ? '' : `var(${STC[st]})`;
     $('#mbt' + m).hidden = bnNow !== m;
     const sw = $('#mst' + m); sw.textContent = STL[st]; sw.style.color = st === 'RUN' ? 'var(--ink)' : `var(${STC[st]})`;
-    $('#msx' + m).textContent = (st === 'STOP' || st === 'SETUP') ? REASONS[x.ev.reason].short + ' · ' + mmss(S.t - x.ev.start) : (m === 'A' && x.ph === 'mix' ? `mieszanie ${mmss(x.mixEl)} / std ${mmss(x.mixStd)}` : m === 'A' ? `partia ${x.batch}` : st === 'STARVED' ? 'czeka na wsad' : st === 'BLOCKED' ? 'czeka na miejsce' : 'tempo nominalne');
+    $('#msx' + m).textContent = (st === 'STOP' || st === 'SETUP') ? REASONS[x.ev.reason].short + ' · ' + mmss(S.t - x.ev.start) : (m === 'A' && x.ph === 'mix' ? `mixing ${mmss(x.mixEl)} / std ${mmss(x.mixStd)}` : m === 'A' ? `batch ${x.batch}` : st === 'STARVED' ? 'waiting for input' : st === 'BLOCKED' ? 'waiting for space' : 'nominal rate');
     $('#mp' + m).textContent = pct(Math.min(9.99, outs[m] / planNow));
     $('#mn' + m).textContent = pct(UI.bnSh.sh[m]);
     const oc = $('#mop' + m), h = opChip(m); if (oc.innerHTML !== h) oc.innerHTML = h;
@@ -1013,16 +1013,16 @@ function renderLine() {
     $('#bf' + i).setAttribute('y', 37 - 34 * l); $('#bf' + i).setAttribute('height', 34 * l);
     $('#bb' + i).style.width = (100 * l) + '%';
     $('#bv' + i).textContent = fmt(v) + ' / ' + fmt(c);
-    $('#bm' + i).textContent = '≈ ' + f1(v / rate) + ' min zapasu';
-    $('#bnm' + i).textContent = i === 1 && S.fx.bufor ? 'Stół akumulacyjny' : name;
+    $('#bm' + i).textContent = '≈ ' + f1(v / rate) + ' min of stock';
+    $('#bnm' + i).textContent = i === 1 && S.fx.bufor ? 'Accumulation table' : name;
   });
   const on = [S.A.ph === 'load' && S.A.st === 'RUN', S.A.ph === 'dis', S.B.st === 'RUN', S.B.st === 'RUN', S.C.st === 'RUN', S.C.st === 'RUN'];
   on.forEach((v, i) => $('#va' + i).classList.toggle('on', v));
   const su = S.P.setupAt;
-  $('#vProd').textContent = S.B.st === 'SETUP' ? `przezbrojenie: ${FLAV[S.B.setupIdx - 1]} → ${FLAV[S.B.setupIdx]}` : FLAV[S.t < su[0] ? 0 : S.t < su[1] ? 1 : 2];
+  $('#vProd').textContent = S.B.st === 'SETUP' ? `changeover: ${FLAV[S.B.setupIdx - 1]} → ${FLAV[S.B.setupIdx]}` : FLAV[S.t < su[0] ? 0 : S.t < su[1] ? 1 : 2];
   $('#sBnNow').textContent = bnNow ? MACH[bnNow].name : '–';
   const h1 = S.hopper / PLAN_RATE, h2 = S.belt / PLAN_RATE;
-  $('#sLead').innerHTML = `<span>Lej<b>${f1(h1)} min</b></span><span>Bufor taśmy<b>${f1(h2)} min</b></span><span>Wartość dodana<b>25 min</b></span><span>Razem<b>${fmt(h1 + h2 + 25)} min</b></span>`;
+  $('#sLead').innerHTML = `<span>Hopper<b>${f1(h1)} min</b></span><span>Belt buffer<b>${f1(h2)} min</b></span><span>Value added<b>25 min</b></span><span>Total<b>${fmt(h1 + h2 + 25)} min</b></span>`;
   return bnNow;
 }
 function oeeCls(v) { return v >= 0.85 ? 'hi' : v >= 0.65 ? 'mid2' : 'lo'; }
@@ -1030,7 +1030,7 @@ function renderSide() {
   $('#sBnRows').innerHTML = MS.map(m => `<div class="bnrow"><span>${MACH[m].name}</span><span class="bar"><i style="width:${100 * UI.bnSh.sh[m]}%"></i></span><span class="pv">${pct(UI.bnSh.sh[m])}</span></div>`).join('');
   const rows = MS.map(m => { const o = oee(S, m); return `<tr><td>${MACH[m].name}</td><td>${pct(o.A)}</td><td>${pct(o.P)}</td><td>${pct(o.Q)}</td><td class="${oeeCls(o.oee)}">${pct(o.oee)}</td></tr>`; });
   const planNow = PLAN_RATE * S.t / 60 || 1, lo = goodOut(S) / planNow;
-  rows.push(`<tr class="tot"><td>Linia</td><td colspan="3" style="font-family:var(--f-b);color:var(--muted);text-align:left">dobre / plan</td><td class="${oeeCls(lo)}">${pct(lo)}</td></tr>`);
+  rows.push(`<tr class="tot"><td>Linia</td><td colspan="3" style="font-family:var(--f-b);color:var(--muted);text-align:left">good / plan</td><td class="${oeeCls(lo)}">${pct(lo)}</td></tr>`);
   $('#sOee').innerHTML = rows.join('');
   const W = wasteSplit(), mx = Math.max(1, ...Object.values(W).map(w => w.t));
   $('#sWaste').innerHTML = Object.entries(W).map(([k, w]) => `<div class="wrow"><span>${k}</span><span class="bar"><i style="width:${100 * w.t / mx}%"></i></span><span class="pv">${fmt(w.t)} min</span></div>`).join('');
@@ -1044,8 +1044,8 @@ function wasteSplit() {
     const w = W[REASONS[r.r].waste]; w.t += r.min; w.it[mname(r.m) + ': ' + REASONS[r.r].short.toLowerCase()] = r.min;
   }
   let wait = 0; for (const m of MS) wait += S.secs[m].STARVED + S.secs[m].BLOCKED;
-  W.Muda.t += wait / 60; W.Muda.it['czekanie między maszynami'] = wait / 60;
-  const rej = S.rej.B + S.rej.C; if (rej > 0) { W.Muda.t += rej / PLAN_RATE; W.Muda.it['braki jakościowe (w min. planu)'] = rej / PLAN_RATE; }
+  W.Muda.t += wait / 60; W.Muda.it['waiting between machines'] = wait / 60;
+  const rej = S.rej.B + S.rej.C; if (rej > 0) { W.Muda.t += rej / PLAN_RATE; W.Muda.it['quality rejects (in plan minutes)'] = rej / PLAN_RATE; }
   return W;
 }
 
@@ -1057,17 +1057,17 @@ function renderCrew() {
     UI.sigs.crew = sig;
     $('#crewPos').innerHTML = MS.map(m => {
       const p = opOf(S, m);
-      const opts = CREW.map(c => { const at = assignedTo(c.id); return `<option value="${c.id}" ${c.id === S.assign[m] ? 'selected' : ''}>${c.name} · ${LVL[c.lvl[m]]}${at && at !== m ? ' (przy ' + mname(at).toLowerCase() + ')' : ''}</option>`; }).join('');
-      return `<div class="posrow"><span class="mid">${m}</span><span class="nm">${MACH[m].name}<small>${S.focus === m ? 'wąskie gardło zmiany' : 'standard'}</small></span><select data-pos="${m}" aria-label="Obsada: ${MACH[m].name}">${opts}</select><span class="lv lv${p.lvl[m]}" title="poziom ILUO">${LVL[p.lvl[m]]}</span></div>`;
+      const opts = CREW.map(c => { const at = assignedTo(c.id); return `<option value="${c.id}" ${c.id === S.assign[m] ? 'selected' : ''}>${c.name} · ${LVL[c.lvl[m]]}${at && at !== m ? ' (at ' + mname(at).toLowerCase() + ')' : ''}</option>`; }).join('');
+      return `<div class="posrow"><span class="mid">${m}</span><span class="nm">${MACH[m].name}<small>${S.focus === m ? 'shift bottleneck' : 'standard'}</small></span><select data-pos="${m}" aria-label="Staffing: ${MACH[m].name}">${opts}</select><span class="lv lv${p.lvl[m]}" title="ILUO level">${LVL[p.lvl[m]]}</span></div>`;
     }).join('');
-    let t = `<thead><tr><th>Osoba</th>${MS.map(m => `<th>${mname(m)}</th>`).join('')}</tr></thead><tbody>`;
-    for (const c of CREW) { const at = assignedTo(c.id); t += `<tr><td>${c.name}${at ? `<small>przy: ${mname(at).toLowerCase()}</small>` : '<small>rezerwa</small>'}</td>${MS.map(m => `<td><span class="cell lv${c.lvl[m]}${at === m ? ' here' : ''}">${LVL[c.lvl[m]]}</span></td>`).join('')}</tr>`; }
+    let t = `<thead><tr><th>Person</th>${MS.map(m => `<th>${mname(m)}</th>`).join('')}</tr></thead><tbody>`;
+    for (const c of CREW) { const at = assignedTo(c.id); t += `<tr><td>${c.name}${at ? `<small>at: ${mname(at).toLowerCase()}</small>` : '<small>reserve</small>'}</td>${MS.map(m => `<td><span class="cell lv${c.lvl[m]}${at === m ? ' here' : ''}">${LVL[c.lvl[m]]}</span></td>`).join('')}</tr>`; }
     t += `<tr><td style="color:var(--muted)">U + O</td>${MS.map(m => `<td style="font-family:var(--f-m)">${CREW.filter(c => c.lvl[m] >= 3).length}</td>`).join('')}</tr></tbody>`;
     $('#iluo').innerHTML = t;
     const risks = [];
-    for (const m of MS) { const n = CREW.filter(c => c.lvl[m] >= 3).length, o = CREW.filter(c => c.lvl[m] === 4).length; if (n <= 2) risks.push(`<div class="alert">${MACH[m].name}: tylko ${n} osoby z U albo O. Urlop lub choroba = linia na poziomie L.</div>`); else if (o <= 1) risks.push(`<div class="alert warn">${MACH[m].name}: jeden trener (O). Nikt nie szkoli, gdy go nie ma.</div>`); }
-    for (const m of MS) { const p = opOf(S, m); if (p.lvl[m] <= 1) risks.push(`<div class="alert">${p.name} na ${mname(m).toLowerCase()} ma poziom I. Wymaga nadzoru, postoje ×1,45.</div>`); }
-    $('#crewRisk').innerHTML = risks.length ? risks.join('') : '<div class="alert ok">Obsada bez ryzyka: każda maszyna ma zapas U/O.</div>';
+    for (const m of MS) { const n = CREW.filter(c => c.lvl[m] >= 3).length, o = CREW.filter(c => c.lvl[m] === 4).length; if (n <= 2) risks.push(`<div class="alert">${MACH[m].name}: only ${n} people at U or O. One holiday or sick day = line running at level L.</div>`); else if (o <= 1) risks.push(`<div class="alert warn">${MACH[m].name}: a single trainer (O). Nobody trains when they are away.</div>`); }
+    for (const m of MS) { const p = opOf(S, m); if (p.lvl[m] <= 1) risks.push(`<div class="alert">${p.name} on the ${mname(m).toLowerCase()} is level I. Needs supervision, stops ×1.45.</div>`); }
+    $('#crewRisk').innerHTML = risks.length ? risks.join('') : '<div class="alert ok">Staffing without risk: every machine has U/O cover.</div>';
   }
   const m = S.focus; let h = '';
   if (m) {
@@ -1075,16 +1075,16 @@ function renderCrew() {
     let best = null; for (const c of CREW) if (c.id !== cur.id && c.lvl[m] > cur.lvl[m] && (!best || c.lvl[m] > best.lvl[m])) best = c;
     if (best) {
       const gain = own * (1 - LVLFAC[best.lvl[m]] / LVLFAC[cur.lvl[m]]), at = assignedTo(best.id);
-      h = `<div class="reco"><span class="tool">Załoga · wąskie gardło</span><h4>${best.name} (${LVL[best.lvl[m]]}) na ${mname(m).toLowerCase()} zamiast ${cur.name} (${LVL[cur.lvl[m]]})</h4><p>Własne postoje wąskiego gardła w tej zmianie: ${fmt(own)} min. Przy poziomie ${LVL[best.lvl[m]]} byłyby krótsze o ok. <b class="mono">${fmt(gain)} min</b>, czyli do +${fmt(Math.round(gain * PLAN_RATE / 100) * 100)} szt.</p><p class="hint" style="margin:0">${at ? `${best.name} stoi teraz przy ${mname(at).toLowerCase()}. ${cur.name} ma tam ${LVL[cur.lvl[at]]}.` : `${best.name} jest w rezerwie.`} ${best.lvl[m] === 4 && cur.lvl[m] <= 2 ? 'Para O + L to też szkolenie na stanowisku.' : ''}</p><div class="pact"><button type="button" class="btn primary" data-swap="${m}:${best.id}">Zamień teraz</button></div></div>`;
-    } else h = `<div class="alert ok">Przy wąskim gardle (${mname(m).toLowerCase()}) stoi najlepsza dostępna osoba: ${cur.name} (${LVL[cur.lvl[m]]}).</div>`;
-  } else h = '<p class="calm">Rekomendacja pojawi się, gdy ustali się wąskie gardło zmiany.</p>';
+      h = `<div class="reco"><span class="tool">Crew · bottleneck</span><h4>${best.name} (${LVL[best.lvl[m]]}) on the ${mname(m).toLowerCase()} instead of ${cur.name} (${LVL[cur.lvl[m]]})</h4><p>Own stops at the bottleneck this shift: ${fmt(own)} min. At level ${LVL[best.lvl[m]]} they would be about <b class="mono">${fmt(gain)} min</b> shorter, up to +${fmt(Math.round(gain * PLAN_RATE / 100) * 100)} pcs.</p><p class="hint" style="margin:0">${at ? `${best.name} is at the ${mname(at).toLowerCase()} now. ${cur.name} holds ${LVL[cur.lvl[at]]} there.` : `${best.name} is in reserve.`} ${best.lvl[m] === 4 && cur.lvl[m] <= 2 ? 'An O + L pair is also on-the-job training.' : ''}</p><div class="pact"><button type="button" class="btn primary" data-swap="${m}:${best.id}">Swap now</button></div></div>`;
+    } else h = `<div class="alert ok">The best available person is already at the bottleneck (${mname(m).toLowerCase()}): ${cur.name} (${LVL[cur.lvl[m]]}).</div>`;
+  } else h = '<p class="calm">A recommendation appears once the shift bottleneck settles.</p>';
   if (UI.sigs.reco !== h) { UI.sigs.reco = h; $('#crewReco').innerHTML = h; }
 }
 function setAssign(m, id) {
   const at = assignedTo(id), prev = S.assign[m];
   S.assign[m] = id; if (at && at !== m) S.assign[at] = prev;
   UI.assign = { ...S.assign }; UI.sigs.crew = null; UI.sigs.reco = null;
-  toast(`${CREW_BY[id].name} przechodzi na ${mname(m).toLowerCase()}${at && at !== m ? `, ${CREW_BY[prev].name} na ${mname(at).toLowerCase()}` : ''}.`);
+  toast(`${CREW_BY[id].name} moves to the ${mname(m).toLowerCase()}${at && at !== m ? `, ${CREW_BY[prev].name} to the ${mname(at).toLowerCase()}` : ''}.`);
   renderAll();
 }
 document.addEventListener('change', e => { const sel = e.target.closest('select[data-pos]'); if (sel) setAssign(sel.dataset.pos, sel.value); });
@@ -1149,7 +1149,7 @@ function drawCum() {
   g.font = `11px ${COL.mono}`; g.textAlign = 'right'; g.textBaseline = 'middle';
   for (let v = 0; v <= ymax; v += 25000) {
     g.fillStyle = COL.line2; g.fillRect(GL, Y(v), pw, 1);
-    g.fillStyle = COL.muted; g.fillText(v ? fmt(v / 1000) + ' tys.' : '0', GL - 8, Y(v));
+    g.fillStyle = COL.muted; g.fillText(v ? fmt(v / 1000) + 'k' : '0', GL - 8, Y(v));
   }
   g.strokeStyle = COL.line; g.lineWidth = 2; g.setLineDash([6, 4]);
   g.beginPath(); g.moveTo(X(0), Y(0)); g.lineTo(X(720), Y(PLAN_TOTAL)); g.stroke(); g.setLineDash([]);
@@ -1169,44 +1169,44 @@ function renderFlow() {
   const w = S.wait, items = [];
   const planNow = PLAN_RATE * S.t / 60 || 1;
   const bs = sum(w.B.starved), bb = sum(w.B.blocked), cs = sum(w.C.starved), ab = sum(w.A.blocked);
-  if (bs >= 120) items.push([bs, 'B ← A', `Formierka czekała na mikser <b class="mono">${fmt(bs / 60)} min</b>. Mikser ma ${pct(S.outA / planNow)} planu.`, topCauses(w.B.starved, 3)]);
-  if (bb >= 120) items.push([bb, 'B → C', `Formierka stała z braku miejsca <b class="mono">${fmt(bb / 60)} min</b>, bo piec nie odbierał.`, topCauses(w.B.blocked, 3)]);
-  if (cs >= 120) items.push([cs, 'C ← B', `Piec czekał na batony <b class="mono">${fmt(cs / 60)} min</b>. To czysta strata na końcu linii.`, topCauses(w.C.starved, 3)]);
-  if (ab >= 120) items.push([ab, 'A → B', `Mikser czekał z wyładunkiem <b class="mono">${fmt(ab / 60)} min</b>, bo lej był pełny.`, topCauses(w.A.blocked, 3)]);
+  if (bs >= 120) items.push([bs, 'B ← A', `The former waited for the mixer <b class="mono">${fmt(bs / 60)} min</b>. The mixer is at ${pct(S.outA / planNow)} of plan.`, topCauses(w.B.starved, 3)]);
+  if (bb >= 120) items.push([bb, 'B → C', `The former was blocked <b class="mono">${fmt(bb / 60)} min</b> because the oven was not taking bars.`, topCauses(w.B.blocked, 3)]);
+  if (cs >= 120) items.push([cs, 'C ← B', `The oven waited for bars <b class="mono">${fmt(cs / 60)} min</b>. Pure loss at the end of the line.`, topCauses(w.C.starved, 3)]);
+  if (ab >= 120) items.push([ab, 'A → B', `The mixer waited to discharge <b class="mono">${fmt(ab / 60)} min</b> because the hopper was full.`, topCauses(w.A.blocked, 3)]);
   items.sort((a, b) => b[0] - a[0]);
-  $('#flow').innerHTML = items.length ? items.map(i => `<div class="fl"><span class="chain">${i[1]}</span><p>${i[2]}<small>Przyczyny: ${esc(i[3] || 'za mało danych')}</small></p></div>`).join('') : '<p class="calm">Za mało danych. Maszyny jeszcze na siebie nie czekały.</p>';
+  $('#flow').innerHTML = items.length ? items.map(i => `<div class="fl"><span class="chain">${i[1]}</span><p>${i[2]}<small>Causes: ${esc(i[3] || 'not enough data')}</small></p></div>`).join('') : '<p class="calm">Not enough data. The machines have not waited on each other yet.</p>';
 }
 function renderPareto() {
   const rows = Object.values(UI.rows).sort((a, b) => b.min - a.min).slice(0, 8);
   const mx = Math.max(1, ...rows.map(r => r.min));
-  $('#pareto').innerHTML = rows.length ? rows.map(r => `<div class="prow"><span class="nm"><span class="pm">${r.m}</span>${esc(rlabel(r.r))}</span><span class="ptrack"><i style="width:${100 * r.min / mx}%"></i><b style="width:${100 * r.bn / mx}%"></b></span><span class="pv">${fmt(r.min)} min · <em>${fmt(r.bn)}</em></span></div>`).join('') : '<p class="calm">Brak postojów.</p>';
+  $('#pareto').innerHTML = rows.length ? rows.map(r => `<div class="prow"><span class="nm"><span class="pm">${r.m}</span>${esc(rlabel(r.r))}</span><span class="ptrack"><i style="width:${100 * r.min / mx}%"></i><b style="width:${100 * r.bn / mx}%"></b></span><span class="pv">${fmt(r.min)} min · <em>${fmt(r.bn)}</em></span></div>`).join('') : '<p class="calm">No stops.</p>';
 }
 function renderFish() {
   const m = S.focus || UI.bnSh.main;
   const svg = $('#fish');
-  if (!m) { $('#fishT').textContent = 'Ishikawa'; svg.innerHTML = '<text x="20" y="40" class="empty" font-size="13">Wąskie gardło jeszcze nie jest ustalone.</text>'; return; }
-  const cats = { 'Człowiek': {}, 'Maszyna': {}, 'Metoda': {}, 'Materiał': {}, 'Pomiar': {}, 'Środowisko': {} };
+  if (!m) { $('#fishT').textContent = 'Ishikawa'; svg.innerHTML = '<text x="20" y="40" class="empty" font-size="13">The bottleneck is not settled yet.</text>'; return; }
+  const cats = { 'People': {}, 'Machine': {}, 'Method': {}, 'Material': {}, 'Measurement': {}, 'Environment': {} };
   let bnLost = 0;
   for (const ev of S.events) {
     if (ev.m !== m) continue;
     const d = ((ev.end == null ? S.t : ev.end) - ev.start) / 60;
     let cat, label;
-    if (!ev.rec) { cat = 'Pomiar'; label = 'Postój bez przyczyny'; }
-    else if (ev.rec.reason === 'inne') { cat = 'Pomiar'; label = 'Zgłoszone jako „Inne”'; }
+    if (!ev.rec) { cat = 'Measurement'; label = 'Stop without reason'; }
+    else if (ev.rec.reason === 'inne') { cat = 'Measurement'; label = 'Reported as “Other”'; }
     else if (ev.rec.sub != null) { const s = SUBS[ev.rec.reason][ev.rec.sub]; cat = s[1]; label = s[0]; }
     else { cat = REASONS[ev.rec.reason].cat; label = REASONS[ev.rec.reason].label; }
     const o = cats[cat][label] || (cats[cat][label] = { n: 0, min: 0 }); o.n++; o.min += d;
   }
   for (const r of Object.values(UI.rows)) if (r.m === m) bnLost += r.bn;
-  if (m === 'A') { const ns = nightShare('syrop'); if (ns.n >= 3 && ns.night / ns.n >= 0.6) cats['Środowisko']['Zimny syrop głównie po 00:00'] = { n: ns.night, min: -1 }; }
-  $('#fishT').textContent = `Ishikawa: ${MACH[m].name}, wąskie gardło zmiany`;
-  const pos = [['Człowiek', 190, 'top'], ['Maszyna', 400, 'top'], ['Metoda', 610, 'top'], ['Materiał', 190, 'bot'], ['Pomiar', 400, 'bot'], ['Środowisko', 610, 'bot']];
+  if (m === 'A') { const ns = nightShare('syrop'); if (ns.n >= 3 && ns.night / ns.n >= 0.6) cats['Environment']['Cold syrup mostly after 00:00'] = { n: ns.night, min: -1 }; }
+  $('#fishT').textContent = `Ishikawa: ${MACH[m].name}, shift bottleneck`;
+  const pos = [['People', 190, 'top'], ['Machine', 400, 'top'], ['Method', 610, 'top'], ['Material', 190, 'bot'], ['Measurement', 400, 'bot'], ['Environment', 610, 'bot']];
   let h = `<line class="spine" x1="20" y1="150" x2="722" y2="150"/>`;
   h += `<rect class="head" x="724" y="96" width="192" height="108" rx="4"/>`;
   h += `<text x="736" y="120" font-size="12" style="fill:var(--bn);font-weight:700">PROBLEM</text>`;
-  h += `<text x="736" y="142" font-size="15" font-weight="600">${esc(mname(m))} ogranicza linię</text>`;
-  h += `<text x="736" y="164" font-size="12">wąskie gardło: ${pct(UI.bnSh.sh[m])} zmiany</text>`;
-  h += `<text x="736" y="182" font-size="12">${fmt(bnLost)} min własnych postojów</text>`;
+  h += `<text x="736" y="142" font-size="15" font-weight="600">${esc(mname(m))} limits the line</text>`;
+  h += `<text x="736" y="164" font-size="12">bottleneck: ${pct(UI.bnSh.sh[m])} of shift</text>`;
+  h += `<text x="736" y="182" font-size="12">${fmt(bnLost)} min of own stops</text>`;
   for (const [cat, x, side] of pos) {
     const yS = side === 'top' ? 34 : 266;
     h += `<line class="bone" x1="${x}" y1="${yS}" x2="${x + 90}" y2="150"/>`;
@@ -1218,13 +1218,13 @@ function renderFish() {
       const bx = x + 90 * (side === 'top' ? (y - 34) / 116 : (266 - y) / 116);
       const lab = label.length > 28 ? label.slice(0, 27) + '…' : label;
       h += `<text x="${bx - 8}" y="${y}" font-size="12" text-anchor="end">${esc(lab)}</text>`;
-      h += `<text class="num" x="${bx - 8}" y="${y + 12}" text-anchor="end">${o.min < 0 ? o.n + ' przypadków' : o.n + '× · ' + fmt(o.min) + ' min'}</text>`;
+      h += `<text class="num" x="${bx - 8}" y="${y + 12}" text-anchor="end">${o.min < 0 ? o.n + ' cases' : o.n + '× · ' + fmt(o.min) + ' min'}</text>`;
     });
   }
   svg.innerHTML = h;
 }
 function renderWaste() {
-  const D = { Muda: 'marnotrawstwo: czekanie, awarie, przezbrojenia, braki', Mura: 'nierówność: zmienny czas cyklu i podawanie', Muri: 'przeciążenie ludzi i maszyn' };
+  const D = { Muda: 'waste: waiting, breakdowns, changeovers, rejects', Mura: 'unevenness: variable cycle time and feeding', Muri: 'overburden on people and machines' };
   const W = wasteSplit(); for (const k in W) W[k].d = D[k];
   if (false) {
   for (const r of Object.values(UI.rows)) {
@@ -1232,25 +1232,25 @@ function renderWaste() {
     const w = W[REASONS[r.r].waste]; w.t += r.min; w.it[mname(r.m) + ': ' + REASONS[r.r].short.toLowerCase()] = r.min;
   }
   let wait = 0; for (const m of MS) wait += S.secs[m].STARVED + S.secs[m].BLOCKED;
-  W.Muda.t += wait / 60; W.Muda.it['czekanie między maszynami'] = wait / 60;
+  W.Muda.t += wait / 60; W.Muda.it['waiting between machines'] = wait / 60;
   }
-  $('#waste').innerHTML = Object.entries(W).map(([k, w]) => `<div class="wc"><h4>${k}</h4><p class="wd">${w.d}</p><span class="wn">${fmt(w.t)} min</span><ul>${Object.entries(w.it).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([l, v]) => `<li><span>${esc(l)}</span><span>${fmt(v)}</span></li>`).join('') || '<li><span>brak</span><span></span></li>'}</ul></div>`).join('');
+  $('#waste').innerHTML = Object.entries(W).map(([k, w]) => `<div class="wc"><h4>${k}</h4><p class="wd">${w.d}</p><span class="wn">${fmt(w.t)} min</span><ul>${Object.entries(w.it).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([l, v]) => `<li><span>${esc(l)}</span><span>${fmt(v)}</span></li>`).join('') || '<li><span>none</span><span></span></li>'}</ul></div>`).join('');
 }
 function renderPatterns() {
   const L = [];
   const ns = nightShare('syrop');
-  if (ns.n >= 3 && ns.night >= 3) L.push([ns.night / ns.n >= 0.6, `${ns.night} z ${ns.n} wolnych cykli przez zimny syrop przypada na 00:00–06:00.${ns.night / ns.n >= 0.6 ? ' Hala stygnie w nocy.' : ''}`, 'Mikser · godzina zgłoszenia']);
+  if (ns.n >= 3 && ns.night >= 3) L.push([ns.night / ns.n >= 0.6, `${ns.night} of ${ns.n} slow cycles from cold syrup fall between 00:00 and 06:00.${ns.night / ns.n >= 0.6 ? ' The hall cools down at night.' : ''}`, 'Mixer · time of report']);
   const tor = S.events.filter(e => e.rec && e.rec.reason === 'tor').length;
-  if (tor >= 3) L.push([UI.bnSh.main === 'C', `Taśma pieca schodzi z toru średnio co ${fmt(S.t / 60 / tor)} min.`, `Piec · ${tor} zgłoszeń`]);
+  if (tor >= 3) L.push([UI.bnSh.main === 'C', `The oven belt loses tracking every ${fmt(S.t / 60 / tor)} min on average.`, `Oven · ${tor} reports`]);
   const su = S.events.filter(e => e.type === 'setup' && e.end != null);
-  if (su.length) { const av = su.reduce((a, e) => a + e.end - e.start, 0) / su.length / 60; L.push([UI.bnSh.main === 'B', `Przezbrojenie trwa średnio ${fmt(av)} min. Cel po SMED: poniżej 15 min.`, `Formierka · ${su.length} przezbrojeń`]); }
+  if (su.length) { const av = su.reduce((a, e) => a + e.end - e.start, 0) / su.length / 60; L.push([UI.bnSh.main === 'B', `Changeover takes ${fmt(av)} min on average. SMED target: under 15 min.`, `Former · ${su.length} changeovers`]); }
   const noz = S.events.filter(e => e.rec && e.rec.reason === 'noz').length;
-  if (noz >= 3) L.push([false, `Nóż formierki klei się średnio co ${fmt(S.t / 60 / noz)} min.`, `Formierka · ${noz} zgłoszeń`]);
+  if (noz >= 3) L.push([false, `The former knife sticks every ${fmt(S.t / 60 / noz)} min on average.`, `Former · ${noz} reports`]);
   const bc = S.wait.B.blocked, cStopBlock = Object.entries(bc).filter(([k]) => k === 'C:tor' || k === 'C:zator').reduce((a, [, v]) => a + v, 0);
-  if (cStopBlock >= 600) L.push([UI.bnSh.main === 'C', `${pct(cStopBlock / Math.max(1, sum(bc)))} blokad formierki wynika z postojów pieca. Formierka nie jest tu winna.`, `Przepływ B → C · ${fmt(cStopBlock / 60)} min`]);
+  if (cStopBlock >= 600) L.push([UI.bnSh.main === 'C', `${pct(cStopBlock / Math.max(1, sum(bc)))} of former blockages come from oven stops. The former is not at fault here.`, `Flow B → C · ${fmt(cStopBlock / 60)} min`]);
   const ev = S.events.filter(e => e.type !== 'setup'), none = ev.filter(e => !e.rec).length, inn = ev.filter(e => e.rec && e.rec.reason === 'inne').length;
-  if (ev.length) L.push([none / ev.length > 0.25, `Bez przyczyny: ${none} z ${ev.length} zdarzeń. „Inne”: ${inn}.`, 'Jakość danych']);
-  $('#pat').innerHTML = L.length ? L.map(([hot, t, s]) => `<li class="${hot ? 'hot' : ''}">${esc(t)}<small>${esc(s)}</small></li>`).join('') : '<li>Za mało danych.</li>';
+  if (ev.length) L.push([none / ev.length > 0.25, `No reason given: ${none} of ${ev.length} events. “Other”: ${inn}.`, 'Data quality']);
+  $('#pat').innerHTML = L.length ? L.map(([hot, t, s]) => `<li class="${hot ? 'hot' : ''}">${esc(t)}<small>${esc(s)}</small></li>`).join('') : '<li>Not enough data.</li>';
 }
 function computeProps() {
   const rows = UI.rows, sh = UI.bnSh, scale = SHIFT_SEC / Math.max(S.t, 3600);
@@ -1262,12 +1262,12 @@ function computeProps() {
       let bm = 0; for (const k in S.wait.C.starved) if (k.startsWith('B:')) bm += S.wait.C.starved[k];
       bm /= 60;
       if (!(sh.sh.C >= 0.3 && bm >= 10) && !UI.queued[p.id]) continue;
-      ev = `Piec był głodzony ${fmt(bm)} min przez postoje formierki.`; gain = bm * p.red * 135 * scale; min = bm;
+      ev = `The oven was starved ${fmt(bm)} min by former stops.`; gain = bm * p.red * 135 * scale; min = bm;
     } else {
       for (const r of p.reasons) { const row = rows[p.m + '|' + r]; if (row) { min += row.min; n += row.n; bnm += row.bn; } }
       if (min < 8 && !UI.queued[p.id]) continue;
-      ev = `${n} zgłoszeń · ${fmt(min)} min · ${fmt(bnm)} min na wąskim gardle`;
-      if (p.id === 'syrop') { const ns = nightShare('syrop'); if (ns.night >= 3) ev += ` · ${ns.night} z ${ns.n} po 00:00`; }
+      ev = `${n} reports · ${fmt(min)} min · ${fmt(bnm)} min at the bottleneck`;
+      if (p.id === 'syrop') { const ns = nightShare('syrop'); if (ns.night >= 3) ev += ` · ${ns.night} of ${ns.n} after 00:00`; }
       gain = bnm * p.red * PLAN_RATE * scale;
     }
     list.push({ p, min, gain, ev, isBn: sh.main === p.m });
@@ -1279,26 +1279,26 @@ function renderProps() {
   const list = computeProps();
   const evs = S.events.filter(e => e.type !== 'setup'), none = evs.filter(e => !e.rec).length;
   let h = '';
-  if (evs.length >= 4 && none / evs.length >= 0.25) h += `<article class="prop is-bn"><div class="ptop"><span class="tool">Andon · standard zgłaszania</span><span class="first">Najpierw dane</span></div><h4>Dane niepełne</h4><p class="what">${none} z ${evs.length} zdarzeń nie ma przyczyny. Bez tego BNECK widzi, gdzie linia traci, ale nie wie dlaczego.</p><p class="offnote">Zgłoś przyczyny na tabletach albo włącz „Operatorzy zgłaszają sami”.</p></article>`;
+  if (evs.length >= 4 && none / evs.length >= 0.25) h += `<article class="prop is-bn"><div class="ptop"><span class="tool">Andon · reporting standard</span><span class="first">Data first</span></div><h4>Incomplete data</h4><p class="what">${none} of ${evs.length} events have no reason. Without it BNECK sees where the line loses, but not why.</p><p class="offnote">Report reasons on the tablets or tick “Operators report automatically”.</p></article>`;
   list.forEach((o, i) => {
     const p = o.p, q = !!UI.queued[p.id];
-    const g = o.gain >= 500 ? `do +${fmt(Math.round(o.gain / 100) * 100)} szt. na zmianę` : 'ok. 0 teraz';
+    const g = o.gain >= 500 ? `up to +${fmt(Math.round(o.gain / 100) * 100)} pcs per shift` : 'about 0 now';
     h += `<article class="prop ${o.isBn ? 'is-bn' : 'is-off'}">
-      <div class="ptop"><span class="pm">${p.m}</span><span class="tool">${esc(p.tool)}</span>${i === 0 && o.gain >= 500 ? '<span class="first">Najpierw to</span>' : ''}</div>
+      <div class="ptop"><span class="pm">${p.m}</span><span class="tool">${esc(p.tool)}</span>${i === 0 && o.gain >= 500 ? '<span class="first">Do this first</span>' : ''}</div>
       <h4>${esc(p.title)}</h4><p class="what">${esc(p.what)}</p>
-      <dl><dt>Dowód</dt><dd>${esc(o.ev)}</dd><dt>Strata</dt><dd>${esc(p.waste)}</dd><dt>Efekt</dt><dd>${esc(p.effect)}</dd><dt>Szacunek</dt><dd class="gain">${g}</dd></dl>${o.gain >= 500 ? '<p class="offnote">Górna granica. Po poprawce wąskie gardło może się przesunąć.</p>' : ''}
-      ${o.isBn ? '' : `<p class="offnote">${mname(p.m)} nie jest wąskim gardłem. Poprawa teraz nie podniesie produkcji linii.</p>`}
-      <div class="pact">${q ? `<span class="queued">Zaplanowane od zmiany ${S.n + 1}</span><button type="button" class="btn" data-act="undo" data-k="${p.id}">Cofnij</button>` : `<button type="button" class="btn${o.isBn ? ' primary' : ''}" data-act="apply" data-k="${p.id}">Wdroż od zmiany ${S.n + 1}</button>`}</div>
+      <dl><dt>Evidence</dt><dd>${esc(o.ev)}</dd><dt>Waste</dt><dd>${esc(p.waste)}</dd><dt>Effect</dt><dd>${esc(p.effect)}</dd><dt>Estimate</dt><dd class="gain">${g}</dd></dl>${o.gain >= 500 ? '<p class="offnote">Upper bound. After the fix the bottleneck may move.</p>' : ''}
+      ${o.isBn ? '' : `<p class="offnote">The ${mname(p.m).toLowerCase()} is not the bottleneck. Fixing it now will not raise line output.</p>`}
+      <div class="pact">${q ? `<span class="queued">Scheduled from shift ${S.n + 1}</span><button type="button" class="btn" data-act="undo" data-k="${p.id}">Undo</button>` : `<button type="button" class="btn${o.isBn ? ' primary' : ''}" data-act="apply" data-k="${p.id}">Implement from shift ${S.n + 1}</button>`}</div>
     </article>`;
   });
-  if (!h) h = '<p class="calm">Brak propozycji. Linia ma zapas względem planu albo brakuje danych.</p>';
+  if (!h) h = '<p class="calm">No proposals. The line has headroom against plan, or data is missing.</p>';
   if (UI.sigs.props !== h) { UI.sigs.props = h; $('#props').innerHTML = h; }
   const ap = Object.entries(UI.appliedAt);
-  $('#applied').innerHTML = ap.length ? '<span class="lbl">Działa:</span>' + ap.map(([k, n]) => `<span class="chip">${esc(PROP[k].title)} · od zmiany ${n}</span>`).join('') : '';
+  $('#applied').innerHTML = ap.length ? '<span class="lbl">In place:</span>' + ap.map(([k, n]) => `<span class="chip">${esc(PROP[k].title)} · from shift ${n}</span>`).join('') : '';
 }
 function renderHist() {
-  const rows = UI.hist.map(h => `<tr><td class="num">${h.n}</td><td>${h.fx.length ? h.fx.map(k => esc(PROP[k].title)).join(', ') : 'brak'}</td><td class="num">${fmt(h.out)}</td><td class="num">${fmt(PLAN_TOTAL)}</td><td><div class="hbar"><i style="width:${Math.min(100, h.pct / 1.2 * 100)}%"></i><s style="left:${100 / 1.2}%"></s></div><span class="mono" style="font-size:12px">${pct(h.pct)}</span></td><td>${h.main ? mname(h.main) + ' <span class="mono" style="color:var(--muted);font-size:12px">' + pct(h.share) + '</span>' : '–'}</td></tr>`);
-  if (!S.done) rows.push(`<tr><td class="num">${S.n}</td><td>${Object.keys(S.fx).length ? Object.keys(S.fx).map(k => esc(PROP[k].title)).join(', ') : 'brak'}</td><td class="num">${fmt(goodOut(S))}</td><td class="num">${fmt(PLAN_TOTAL)}</td><td><span class="mono" style="font-size:12px;color:var(--muted)">w toku, ${clock(S.t)}</span></td><td>${UI.bnSh.main ? mname(UI.bnSh.main) : '–'}</td></tr>`);
+  const rows = UI.hist.map(h => `<tr><td class="num">${h.n}</td><td>${h.fx.length ? h.fx.map(k => esc(PROP[k].title)).join(', ') : 'none'}</td><td class="num">${fmt(h.out)}</td><td class="num">${fmt(PLAN_TOTAL)}</td><td><div class="hbar"><i style="width:${Math.min(100, h.pct / 1.2 * 100)}%"></i><s style="left:${100 / 1.2}%"></s></div><span class="mono" style="font-size:12px">${pct(h.pct)}</span></td><td>${h.main ? mname(h.main) + ' <span class="mono" style="color:var(--muted);font-size:12px">' + pct(h.share) + '</span>' : '–'}</td></tr>`);
+  if (!S.done) rows.push(`<tr><td class="num">${S.n}</td><td>${Object.keys(S.fx).length ? Object.keys(S.fx).map(k => esc(PROP[k].title)).join(', ') : 'none'}</td><td class="num">${fmt(goodOut(S))}</td><td class="num">${fmt(PLAN_TOTAL)}</td><td><span class="mono" style="font-size:12px;color:var(--muted)">in progress, ${clock(S.t)}</span></td><td>${UI.bnSh.main ? mname(UI.bnSh.main) : '–'}</td></tr>`);
   $('#hist').innerHTML = rows.join('');
 }
 
@@ -1308,31 +1308,31 @@ function renderOverview() {
   const L = [];
   if (planNow) {
     const gap = planNow - goodOut(S);
-    L.push(`Linia: <b>${pct(goodOut(S) / planNow)} planu</b> (dobre sztuki) do ${clock(S.t)}. ${gap > 0 ? `Brakuje <b>${fmt(gap)} szt.</b>` : `Nadwyżka <b>${fmt(-gap)} szt.</b>`}`);
+    L.push(`Line: <b>${pct(goodOut(S) / planNow)} of plan</b> (good units) at ${clock(S.t)}. ${gap > 0 ? `<b>${fmt(gap)} pcs</b> short.` : `<b>${fmt(-gap)} pcs</b> ahead.`}`);
   }
   if (main) {
     const waits = MS.filter(m => m !== main).map(m => `${mname(m).toLowerCase()} ${pct((S.secs[m].STARVED + S.secs[m].BLOCKED) / Math.max(1, S.t))}`).join(', ');
-    L.push(`Linię ogranicza <span class="bnw">${MACH[main].name.toLowerCase()}</span>, wąskie gardło przez ${pct(UI.bnSh.sh[main])} zmiany. Pozostałe maszyny czekają: ${waits} czasu.`);
+    L.push(`The line is limited by the <span class="bnw">${MACH[main].name.toLowerCase()}</span>, bottleneck for ${pct(UI.bnSh.sh[main])} of the shift. The other machines wait: ${waits} of the time.`);
     const top = Object.values(UI.rows).filter(r => r.m === main && r.bn >= 1).sort((a, b) => b.bn - a.bn)[0];
-    if (top) L.push(`Największa strata na wąskim gardle: <b>${esc(rlabel(top.r).toLowerCase())}</b>, ${fmt(top.bn)} min.`);
-  } else L.push('Wąskie gardło jeszcze nieustalone. Za mało danych z tej zmiany.');
-  if (main) { const p = opOf(S, main); if (p && p.lvl[main] <= 2) L.push(`Przy wąskim gardle stoi ${p.name}, poziom ${LVL[p.lvl[main]]}. Sprawdź zakładkę Załoga.`); }
+    if (top) L.push(`Biggest loss at the bottleneck: <b>${esc(rlabel(top.r).toLowerCase())}</b>, ${fmt(top.bn)} min.`);
+  } else L.push('Bottleneck not settled yet. Not enough data from this shift.');
+  if (main) { const p = opOf(S, main); if (p && p.lvl[main] <= 2) L.push(`${p.name} is at the bottleneck at level ${LVL[p.lvl[main]]}. Check the Crew tab.`); }
   const best = computeProps().find(o => o.gain >= 500);
-  if (best) L.push(`Najpierw: <b>${esc(best.p.title)}</b> (${esc(best.p.tool)}). Szacunek do +${fmt(Math.round(best.gain / 100) * 100)} szt. na zmianę.`);
-  else if (main) L.push('Brak poprawki z wyraźnym zyskiem. Zbierz więcej zgłoszeń przyczyn.');
+  if (best) L.push(`First: <b>${esc(best.p.title)}</b> (${esc(best.p.tool)}). Estimate up to +${fmt(Math.round(best.gain / 100) * 100)} pcs per shift.`);
+  else if (main) L.push('No fix with a clear gain. Collect more reason reports.');
   const prev = UI.hist[UI.hist.length - 1];
-  if (prev && !S.done) L.push(`Poprzednia zmiana: ${pct(prev.pct)} planu, wąskie gardło: ${prev.main ? mname(prev.main).toLowerCase() : '–'}.`);
+  if (prev && !S.done) L.push(`Previous shift: ${pct(prev.pct)} of plan, bottleneck: ${prev.main ? mname(prev.main).toLowerCase() : '–'}.`);
   const h = L.map(x => `<li>${x}</li>`).join('');
   if (UI.sigs.ov !== h) { UI.sigs.ov = h; $('#oSum').innerHTML = h; }
   const rows = main ? Object.values(UI.rows).filter(r => r.m === main && r.bn >= 0.5).sort((a, b) => b.bn - a.bn).slice(0, 5) : [];
   const mx = Math.max(1, ...rows.map(r => r.bn));
-  $('#oTop').innerHTML = rows.length ? rows.map(r => `<div class="prow"><span class="nm"><span class="pm">${r.m}</span>${esc(rlabel(r.r))}</span><span class="ptrack"><b style="width:${100 * r.bn / mx}%"></b></span><span class="pv"><em>${fmt(r.bn)} min</em></span></div>`).join('') : '<p class="calm">Brak strat na wąskim gardle w tej zmianie.</p>';
+  $('#oTop').innerHTML = rows.length ? rows.map(r => `<div class="prow"><span class="nm"><span class="pm">${r.m}</span>${esc(rlabel(r.r))}</span><span class="ptrack"><b style="width:${100 * r.bn / mx}%"></b></span><span class="pv"><em>${fmt(r.bn)} min</em></span></div>`).join('') : '<p class="calm">No losses at the bottleneck this shift.</p>';
 }
 function renderHistChart() {
   const items = UI.hist.slice(-7).map(h => ({ n: h.n, p: h.pct, bn: h.main, live: false }));
   if (!S.done) items.push({ n: S.n, p: S.t ? goodOut(S) / (PLAN_RATE * S.t / 60) : 0, bn: UI.bnSh.main, live: true });
   const max = 1.2;
-  $('#oHist').innerHTML = items.map(i => `<div class="hcc"><span class="hcv">${pct(i.p)}</span><div class="hct${i.live ? ' live' : ''}"><i style="height:${Math.min(100, 100 * i.p / max)}%"></i><s style="bottom:${100 / max}%"></s></div><span class="hcl">Zm. ${i.n}${i.live ? ', w toku' : ''}</span><span class="hcb">${i.bn ? mname(i.bn) : '–'}</span></div>`).join('');
+  $('#oHist').innerHTML = items.map(i => `<div class="hcc"><span class="hcv">${pct(i.p)}</span><div class="hct${i.live ? ' live' : ''}"><i style="height:${Math.min(100, 100 * i.p / max)}%"></i><s style="bottom:${100 / max}%"></s></div><span class="hcl">Shift ${i.n}${i.live ? ', live' : ''}</span><span class="hcb">${i.bn ? mname(i.bn) : '–'}</span></div>`).join('');
 }
 
 // ---------- tabs ----------
@@ -1364,26 +1364,26 @@ document.addEventListener('click', e => { const b = e.target.closest('[data-go]'
 // ---------- render loop ----------
 function renderFast() {
   $('#clk').textContent = clock(S.t);
-  $('#shiftLbl').textContent = `Zmiana ${S.n}`;
+  $('#shiftLbl').textContent = `Shift ${S.n}`;
   $('#progBar').style.width = (100 * S.t / SHIFT_SEC) + '%';
   const planNow = PLAN_RATE * S.t / 60;
   const good = goodOut(S);
   $('#kOut').textContent = fmt(good);
-  $('#kOutS').textContent = `plan do teraz ${fmt(planNow)} · braki ${fmt(S.rej.B + S.rej.C)}`;
+  $('#kOutS').textContent = `plan to now ${fmt(planNow)} · rejects ${fmt(S.rej.B + S.rej.C)}`;
   $('#kPct').textContent = planNow ? pct(good / planNow) : '–';
   const bn = renderLine(), main = S.focus || UI.bnSh.main;
-  $('#kPctS').textContent = `cel zmiany ${fmt(PLAN_TOTAL)} szt.`;
+  $('#kPctS').textContent = `shift target ${fmt(PLAN_TOTAL)} pcs`;
   $('#kBn').textContent = main ? MACH[main].name : '–';
-  $('#kBnS').textContent = main ? `${pct(UI.bnSh.sh[main])} zmiany · teraz: ${bn ? mname(bn).toLowerCase() : '–'}` : 'metoda okresów aktywnych';
-  $('#nPct').textContent = planNow ? pct(good / planNow) + ' planu' : '– planu';
-  $('#nBn').innerHTML = '<span class="lg">Wąskie gardło</span><span class="sm">WG</span>: ' + (bn ? mname(bn) : '–');
+  $('#kBnS').textContent = main ? `${pct(UI.bnSh.sh[main])} of shift · now: ${bn ? mname(bn).toLowerCase() : '–'}` : 'active period method';
+  $('#nPct').textContent = planNow ? pct(good / planNow) + ' of plan' : '– of plan';
+  $('#nBn').innerHTML = '<span class="lg">Bottleneck</span><span class="sm">BN</span>: ' + (bn ? mname(bn) : '–');
   let np = 0; for (const ev of S.events) if (needsInput(S, ev)) np++;
   const bd = $('#tbBadge'); bd.hidden = !np || S.auto; bd.textContent = np;
   const ob = main ? oee(S, main) : null;
   $('#kOee').textContent = planNow ? pct(good / planNow) : '–';
-  $('#kOeeS').textContent = ob ? `${mname(main)}: D ${pct(ob.A)} · W ${pct(ob.P)} · J ${pct(ob.Q)}` : 'dobre sztuki / plan';
+  $('#kOeeS').textContent = ob ? `${mname(main)}: A ${pct(ob.A)} · P ${pct(ob.P)} · Q ${pct(ob.Q)}` : 'good units / plan';
   for (const m of MS) tabDynamic(m);
-  $('#bPlay').textContent = UI.playing ? 'Pauza' : 'Start';
+  $('#bPlay').textContent = UI.playing ? 'Pause' : 'Start';
 }
 function renderSlow() {
   if (!UI.presim && !S.done) updateFocus(false);
@@ -1422,8 +1422,8 @@ function act(el) {
     UI.sigs[ev.m] = null; UI.rows = lossRows(); renderTab(ev.m); tabDynamic(ev.m);
   } else if (a === 'apply') {
     UI.queued[el.dataset.k] = true; renderProps();
-    toast(`${PROP[el.dataset.k].title}: działa od zmiany ${S.n + 1}.`);
-    if (S.done) $('#endSub').textContent = `Od następnej zmiany działa ${Object.keys(UI.queued).length} ${Object.keys(UI.queued).length === 1 ? 'nowa poprawka' : 'nowe poprawki'}.`;
+    toast(`${PROP[el.dataset.k].title}: in place from shift ${S.n + 1}.`);
+    if (S.done) { const q = Object.keys(UI.queued).length; $('#endSub').textContent = `${q} new ${q === 1 ? 'fix takes' : 'fixes take'} effect next shift.`; }
   } else if (a === 'undo') { delete UI.queued[el.dataset.k]; renderProps(); }
 }
 document.addEventListener('pointerdown', e => {

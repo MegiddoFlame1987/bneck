@@ -1,28 +1,28 @@
 # BNECK
 
-Demo narzędzia dla shift managera: wąskie gardło linii, przepływ między maszynami i propozycje lean.
+Demo of a shift-manager tool: line bottleneck, flow between machines, OEE, crew skills and lean improvement proposals.
 
-Fabryka **Oakmere Bar Co.** jest fikcyjna. Maszyny, awarie i liczby pochodzą z symulacji.
+**Oakmere Bar Co.** is fictional. Machines, failures and numbers come from a simulation.
 
-## Co jest w środku
+## Contents
 
-| Plik | Co to jest |
+| File | What it is |
 |---|---|
-| `index.html` | Cała strona w jednym pliku. Zakładki: Przegląd (kierownik), Linia (strumień z góry na dół, wąskie gardło, OEE, straty), Załoga (ILUO, obsada, rekomendacja), Operatorzy (tablety), Analiza, Działania |
-| `test.js` | Test silnika: 5 zmian z kolejnymi poprawkami, sprawdza % planu i wąskie gardło |
+| `index.html` | The whole app in one file. Tabs: Overview (manager), Line (stream top to bottom, bottleneck, OEE, losses), Crew (ILUO, staffing, recommendation), Operators (tablets), Analysis, Actions |
+| `test.js` | Engine test: 5 shifts with successive fixes, checks % of plan and bottleneck |
 
-## Uruchomienie
+## Run
 
-- Strona: otwórz `index.html` w przeglądarce. Bez builda, bez serwera.
+- App: open `index.html` in a browser. No build, no server.
 - Test: `node test.js`
-- Vercel: import repo, preset "Other", bez komendy build.
+- Vercel: import the repo, preset "Other", no build command.
 
-## Jak liczone jest wąskie gardło
+## How it works
 
-Metoda okresów aktywnych (Roser). W danej chwili wąskim gardłem jest maszyna z najdłuższym nieprzerwanym okresem pracy albo własnego postoju. Brak wsadu i brak miejsca przerywają okres.
+Bottleneck: active period method (Roser). At any moment the bottleneck is the machine with the longest uninterrupted period of running or own stoppage. Starved and blocked states end the period.
 
-OEE: dostępność (bez własnych postojów) × wydajność (wobec tempa idealnego, czekanie na inną maszynę obniża wydajność) × jakość (dobre sztuki).
+OEE: availability (time without own stops) × performance (against ideal rate; waiting for another machine lowers it) × quality (good units).
 
-Załoga: poziom ILUO operatora mnoży czas usuwania postojów (I ×1,45, L ×1,15, U ×1,0, O ×0,8). W produkcie obsada i matryca przyjdą z Crewmap.
+Crew: the operator's ILUO level multiplies own-stop duration (I ×1.45, L ×1.15, U ×1.0, O ×0.8). In the product, staffing and the matrix come from Crewmap.
 
-Propozycje w demo daje silnik reguł, nie model AI.
+Proposals in the demo come from a rule engine, not an AI model.

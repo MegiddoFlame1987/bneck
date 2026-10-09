@@ -1,9 +1,9 @@
-// Sprawdza silnik symulacji z index.html: 5 zmian, kolejne poprawki, % planu i wąskie gardło.
-// Uruchom: node test.js
+// Checks the simulation engine inside index.html: 5 shifts, successive fixes, % of plan and bottleneck.
+// Run: node test.js
 const fs = require('fs'), vm = require('vm');
 const html = fs.readFileSync(__dirname + '/index.html', 'utf8');
 const a = html.indexOf('/*ENGINE-START*/'), b = html.indexOf('/*ENGINE-END*/');
-if (a < 0 || b < 0) { console.error('Brak znaczników ENGINE-START/END w index.html'); process.exit(1); }
+if (a < 0 || b < 0) { console.error('ENGINE-START/END markers not found in index.html'); process.exit(1); }
 const E = vm.runInNewContext(html.slice(a, b) + '\n;({ warmShift, newShift, step, bnMinutes, bnShares, autoOps, goodOut, oee, MS, PLAN_TOTAL })');
 
 const stages = [
@@ -20,7 +20,7 @@ stages.forEach((st, i) => {
   const sh = E.bnShares(E.bnMinutes(s)), p = E.goodOut(s) / E.PLAN_TOTAL;
   const ok = p >= st.expect[0] && p <= st.expect[1] && sh.main === st.bn;
   if (!ok) fail++;
-  console.log(`${ok ? 'OK  ' : 'FAIL'} zmiana ${i + 1}: ${(p * 100).toFixed(0)}% planu (dobre), OEE linii ${E.MS.map(m => m + ' ' + (E.oee(s, m).oee * 100).toFixed(0)).join('/')}, wąskie gardło ${sh.main} (${(sh.sh[sh.main] * 100).toFixed(0)}%), poprawki: ${Object.keys(st.fx).join(', ') || 'brak'}`);
+  console.log(`${ok ? 'OK  ' : 'FAIL'} shift ${i + 1}: ${(p * 100).toFixed(0)}% of plan (good), OEE ${E.MS.map(m => m + ' ' + (E.oee(s, m).oee * 100).toFixed(0)).join('/')}, bottleneck ${sh.main} (${(sh.sh[sh.main] * 100).toFixed(0)}%), fixes: ${Object.keys(st.fx).join(', ') || 'none'}`);
   prev = sh.main;
 });
 process.exit(fail ? 1 : 0);
