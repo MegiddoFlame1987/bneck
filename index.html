@@ -210,6 +210,30 @@ main { max-width: 1360px; margin: 0 auto; padding-inline: 24px; padding-block: 2
 .iluo td:first-child small { color: var(--muted); font-weight: 400; margin-left: 6px; }
 .cell { display: inline-grid; place-items: center; width: 36px; height: 30px; border-radius: 6px; font-family: var(--f-m); font-weight: 700; color: #fff; }
 .cell.here { outline: 2px solid var(--ink); outline-offset: 2px; }
+.crewf { margin: 0 0 10px; flex-wrap: wrap; }
+.crewf button { min-height: 36px; }
+.psn { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line2); font-size: 14px; }
+.psn:last-of-type { border-bottom: 0; }
+.psn .nm { font-weight: 600; min-width: 0; }
+.psn .nm small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+.psn.off .nm { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; }
+.psn .stseg { justify-self: end; }
+.stseg button { min-width: 50px; min-height: 36px; font-size: 12px; }
+.sublbl { display: block; margin: 16px 0 2px; }
+.planfoot { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; font-size: 13px; color: var(--muted); }
+.offs { display: flex; flex-wrap: wrap; gap: 6px; margin: -4px 0 6px; font-size: 13px; color: var(--muted); }
+.offs b { color: var(--ink); font-weight: 600; }
+.ahead { list-style: none; margin: 0; padding: 0; }
+.ahead li { display: grid; grid-template-columns: 7.2rem 4.4rem minmax(0, 1fr); gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line2); font-size: 14px; align-items: baseline; }
+.ahead li:last-child { border-bottom: 0; }
+.ahead .when { font-family: var(--f-m); font-size: 13px; }
+.ahead .bad { color: var(--stop); font-weight: 600; }
+.ahead .ok2 { color: var(--muted); }
+.iluo tr.cg th { text-align: left; padding: 12px 6px 2px; font-family: var(--f-d); font-size: 16px; letter-spacing: .01em; text-transform: none; color: var(--ink); }
+.iluo tr.cg th small { font-family: var(--f-b); font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 6px; }
+.iluo button.cell { border: 0; cursor: pointer; font-size: 14px; }
+.iluo button.cell:hover { filter: brightness(1.08); }
+.iluo tr.off td:first-child { color: var(--muted); }
 .ilegend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); margin-top: 10px; }
 .alert { border-left: 4px solid var(--stop); background: var(--stopsoft); border-radius: var(--rs); padding: 10px 14px; font-size: 14px; }
 .alert.ok { border-left-color: var(--ok); background: var(--oksoft); }
@@ -471,7 +495,7 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
     <div class="tablist" role="tablist" aria-label="BNECK views">
       <button type="button" role="tab" id="t-przeglad" aria-controls="p-przeglad" aria-selected="true" data-tab="przeglad">Overview</button>
       <button type="button" role="tab" id="t-linia" aria-controls="p-linia" aria-selected="false" tabindex="-1" data-tab="linia">Line</button>
-      <button type="button" role="tab" id="t-zaloga" aria-controls="p-zaloga" aria-selected="false" tabindex="-1" data-tab="zaloga">Crew</button>
+      <button type="button" role="tab" id="t-zaloga" aria-controls="p-zaloga" aria-selected="false" tabindex="-1" data-tab="zaloga">Shift &amp; crew</button>
       <button type="button" role="tab" id="t-operatorzy" aria-controls="p-operatorzy" aria-selected="false" tabindex="-1" data-tab="operatorzy">Operators<span class="badge" id="tbBadge" hidden>0</span></button>
       <button type="button" role="tab" id="t-analiza" aria-controls="p-analiza" aria-selected="false" tabindex="-1" data-tab="analiza">Analysis</button>
       <button type="button" role="tab" id="t-flow" aria-controls="p-flow" aria-selected="false" tabindex="-1" data-tab="flow">Flow</button>
@@ -537,16 +561,20 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
   </section>
 
   <section class="tp" id="p-zaloga" role="tabpanel" aria-labelledby="t-zaloga" hidden>
-    <div class="sh"><h2>Crew</h2><p>Who runs which machine and what they can do. ILUO levels from the skills matrix (in the product: from Crewmap). A crew change takes effect immediately.</p></div>
+    <div class="sh"><h2>Shift &amp; crew</h2><p>Build the next shift from the rota, see who runs each machine now, keep the skills matrix current. The ILUO level at a machine changes how fast stops are cleared. In the product the rota and the matrix come from Crewmap.</p></div>
     <div class="crewg">
       <div class="stack">
-        <div class="panel"><h3>Line staffing</h3><p class="hint">Pick a person for each position. The level at a machine changes how fast stops are cleared.</p><div id="crewPos"></div></div>
+        <div class="panel"><h3 id="nextH">Next shift</h3><p class="hint">From the rota and known absences. Mark who is off: gaps are filled by floaters, best level first. Used when the shift starts.</p><div id="nextPeople"></div><div id="nextPlan"></div></div>
+        <div class="panel"><h3 id="nowH">This shift</h3><p class="hint">Who runs each machine now. A change takes effect at once.</p><div id="nowAbs"></div><div id="crewPos"></div><div id="nowNote"></div></div>
         <div id="crewReco"></div>
+        <div class="panel"><h3>Coming shifts</h3><p class="hint">Rota and known absences for the next six shifts. Red: a machine would have no operator.</p><ul class="ahead" id="crewAhead"></ul></div>
       </div>
       <div class="stack">
-        <div class="panel"><h3>ILUO matrix</h3><p class="hint">Outline: current position. Bottom row: how many people hold U or O on the machine.</p><div style="overflow-x:auto"><table class="iluo" id="iluo"></table></div>
+        <div class="panel"><h3>Skills matrix (ILUO)</h3><p class="hint">Tap a level after a sign-off: I → L → U → O → I. Outline: running that machine now. Bottom row: people at U or O.</p>
+          <div class="seg crewf" role="group" aria-label="Show crew" id="crewF"></div>
+          <div style="overflow-x:auto"><table class="iluo" id="iluo"></table></div>
           <div class="ilegend"><span><i class="lv lv1" style="display:inline-grid;width:18px;height:18px;font-size:11px">I</i> learning, stops ×1.45</span><span><i class="lv lv2" style="display:inline-grid;width:18px;height:18px;font-size:11px">L</i> supervised, ×1.15</span><span><i class="lv lv3" style="display:inline-grid;width:18px;height:18px;font-size:11px">U</i> independent, ×1.0</span><span><i class="lv lv4" style="display:inline-grid;width:18px;height:18px;font-size:11px">O</i> trains others, ×0.8</span></div></div>
-        <div class="panel"><h3>Staffing risk</h3><div class="stack" id="crewRisk"></div></div>
+        <div class="panel"><h3>Staffing risk</h3><p class="hint">Where one more absence leaves a machine without someone at U or O.</p><div class="stack" id="crewRisk"></div></div>
       </div>
     </div>
   </section>
@@ -1015,7 +1043,8 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 const pct = x => Math.round(x * 100) + '%';
 const mname = m => MACH[m].short;
 
-const UI = { speed: 112, assign: { ...DEFAULT_ASSIGN }, playing: true, auto: true, hist: [], queued: {}, appliedAt: {}, fixState: {}, runTo: 0, monthDone: false, prevCum: null, prevMain: null, presim: false, bn: [], bnSh: { sh: { A: 0, B: 0, C: 0 }, main: null, tot: 0 }, rows: {}, sigs: {}, flash: null };
+const LV0 = Object.fromEntries(ROSTER.map(p => [p.id, { ...p.lvl }]));
+const UI = { next: null, crewVer: 0, speed: 112, assign: { ...DEFAULT_ASSIGN }, playing: true, auto: true, hist: [], queued: {}, appliedAt: {}, fixState: {}, runTo: 0, monthDone: false, prevCum: null, prevMain: null, presim: false, bn: [], bnSh: { sh: { A: 0, B: 0, C: 0 }, main: null, tot: 0 }, rows: {}, sigs: {}, flash: null };
 let S = null;
 
 // ---------- sim control ----------
@@ -1029,7 +1058,10 @@ function fixEffects(n) {
   return fx;
 }
 function startShift(n) {
-  S = warmShift(newShift(n, fixEffects(n), UI.prevMain, UI.assign));
+  const plan = UI.next && UI.next.n === n ? UI.next : planShift(n);
+  UI.next = null;
+  S = warmShift(newShift(n, fixEffects(n), UI.prevMain, plan.assign));
+  S.plan = plan; UI.assign = { ...S.assign };
   S.auto = UI.auto; S.focusSince = 0;
   UI.sigs = {}; UI.bn = []; UI.bnSh = { sh: { A: 0, B: 0, C: 0 }, main: null, tot: 0 };
   $('#endBar').hidden = true; $('#bPlay').disabled = false; $('#bEnd').disabled = false; $('#bDay').disabled = false;
@@ -1095,6 +1127,7 @@ function runShifts(count) {
 }
 function resetDemo() {
   UI.hist = []; UI.queued = {}; UI.appliedAt = {}; UI.fixState = {}; UI.prevCum = null; UI.prevMain = null; UI.assign = { ...DEFAULT_ASSIGN }; UI.monthDone = false;
+  UI.next = null; for (const p of ROSTER) p.lvl = { ...LV0[p.id] };
   startShift(1); UI.presim = true; advance(6 * 3600); UI.presim = false; updateFocus(true);
   UI.playing = true; STORE.del('month'); renderAll(true);
 }
@@ -1334,47 +1367,144 @@ function wasteSplit() {
   return W;
 }
 
-// ---------- crew ----------
+// ---------- shift & crew ----------
+let CREWF = 'all';
+const ST = { IN: 'In', HOL: 'Holiday', SICK: 'Sick' };
+const placeOf = p => p.home ? MACH[p.home].short : 'Floater';
+const shiftName = n => { const c = calOf(n); return `${c.dow} ${c.day} · ${c.type === 'day' ? 'day' : 'night'}`; };
 function assignedTo(id) { for (const m of MS) if (S.assign[m] === id) return m; return null; }
+function onShift() { const pl = S.plan; return ROSTER.filter(p => p.crew === pl.crew && !pl.status[p.id]); }
+function planInfo(pl) {
+  const present = ROSTER.filter(p => p.crew === pl.crew && !pl.status[p.id]);
+  const used = new Set(Object.values(pl.assign).filter(Boolean));
+  pl.open = MS.filter(m => !pl.assign[m]); pl.spare = present.filter(p => !used.has(p.id)).map(p => p.id);
+  return pl;
+}
+function nextPlan() {
+  const n = S.n + 1; if (n > SHIFTS) return null;
+  if (!UI.next || UI.next.n !== n) UI.next = planShift(n);
+  return UI.next;
+}
+function lvBadge(p, m) { return p ? `<span class="lv lv${p.lvl[m]}" title="ILUO level">${LVL[p.lvl[m]]}</span>` : '<span class="lv lv1" title="No operator">–</span>'; }
+function staffSelect(attr, m, people, cur, busyOf) {
+  const opts = people.map(c => { const at = busyOf(c.id); return `<option value="${c.id}" ${c.id === cur ? 'selected' : ''}>${esc(c.name)} · ${LVL[c.lvl[m]]}${at && at !== m ? ' (at ' + mname(at).toLowerCase() + ')' : ''}</option>`; }).join('');
+  return `<select ${attr}="${m}" aria-label="Staffing: ${MACH[m].name}"><option value="" ${cur ? '' : 'selected'}>No operator</option>${opts}</select>`;
+}
+const UNSTAFFED = m => `<div class="alert">${MACH[m].name}: no operator. The next machine's operator covers it: own stops ×1.6 and a 4–9 min stop about every 45 min.</div>`;
 function renderCrew() {
-  const sig = JSON.stringify(S.assign) + S.n + (S.focus || '');
+  const nx = nextPlan();
+  const sig = JSON.stringify([S.assign, S.n, S.focus, UI.crewVer, CREWF, nx, !!S.fx.pula, !!S.checks.pula]);
   if (UI.sigs.crew !== sig) {
     UI.sigs.crew = sig;
-    $('#crewPos').innerHTML = MS.map(m => {
-      const p = opOf(S, m);
-      const opts = CREW.map(c => { const at = assignedTo(c.id); return `<option value="${c.id}" ${c.id === S.assign[m] ? 'selected' : ''}>${c.name} · ${LVL[c.lvl[m]]}${at && at !== m ? ' (at ' + mname(at).toLowerCase() + ')' : ''}</option>`; }).join('');
-      return `<div class="posrow"><span class="mid">${m}</span><span class="nm">${MACH[m].name}<small>${S.focus === m ? 'shift bottleneck' : 'standard'}</small></span><select data-pos="${m}" aria-label="Staffing: ${MACH[m].name}">${opts}</select><span class="lv lv${p.lvl[m]}" title="ILUO level">${LVL[p.lvl[m]]}</span></div>`;
-    }).join('');
+    const pl = S.plan, here = onShift();
+    // next shift
+    if (nx) {
+      $('#nextH').textContent = `Next shift · ${shiftName(nx.n)} · Crew ${nx.crew}`;
+      const crew = ROSTER.filter(p => p.crew === nx.crew);
+      $('#nextPeople').innerHTML = '<span class="lbl sublbl">Who is in</span>' + crew.map(p => { const st = nx.status[p.id] || 'IN'; return `<div class="psn${st !== 'IN' ? ' off' : ''}"><span class="nm">${esc(p.name)}<small>${placeOf(p)}</small></span><span class="seg stseg" role="group" aria-label="${esc(p.name)}: in or off">${Object.keys(ST).map(k => `<button type="button" data-ns="${p.id}:${k}" aria-pressed="${st === k}">${k === 'IN' ? 'In' : k}</button>`).join('')}</span></div>`; }).join('');
+      const present = crew.filter(p => !nx.status[p.id]), nAt = id => { for (const m of MS) if (nx.assign[m] === id) return m; return null; };
+      $('#nextPlan').innerHTML = '<span class="lbl sublbl">Plan</span>' + MS.map(m => { const p = nx.assign[m] ? CREW_BY[nx.assign[m]] : null; return `<div class="posrow"><span class="mid">${m}</span><span class="nm">${MACH[m].name}<small>${p ? (p.home === m ? 'fixed place' : p.home ? 'moved from the ' + mname(p.home).toLowerCase() : 'floater') : 'open'}</small></span>${staffSelect('data-np', m, present, nx.assign[m], nAt)}${lvBadge(p, m)}</div>`; }).join('')
+        + nx.open.map(UNSTAFFED).join('')
+        + `<div class="planfoot"><span>${nx.spare.length ? 'Spare: ' + nx.spare.map(id => esc(CREW_BY[id].name)).join(', ') : 'No spare floater.'}</span><button type="button" class="btn" data-nreset="1">Back to rota</button></div>`;
+    } else { $('#nextH').textContent = 'Next shift'; $('#nextPeople').innerHTML = '<p class="calm">Last shift of the month.</p>'; $('#nextPlan').innerHTML = ''; }
+    // this shift
+    $('#nowH').textContent = `This shift · ${shiftName(S.n)} · Crew ${pl.crew}`;
+    const offs = Object.entries(pl.status);
+    $('#nowAbs').innerHTML = `<div class="offs">${offs.length ? 'Off: ' + offs.map(([id, k]) => `<b>${esc(CREW_BY[id].name)}</b> ${ST[k].toLowerCase()}`).join(', ') : 'Everyone on the rota is in.'}</div>`;
+    $('#crewPos').innerHTML = MS.map(m => { const p = opOf(S, m); return `<div class="posrow"><span class="mid">${m}</span><span class="nm">${MACH[m].name}<small>${S.focus === m ? 'shift bottleneck' : 'standard'}</small></span>${staffSelect('data-pos', m, here, S.assign[m], assignedTo)}${lvBadge(p, m)}</div>`; }).join('');
+    $('#nowNote').innerHTML = MS.filter(m => !S.assign[m]).map(UNSTAFFED).join('') + (S.fx.pula ? `<label class="tog" style="margin-top:10px"><input type="checkbox" data-act="chk" data-k="pula" ${S.checks.pula ? 'checked' : ''}> ${esc(PROP.pula.check)}</label>` : '');
+    // coming shifts
+    const L = [];
+    for (let n = S.n + 1; n <= Math.min(SHIFTS, S.n + 6); n++) {
+      const x = n === S.n + 1 && nx ? nx : planShift(n), off = Object.keys(x.status).length;
+      L.push(`<li><span class="when">${shiftName(n)}</span><span>Crew ${x.crew}</span><span class="${x.open.length ? 'bad' : 'ok2'}">${off ? off + ' off' : 'all in'}${x.open.length ? ' · ' + x.open.map(m => mname(m).toLowerCase()).join(', ') + ' open' : ''}</span></li>`);
+    }
+    $('#crewAhead').innerHTML = L.length ? L.join('') : '<li><span class="ok2">No more shifts this month.</span></li>';
+    // matrix
+    $('#crewF').innerHTML = ['all', ...CREWS].map(c => `<button type="button" data-crewf="${c}" aria-pressed="${String(CREWF) === String(c)}">${c === 'all' ? 'All crews' : 'Crew ' + c}</button>`).join('');
+    const shown = CREWS.filter(c => CREWF === 'all' || String(CREWF) === String(c));
     let t = `<thead><tr><th>Person</th>${MS.map(m => `<th>${mname(m)}</th>`).join('')}</tr></thead><tbody>`;
-    for (const c of CREW) { const at = assignedTo(c.id); t += `<tr><td>${c.name}${at ? `<small>at: ${mname(at).toLowerCase()}</small>` : '<small>reserve</small>'}</td>${MS.map(m => `<td><span class="cell lv${c.lvl[m]}${at === m ? ' here' : ''}">${LVL[c.lvl[m]]}</span></td>`).join('')}</tr>`; }
-    t += `<tr><td style="color:var(--muted)">U + O</td>${MS.map(m => `<td style="font-family:var(--f-m)">${CREW.filter(c => c.lvl[m] >= 3).length}</td>`).join('')}</tr></tbody>`;
+    const rows = [];
+    for (const c of shown) {
+      const tag = c === pl.crew ? 'on now' : nx && c === nx.crew ? 'next' : '';
+      t += `<tr class="cg"><th colspan="${MS.length + 1}">Crew ${c}${tag ? `<small>${tag}</small>` : ''}</th></tr>`;
+      for (const p of ROSTER.filter(x => x.crew === c)) {
+        rows.push(p);
+        const at = c === pl.crew ? assignedTo(p.id) : null, off = c === pl.crew && pl.status[p.id];
+        t += `<tr class="${off ? 'off' : ''}"><td>${esc(p.name)}<small>${placeOf(p)}${off ? ' · off' : at ? ' · at ' + mname(at).toLowerCase() : ''}</small></td>${MS.map(m => `<td><button type="button" class="cell lv${p.lvl[m]}${at === m ? ' here' : ''}" data-lv="${p.id}:${m}" aria-label="${esc(p.name)} on the ${mname(m).toLowerCase()}: ${LVL[p.lvl[m]]}. Tap to change.">${LVL[p.lvl[m]]}</button></td>`).join('')}</tr>`;
+      }
+    }
+    t += `<tr><td style="color:var(--muted)">U + O</td>${MS.map(m => `<td style="font-family:var(--f-m)">${rows.filter(c => c.lvl[m] >= 3).length}</td>`).join('')}</tr></tbody>`;
     $('#iluo').innerHTML = t;
+    // risk
     const risks = [];
-    for (const m of MS) { const n = CREW.filter(c => c.lvl[m] >= 3).length, o = CREW.filter(c => c.lvl[m] === 4).length; if (n <= 2) risks.push(`<div class="alert">${MACH[m].name}: only ${n} people at U or O. One holiday or sick day = line running at level L.</div>`); else if (o <= 1) risks.push(`<div class="alert warn">${MACH[m].name}: a single trainer (O). Nobody trains when they are away.</div>`); }
-    for (const m of MS) { const p = opOf(S, m); if (p.lvl[m] <= 1) risks.push(`<div class="alert">${p.name} on the ${mname(m).toLowerCase()} is level I. Needs supervision, stops ×1.45.</div>`); }
-    $('#crewRisk').innerHTML = risks.length ? risks.join('') : '<div class="alert ok">Staffing without risk: every machine has U/O cover.</div>';
+    if (nx) for (const m of nx.open) risks.push(`<div class="alert">Next shift (${shiftName(nx.n)}): the ${mname(m).toLowerCase()} has no operator. Book a floater from another crew or move a trained person.</div>`);
+    for (const m of MS) { const p = opOf(S, m); if (p && p.lvl[m] <= 1) risks.push(`<div class="alert">${esc(p.name)} on the ${mname(m).toLowerCase()} is level I. Needs supervision, stops ×1.45.</div>`); }
+    const atL = [];
+    for (const c of CREWS) {
+      const crew = ROSTER.filter(p => p.crew === c), fl = crew.filter(p => !p.home);
+      for (const m of MS) {
+        const fixed = crew.find(p => p.home === m); if (!fixed) continue;
+        const best = fl.reduce((b, p) => !b || p.lvl[m] > b.lvl[m] ? p : b, null);
+        if (!best) risks.push(`<div class="alert">Crew ${c}: nobody covers the ${mname(m).toLowerCase()} when ${esc(fixed.name)} is off.</div>`);
+        else if (best.lvl[m] === 1) risks.push(`<div class="alert">Crew ${c}: when ${esc(fixed.name)} is off, the ${mname(m).toLowerCase()} gets ${esc(best.name)} at I.</div>`);
+        else if (best.lvl[m] === 2) atL.push(`crew ${c} ${mname(m).toLowerCase()} (${esc(best.name)})`);
+      }
+    }
+    if (atL.length) risks.push(`<div class="alert warn">Floater cover at L only, needs supervision: ${atL.join(', ')}.</div>`);
+    $('#crewRisk').innerHTML = risks.length ? risks.join('') : '<div class="alert ok">Every machine has U or O cover in every crew.</div>';
   }
+  // recommendation for this shift
   const m = S.focus; let h = '';
   if (m) {
     const cur = opOf(S, m), own = Object.values(UI.rows).filter(r => r.m === m).reduce((a, r) => a + r.min, 0);
-    let best = null; for (const c of CREW) if (c.id !== cur.id && c.lvl[m] > cur.lvl[m] && (!best || c.lvl[m] > best.lvl[m])) best = c;
-    if (best) {
-      const gain = own * (1 - LVLFAC[best.lvl[m]] / LVLFAC[cur.lvl[m]]), at = assignedTo(best.id);
-      h = `<div class="reco"><span class="tool">Crew · bottleneck</span><h4>${best.name} (${LVL[best.lvl[m]]}) on the ${mname(m).toLowerCase()} instead of ${cur.name} (${LVL[cur.lvl[m]]})</h4><p>Own stops at the bottleneck this shift: ${fmt(own)} min. At level ${LVL[best.lvl[m]]} they would be about <b class="mono">${fmt(gain)} min</b> shorter, up to +${fmt(Math.round(gain * PLAN_RATE / 100) * 100)} pcs.</p><p class="hint" style="margin:0">${at ? `${best.name} is at the ${mname(at).toLowerCase()} now. ${cur.name} holds ${LVL[cur.lvl[at]]} there.` : `${best.name} is in reserve.`} ${best.lvl[m] === 4 && cur.lvl[m] <= 2 ? 'An O + L pair is also on-the-job training.' : ''}</p><div class="pact"><button type="button" class="btn primary" data-swap="${m}:${best.id}">Swap now</button></div></div>`;
-    } else h = `<div class="alert ok">The best available person is already at the bottleneck (${mname(m).toLowerCase()}): ${cur.name} (${LVL[cur.lvl[m]]}).</div>`;
+    const curF = cur ? LVLFAC[cur.lvl[m]] : S.P.unstaffedFac;
+    let best = null; for (const c of onShift()) if ((!cur || c.id !== cur.id) && (!cur || c.lvl[m] > cur.lvl[m]) && (!best || c.lvl[m] > best.lvl[m])) best = c;
+    if (best && (!cur || best.lvl[m] > cur.lvl[m])) {
+      const gain = own * (1 - LVLFAC[best.lvl[m]] / curF), at = assignedTo(best.id);
+      const curTxt = cur ? `${esc(cur.name)} (${LVL[cur.lvl[m]]})` : 'no operator';
+      h = `<div class="reco"><span class="tool">Crew · bottleneck</span><h4>${esc(best.name)} (${LVL[best.lvl[m]]}) on the ${mname(m).toLowerCase()} instead of ${curTxt}</h4><p>Own stops at the bottleneck this shift: ${fmt(own)} min. At level ${LVL[best.lvl[m]]} they would be about <b class="mono">${fmt(gain)} min</b> shorter, up to +${fmt(Math.round(gain * PLAN_RATE / 100) * 100)} pcs.</p><p class="hint" style="margin:0">${at ? `${esc(best.name)} is at the ${mname(at).toLowerCase()} now.${cur ? ` ${esc(cur.name)} holds ${LVL[cur.lvl[at]]} there.` : ' That machine would have no operator.'}` : `${esc(best.name)} is spare on this shift.`} ${cur && best.lvl[m] === 4 && cur.lvl[m] <= 2 ? 'An O + L pair is also on-the-job training.' : ''}</p><div class="pact"><button type="button" class="btn primary" data-swap="${m}:${best.id}">Swap now</button></div></div>`;
+    } else h = cur ? `<div class="alert ok">The best person on this shift is already at the bottleneck (${mname(m).toLowerCase()}): ${esc(cur.name)} (${LVL[cur.lvl[m]]}).</div>` : `<div class="alert">The bottleneck (${mname(m).toLowerCase()}) has no operator and nobody on this shift can take it.</div>`;
   } else h = '<p class="calm">A recommendation appears once the shift bottleneck settles.</p>';
   if (UI.sigs.reco !== h) { UI.sigs.reco = h; $('#crewReco').innerHTML = h; }
 }
+function crewChanged() { UI.crewVer++; UI.sigs.crew = null; UI.sigs.reco = null; if (!UI.presim) saveState(); renderAll(); }
 function setAssign(m, id) {
-  const at = assignedTo(id), prev = S.assign[m];
+  id = id || null;
+  const at = id ? assignedTo(id) : null, prev = S.assign[m];
+  if (id === prev) return;
   S.assign[m] = id; if (at && at !== m) S.assign[at] = prev;
-  UI.assign = { ...S.assign }; UI.sigs.crew = null; UI.sigs.reco = null;
-  toast(`${CREW_BY[id].name} moves to the ${mname(m).toLowerCase()}${at && at !== m ? `, ${CREW_BY[prev].name} to the ${mname(at).toLowerCase()}` : ''}.`);
-  renderAll();
+  for (const x of MS) if (!S.assign[x] && S.share[x] < S.t) S.share[x] = S.t + Math.round(S.P.shareEvery * 30);
+  UI.assign = { ...S.assign };
+  const pn = prev ? CREW_BY[prev].name : 'Nobody';
+  toast(id ? `${CREW_BY[id].name} moves to the ${mname(m).toLowerCase()}${at && at !== m ? `, ${prev ? pn + ' to' : 'nobody left at'} the ${mname(at).toLowerCase()}` : ''}.` : `${pn} leaves the ${mname(m).toLowerCase()}. The next machine's operator covers it.`);
+  crewChanged();
 }
-document.addEventListener('change', e => { const sel = e.target.closest('select[data-pos]'); if (sel) setAssign(sel.dataset.pos, sel.value); });
-document.addEventListener('click', e => { const a = e.target.closest('[data-audit]'); if (a) auditFix(a.dataset.audit); });
-document.addEventListener('click', e => { const b = e.target.closest('[data-swap]'); if (b) { const [m, id] = b.dataset.swap.split(':'); setAssign(m, id); } });
+function setNext(m, id) {
+  const nx = nextPlan(); if (!nx) return;
+  id = id || null;
+  let at = null; if (id) for (const x of MS) if (nx.assign[x] === id) at = x;
+  const prev = nx.assign[m];
+  nx.assign[m] = id; if (at && at !== m) nx.assign[at] = prev;
+  planInfo(nx); crewChanged();
+}
+function setNextStatus(id, k) {
+  const nx = nextPlan(); if (!nx) return;
+  const st = { ...nx.status }; if (k === 'IN') delete st[id]; else st[id] = k;
+  UI.next = planShift(nx.n, st); crewChanged();
+}
+document.addEventListener('change', e => {
+  const sel = e.target.closest('select[data-pos]'); if (sel) setAssign(sel.dataset.pos, sel.value);
+  const np = e.target.closest('select[data-np]'); if (np) setNext(np.dataset.np, np.value);
+});
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-audit]'); if (a) auditFix(a.dataset.audit);
+  const b = e.target.closest('[data-swap]'); if (b) { const [m, id] = b.dataset.swap.split(':'); setAssign(m, id); }
+  const ns = e.target.closest('[data-ns]'); if (ns) { const [id, k] = ns.dataset.ns.split(':'); setNextStatus(id, k); }
+  if (e.target.closest('[data-nreset]')) { UI.next = null; nextPlan(); toast('Next shift back to the rota and known absences.'); crewChanged(); }
+  const f = e.target.closest('[data-crewf]'); if (f) { CREWF = f.dataset.crewf === 'all' ? 'all' : +f.dataset.crewf; UI.sigs.crew = null; renderCrew(); }
+  const lv = e.target.closest('[data-lv]'); if (lv) { const [id, m] = lv.dataset.lv.split(':'), p = CREW_BY[id]; p.lvl[m] = p.lvl[m] % 4 + 1; toast(`${p.name} on the ${mname(m).toLowerCase()}: ${LVL[p.lvl[m]]}.`); crewChanged(); }
+});
 
 // ---------- canvases ----------
 let COL = {};
@@ -1638,11 +1768,13 @@ const STORE = (() => {
   const del = k => new Promise(res => { if (!db) return res(false); try { const t = db.transaction('kv', 'readwrite').objectStore('kv').delete(k); t.onsuccess = () => res(true); t.onerror = () => res(false); } catch (e) { res(false); } });
   return { open, get, set, del };
 })();
-function snapshot() { return { v: 1, savedAt: Date.now(), n: S.n, hist: UI.hist, appliedAt: UI.appliedAt, fixState: UI.fixState, assign: UI.assign, monthDone: UI.monthDone }; }
+function snapshot() { return { v: 1, savedAt: Date.now(), n: S.n, hist: UI.hist, appliedAt: UI.appliedAt, fixState: UI.fixState, assign: UI.assign, monthDone: UI.monthDone, levels: Object.fromEntries(ROSTER.map(p => [p.id, { ...p.lvl }])), next: UI.next }; }
 function saveState() { STORE.set('month', snapshot()); }
 function loadState(d) {
   if (!d || !Array.isArray(d.hist)) return false;
   UI.hist = d.hist; UI.appliedAt = d.appliedAt || {}; UI.fixState = d.fixState || {}; UI.assign = { ...DEFAULT_ASSIGN, ...(d.assign || {}) }; UI.queued = {}; UI.monthDone = !!d.monthDone;
+  for (const p of ROSTER) { const L = d.levels && d.levels[p.id]; p.lvl = { ...LV0[p.id] }; if (L) for (const m of MS) if (L[m] >= 1 && L[m] <= 4) p.lvl[m] = L[m] | 0; }
+  UI.next = d.next && d.next.assign && d.next.status && CREWS.includes(d.next.crew) ? planInfo({ n: d.next.n, crew: d.next.crew, status: d.next.status, assign: Object.fromEntries(MS.map(m => [m, CREW_BY[d.next.assign[m]] ? d.next.assign[m] : null])) }) : null;
   UI.prevCum = UI.hist.length ? null : null; UI.prevMain = UI.hist.length ? UI.hist[UI.hist.length - 1].main : null;
   const n = Math.min(SHIFTS, Math.max(1, d.n || UI.hist.length + 1));
   if (UI.monthDone) { startShift(SHIFTS); UI.presim = true; advance(SHIFT_SEC); UI.presim = false; }
@@ -1846,11 +1978,12 @@ function roleItems() {
     I.push({ t: `Now stopped: <b>${stopped.length ? stopped.map(mname).join(', ') : 'none'}</b>`, tab: 'linia', hot: stopped.length > 0 });
     I.push({ t: `Bottleneck now: <b>${bn ? mname(bn) : '–'}</b>`, tab: 'linia', hot: true });
     I.push({ t: `Open reports <b>${open}</b>`, tab: 'operatorzy', hot: open > 2 });
-    if (main) { const p = opOf(S, main); I.push({ t: `At the bottleneck: <b>${p.name} (${LVL[p.lvl[main]]})</b>`, tab: 'zaloga', hot: p.lvl[main] <= 2 }); }
+    if (main) { const p = opOf(S, main); I.push({ t: p ? `At the bottleneck: <b>${esc(p.name)} (${LVL[p.lvl[main]]})</b>` : 'At the bottleneck: <b>no operator</b>', tab: 'zaloga', hot: !p || p.lvl[main] <= 2 }); }
   } else if (ROLE === 'sm') {
     I.push({ t: `Attainment <b>${S.t < 600 ? '–' : pct(goodOut(S) / planNow)}</b>`, tab: 'przeglad', hot: S.t >= 600 && goodOut(S) / planNow < 0.9 });
     I.push({ t: `Bottleneck: <b>${main ? mname(main) : '–'}</b>`, tab: 'linia', hot: true });
     if (props[0]) I.push({ t: `First: <b>${esc(props[0].p.title)}</b>`, tab: 'dzialania', hot: false });
+    const nx = nextPlan(); if (nx) I.push({ t: `Next shift: <b>${nx.open.length ? nx.open.map(mname).join(', ') + ' open' : 'staffed'}</b>`, tab: 'zaloga', hot: nx.open.length > 0 });
     if (last) I.push({ t: `Previous shift <b>${pct(last.pct)}</b>`, tab: 'historia', hot: false });
   } else if (ROLE === 'slt') {
     I.push({ t: `Last 6 days <b>${H.length ? pct(wk) : '–'}</b> of plan`, tab: 'historia', hot: H.length > 0 && wk < 0.9 });
@@ -1906,7 +2039,7 @@ const FLOW = {
   eng:  { band: 'decision', name: 'Engineering', ext: true, where: 'Workshop, called to the line', looks: 'Stops owned by machines: valve, knife, belt, guides', decides: 'Repair now or at changeover, spare parts, TPM checks', cadence: 'On call, weekly TPM review', up: 'Site leadership', escFor: ['zawor', 'noz', 'tor', 'zator'] },
   wh:   { band: 'decision', name: 'Warehouse', ext: true, where: 'Stores, delivers to the mixer', looks: 'Ingredient waits at the mixer', decides: 'Kit timing, delivery route', cadence: 'Per batch', up: 'Site leadership', escFor: ['skladniki'] },
   qa:   { band: 'decision', name: 'Quality', ext: true, where: 'Lab and line checks', looks: 'Rejects: brittle bars after cold syrup, burnt bars after oven stops', decides: 'Hold, release, rework, parameter limits', cadence: 'Hourly checks', up: 'Site leadership', escFor: ['rej'] },
-  pl:   { band: 'decision', name: 'Planning / HR', ext: true, where: 'Office', looks: 'Breaks without cover, changeover timing, skills gaps', decides: 'Rota, cover, flavour sequence', cadence: 'Weekly plan', up: 'Site leadership', escFor: ['przerwa', 'przezbrojenie'] },
+  pl:   { band: 'decision', name: 'Planning / HR', ext: true, where: 'Office', looks: 'Breaks without cover, changeover timing, skills gaps', decides: 'Rota, cover, flavour sequence', cadence: 'Weekly plan', up: 'Site leadership', escFor: ['przerwa', 'przezbrojenie', 'obsada'] },
 };
 let FSEL = 'sm';
 function buildFlow() {
