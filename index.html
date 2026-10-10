@@ -462,7 +462,7 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
 
 <div class="ipn" id="ipn" hidden role="region" aria-label="Ownership notice">
   <div class="ipn-in">
-    <div class="ipn-txt"><b>Ownership notice.</b> The app, its source code, screens and the combination of bottleneck detection, crew ILUO and the lean proposal engine are © 2026 Norbert Mazur, all rights reserved. The methods behind it are public and not claimed: active period method (Roser, 2001), OEE per ISO 22400, ILUO, muda/mura/muri, SMED, TPM, Theory of Constraints. Oakmere Bar Co. is fictional; any real plant's data stays that plant's property. Viewing this demo is permitted. <span class="ipn-more">Details in the About tab.</span></div>
+    <div class="ipn-txt"><b>Ownership notice.</b> The app, its source code, screens and the combination of bottleneck detection, crew ILUO and the lean proposal engine are © 2026 Norbert Mazur, all rights reserved. The methods behind it are public and not claimed: active period method (Roser, 2001), OEE per ISO 22400, ILUO, muda/mura/muri, SMED, TPM, Theory of Constraints. <span id="ipnPlant">This plant</span> is fictional; any real plant's data stays that plant's property. Viewing this demo is permitted. <span class="ipn-more">Details in the About tab.</span></div>
     <button type="button" class="btn" id="ipnOk">Got it</button>
   </div>
 </div>
@@ -472,8 +472,9 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2.5h14v3.5l-5.2 6 5.2 6v3.5H5V18l5.2-6L5 6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="10.6" y="10" width="2.8" height="4" fill="var(--bn)"/></svg>
       <span class="bname">BNECK</span><span class="pill">DEMO</span>
     </div>
-    <div class="plant"><b>Oakmere Bar Co. · Line 2</b><span>30 g oat bars · fictional plant, simulated data</span></div>
+    <div class="plant"><b id="plantName">—</b><span id="plantSub">—</span></div>
     <div class="ctrl">
+      <label class="rolew"><span class="lbl">Value stream</span><select id="indSel" aria-label="Value stream"></select></label>
       <label class="rolew"><span class="lbl">View</span><select id="roleSel" aria-label="Your view"><option value="sm">Shift manager · this shift</option><option value="op">Operator · one machine</option><option value="tl">Team leader · the line</option><option value="slt">Site leadership / CI · the month</option></select></label>
       <button class="btn" id="bTheme" type="button" title="Light or dark">Dark</button>
       <div class="seg" role="group" aria-label="Simulation speed">
@@ -525,7 +526,7 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
     <div class="sh"><h2>Shift overview</h2><p>For the manager: the result, what limits the line and what to do first. Output counted in good units.</p></div>
     <div class="kpis">
       <div class="kpi"><span class="lbl">Output</span><span class="kv mono" id="kOut">0</span><span class="ks" id="kOutS">plan to now 0</span></div>
-      <div class="kpi"><span class="lbl">Plan attainment</span><span class="kv mono" id="kPct">0%</span><span class="ks" id="kPctS">shift target 86,400 pcs</span></div>
+      <div class="kpi"><span class="lbl">Plan attainment</span><span class="kv mono" id="kPct">0%</span><span class="ks" id="kPctS">shift target</span></div>
       <div class="kpi bnk"><span class="lbl">Shift bottleneck</span><span class="kv d" id="kBn">–</span><span class="ks" id="kBnS">active period method</span></div>
       <div class="kpi"><span class="lbl">Line OEE</span><span class="kv mono" id="kOee">0%</span><span class="ks" id="kOeeS">good units / plan</span></div>
     </div>
@@ -535,7 +536,7 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
       <div class="panel" id="escP"><h3>Help needed from other teams</h3><p class="hint">Losses this shift owned outside production. Raise once, the owner gets the minutes and the top cause.</p><div class="stack" id="esc"></div></div>
       <div class="panel"><h3>Next three actions</h3><p class="hint">From the proposal engine, ranked by gain at the bottleneck. Full list under Actions.</p><ol class="nxt" id="oNext"></ol></div>
       <div class="chart"><span class="lbl">Cumulative output</span><canvas id="cum" height="150"></canvas>
-        <div class="legend"><span><i style="background:var(--ink)"></i>This shift</span><span><i style="background:var(--line)"></i>Plan 120 pcs/min</span><span id="lgPrev" hidden><i style="background:var(--muted);opacity:.5"></i>Previous shift</span></div>
+        <div class="legend"><span><i style="background:var(--ink)"></i>This shift</span><span><i style="background:var(--line)"></i>Plan <span id="lgPlan"></span></span><span id="lgPrev" hidden><i style="background:var(--muted);opacity:.5"></i>Previous shift</span></div>
       </div>
       <div class="panel"><h3>Shift results</h3><p class="hint">Bar: plan attainment. Dashed line: 100%. Below the bar: shift bottleneck.</p><div class="hc" id="oHist"></div></div>
     </div>
@@ -581,7 +582,7 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
 
   <section class="tp" id="p-operatorzy" role="tabpanel" aria-labelledby="t-operatorzy" hidden>
     <div class="sh"><h2 id="opH">Operator tablets</h2><p id="opP">The sensor knows the machine stopped. The operator says why. The tablet at the bottleneck asks for detail, the others have quick buttons. Untick “Operators report automatically” at the top to answer for the operators yourself.</p></div>
-    <div class="apick" id="apick" hidden><span class="lbl">Machine</span><div class="seg" role="group" aria-label="Machine"><button type="button" data-asset="A" aria-pressed="true">A · Mixer</button><button type="button" data-asset="B" aria-pressed="false">B · Former</button><button type="button" data-asset="C" aria-pressed="false">C · Oven</button></div><span class="lmeta">In the plant each tablet is fixed to its machine.</span></div>
+    <div class="apick" id="apick" hidden><span class="lbl">Machine</span><div class="seg" role="group" aria-label="Machine" id="assetSeg"></div><span class="lmeta">In the plant each tablet is fixed to its machine.</span></div>
     <div class="tabs" id="tabs"></div>
   </section>
 
@@ -654,10 +655,10 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
       <div class="panel"><span class="lbl">History</span><p>Finished shifts are stored in this browser only (IndexedDB). Nothing leaves the page. Copy data as JSON to move it, Load JSON to replay it. Reset demo clears the store.</p></div>
       <div class="panel"><span class="lbl">Crew</span><p>ILUO levels change how fast stops are cleared. In the product, staffing and the matrix come from Crewmap; here they are built in.</p></div>
       <div class="panel"><span class="lbl">Ownership</span><p>© 2026 Norbert Mazur, all rights reserved: the app, its source code, screens, texts, reason taxonomy and the combination of bottleneck detection, crew ILUO, tablet modes and the proposal engine. Not claimed and free for anyone: active period method (Roser, 2001), OEE (ISO 22400), ILUO, muda/mura/muri, SMED, TPM, TOC. Real plant data stays the plant's property. Full text in the LICENSE file.</p></div>
-      <div class="panel"><span class="lbl">Plant</span><p>Oakmere Bar Co. does not exist. Numbers, machines and failures are invented for this demo.</p></div>
+      <div class="panel"><span class="lbl">Plant</span><p><span id="aboutPlant">This plant</span> does not exist. Numbers, machines and failures are invented for this demo. Four value streams are included; the switcher is in the top bar.</p></div>
     </div>
   </section>
-  <footer class="foot">© 2026 Norbert Mazur, all rights reserved: BNECK, its code, screens and the combination of bottleneck + crew ILUO + tablet modes + proposal engine. Not claimed, public: active period method (Roser, 2001), OEE (ISO 22400), ILUO, muda/mura/muri, SMED, TPM, TOC. Oakmere Bar Co. is fictional. Real plant data stays the plant's property. See LICENSE.</footer>
+  <footer class="foot">© 2026 Norbert Mazur, all rights reserved: BNECK, its code, screens and the combination of bottleneck + crew ILUO + tablet modes + proposal engine. Not claimed, public: active period method (Roser, 2001), OEE (ISO 22400), ILUO, muda/mura/muri, SMED, TPM, TOC. <span id="footPlant">Plants in the demo</span> are fictional. Real plant data stays the plant's property. See LICENSE.</footer>
 </main>
 <div class="drawer" id="drawer" hidden>
   <div class="dr-back" id="drBack"></div>
@@ -670,7 +671,9 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
 
 <script>
 /*ENGINE-START*/
-const SHIFT_SEC = 43200, PLAN_RATE = 120, PLAN_TOTAL = PLAN_RATE * 720, BATCH = 2500;
+const SHIFT_SEC = 43200;
+// Industry-dependent: set by setIndustry() below. PLAN_RATE = units/min of plan, BATCH = units per stage-1 batch.
+let PLAN_RATE, PLAN_TOTAL, BATCH, IDEAL, REASONS, SUBS, MACH, IB, IND_KEY;
 // Calendar: 30 days, day shift 06:00-18:00 and night shift 18:00-06:00, no production on Sundays (day 7, 14, 21, 28).
 const DAYS = 30, DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const CAL = [];
@@ -683,7 +686,6 @@ const rampOf = shiftsSince => Math.min(1, 0.4 + 0.1 * Math.max(0, shiftsSince));
 const lerp = (a, b, e) => a + (b - a) * e;
 const MS = ['A', 'B', 'C'];
 const ACTIVE = { RUN: 1, SLOW: 1, STOP: 1, SETUP: 1 };
-const IDEAL = { A: BATCH / (17 * 60), B: 150 / 60, C: 135 / 60 };
 // ILUO: 1 = I (learning), 2 = L (supervised), 3 = U (independent), 4 = O (trains others). Multiplier on own-stop duration.
 const LVL = ['', 'I', 'L', 'U', 'O'];
 const LVLFAC = [0, 1.45, 1.15, 1.0, 0.8];
@@ -746,29 +748,240 @@ function planShift(n, status) {
   }
   return { n, crew, status: st, assign, open: MS.filter(m => !assign[m]), spare: present.filter(p => !used.has(p.id)).map(p => p.id) };
 }
-const REASONS = {
-  skladniki:     { m: 'A', label: 'Waiting for ingredients', short: 'Ingredients', cat: 'Method', waste: 'Muda', fix: 'kitting' },
-  syrop:         { m: 'A', label: 'Syrup too cold', short: 'Cold syrup', cat: 'Material', waste: 'Mura', fix: 'syrop' },
-  zawor:         { m: 'A', label: 'Syrup valve blocked', short: 'Valve', cat: 'Machine', waste: 'Muda', fix: null },
-  przezbrojenie: { m: 'B', label: 'Flavour changeover', short: 'Changeover', cat: 'Method', waste: 'Muda', fix: 'smed' },
-  noz:           { m: 'B', label: 'Knife sticking', short: 'Knife', cat: 'Machine', waste: 'Muda', fix: 'noz' },
-  przerwa:       { m: 'B', label: 'Break with no cover', short: 'Break', cat: 'People', waste: 'Muri', fix: 'zastepstwo' },
-  obsada:        { m: '*', label: 'No operator at the machine', short: 'No operator', cat: 'People', waste: 'Muri', fix: 'pula' },
-  tor:           { m: 'C', label: 'Belt tracking off', short: 'Belt tracking', cat: 'Machine', waste: 'Muda', fix: 'tpm' },
-  zator:         { m: 'C', label: 'Jam at infeed', short: 'Jam', cat: 'Method', waste: 'Mura', fix: 'prowadnice' },
-  inne:          { m: '*', label: 'Other', short: 'Other', cat: 'Measurement', waste: null, fix: null },
+// Reason skeleton: machine, 6M category, waste type and the fix that targets it are the same in every industry.
+// Only the wording changes, so the fishbone, Pareto, proposal engine and tests stay identical across value streams.
+const RSKEL = {
+  skladniki:     { m: 'A', cat: 'Method',      waste: 'Muda', fix: 'kitting' },
+  syrop:         { m: 'A', cat: 'Material',    waste: 'Mura', fix: 'syrop' },
+  zawor:         { m: 'A', cat: 'Machine',     waste: 'Muda', fix: null },
+  przezbrojenie: { m: 'B', cat: 'Method',      waste: 'Muda', fix: 'smed' },
+  noz:           { m: 'B', cat: 'Machine',     waste: 'Muda', fix: 'noz' },
+  przerwa:       { m: 'B', cat: 'People',      waste: 'Muri', fix: 'zastepstwo' },
+  obsada:        { m: '*', cat: 'People',      waste: 'Muri', fix: 'pula', label: 'No operator at the machine', short: 'No operator' },
+  tor:           { m: 'C', cat: 'Machine',     waste: 'Muda', fix: 'tpm' },
+  zator:         { m: 'C', cat: 'Method',      waste: 'Mura', fix: 'prowadnice' },
+  inne:          { m: '*', cat: 'Measurement', waste: null,   fix: null, label: 'Other', short: 'Other' },
 };
-const SUBS = {
-  skladniki:     [['No kit, weighing at the machine', 'Method', 5], ['Warehouse trolley late', 'Method', 3], ['Batch without label', 'Material', 1]],
-  syrop:         [['Tank heater too weak', 'Machine', 3], ['Hall cold at night', 'Environment', 1, 6], ['No temp. check before dosing', 'Measurement', 3]],
-  zawor:         [['Syrup crystallises in valve', 'Material', 2], ['No flush after batch', 'Method', 1]],
-  przezbrojenie: [['Waiting for format parts', 'Method', 4], ['Washing mould on the machine', 'Method', 3], ['Adjustment after start', 'Machine', 2]],
-  noz:           [['Mass too warm', 'Material', 3], ['No non-stick coating', 'Machine', 3], ['No cleaning schedule', 'Method', 2]],
-  przerwa:       [['No break rotation', 'Method', 3], ['Cover on another line', 'People', 2]],
-  obsada:        [['Absence not covered', 'People', 3], ['No floater trained on this machine', 'People', 3], ['Shift plan made too late', 'Method', 2]],
-  tor:           [['Loose guide', 'Machine', 4], ['Uneven belt tension', 'Machine', 3], ['Build-up on drive roller', 'Method', 2]],
-  zator:         [['Bars fed in clumps', 'Method', 3], ['Infeed guides out of adjustment', 'Machine', 3]],
+// Sub-causes that are about people, not the product: the same in every value stream.
+const SHARED_SUBS = {
+  obsada: [['Absence not covered', 'People', 3], ['No floater trained on this machine', 'People', 3], ['Shift plan made too late', 'Method', 2]],
 };
+// Fix skeleton: lean tool, target reasons and expected reduction. Wording comes from the industry profile.
+const PSKEL = [
+  { id: 'kitting',    m: 'A', reasons: ['skladniki'],     tool: 'Standard work · kitting',      waste: 'Muda · waiting',                 red: 0.9 },
+  { id: 'syrop',      m: 'A', reasons: ['syrop'],         tool: 'Poka-yoke · 5 Why',            waste: 'Mura · variable cycle',          red: 0.9 },
+  { id: 'tpm',        m: 'C', reasons: ['tor'],           tool: 'TPM · CIL checklist',          waste: 'Muda · breakdowns',              red: 0.85 },
+  { id: 'bufor',      m: 'C', special: 'bufor',           tool: 'TOC · Drum-Buffer-Rope',       waste: 'Muda · starving the bottleneck', red: 0.8 },
+  { id: 'prowadnice', m: 'C', reasons: ['zator'],         tool: 'Standardisation · poka-yoke',  waste: 'Mura · uneven feeding',          red: 0.75 },
+  { id: 'smed',       m: 'B', reasons: ['przezbrojenie'], tool: 'SMED',                         waste: 'Muda · changeover',              red: 0.7 },
+  { id: 'noz',        m: 'B', reasons: ['noz'],           tool: '5 Why · standard work',        waste: 'Muda · minor stops',             red: 0.8 },
+  { id: 'zastepstwo', m: 'B', reasons: ['przerwa'],       tool: 'Standard work · Yamazumi',     waste: 'Muri · one operator, no cover',  red: 1 },
+  { id: 'pula',       m: '*', reasons: ['obsada'],        tool: 'Skills matrix (ILUO) · standard work', waste: 'Muri · one person on two machines', red: 0.9,
+    title: 'Floater cover plan before the shift',
+    what: 'Before each shift the shift manager books a named floater for every gap from the rota and absences. Each crew keeps two floaters trained to U on every machine.',
+    effect: 'Stops for a missing operator: every ~45 min → every ~8 h.', check: 'Every machine has a named operator' },
+];
+// Four fictional value streams, same three-stage shape: batch stage → buffer → continuous → buffer → continuous.
+// base: ASSUMED numbers for a mid-size line. [from, to] pairs are the values a fix moves between (0 % → 100 % effective).
+const IND = {
+  bars: {
+    key: 'bars', name: 'Bars', company: 'Oakmere Bar Co.', line: 'Line 2', sub: '30 g oat bars',
+    unit: 'pcs', thing: 'bars', thing1: 'bar', va: 25,
+    mach: { A: { name: 'Mixer', short: 'Mixer' }, B: { name: 'Former', short: 'Former' }, C: { name: 'Tunnel oven', short: 'Oven' } },
+    prod: ['Oat & honey', 'Oat & cranberry', 'Oat & cocoa'], prodWord: 'Flavour', ph: { load: 'loading', mix: 'mixing', dis: 'discharging' },
+    buf: [['Hopper', 'hopper', 'hopperCap'], ['Belt buffer', 'belt', 'beltCap']],
+    rows: { A: [['Batch', '2,500 pcs'], ['Std cycle', '17 min']], B: [['Rate', '150 pcs/min'], ['Changeover', '45 min']], C: [['Rate', '135 pcs/min'], ['Baking', '14 min']] },
+    inName: 'Silo & stores', inFeeds: 'Mixer, by weighed kits', outName: 'Packing', outRecv: 'Baked bars from the oven',
+    rl: {
+      skladniki: ['Waiting for ingredients', 'Ingredients'], syrop: ['Syrup too cold', 'Cold syrup'], zawor: ['Syrup valve blocked', 'Valve'],
+      przezbrojenie: ['Flavour changeover', 'Changeover'], noz: ['Knife sticking', 'Knife'], przerwa: ['Break with no cover', 'Break'],
+      tor: ['Belt tracking off', 'Belt tracking'], zator: ['Jam at infeed', 'Jam'], inne: ['Other', 'Other'],
+    },
+    subs: {
+      skladniki:     [['No kit, weighing at the machine', 'Method', 5], ['Warehouse trolley late', 'Method', 3], ['Batch without label', 'Material', 1]],
+      syrop:         [['Tank heater too weak', 'Machine', 3], ['Hall cold at night', 'Environment', 1, 6], ['No temp. check before dosing', 'Measurement', 3]],
+      zawor:         [['Syrup crystallises in valve', 'Material', 2], ['No flush after batch', 'Method', 1]],
+      przezbrojenie: [['Waiting for format parts', 'Method', 4], ['Washing mould on the machine', 'Method', 3], ['Adjustment after start', 'Machine', 2]],
+      noz:           [['Mass too warm', 'Material', 3], ['No non-stick coating', 'Machine', 3], ['No cleaning schedule', 'Method', 2]],
+      przerwa:       [['No break rotation', 'Method', 3], ['Cover on another line', 'People', 2]],
+      tor:           [['Loose guide', 'Machine', 4], ['Uneven belt tension', 'Machine', 3], ['Build-up on drive roller', 'Method', 2]],
+      zator:         [['Bars fed in clumps', 'Method', 3], ['Infeed guides out of adjustment', 'Machine', 3]],
+    },
+    props: {
+      kitting:    { title: 'Inclusion kitting before the shift', what: 'The warehouse prepares weighed kits two batches ahead. The mixer operator no longer weighs at the machine.', effect: 'Batches waiting for ingredients: ~65% → 5%.', check: 'Inclusion kit for 2 batches ready' },
+      syrop:      { title: 'Syrup temperature poka-yoke', what: 'A sensor blocks dosing below 45°C. Tank heater on a thermostat, started 30 min before the shift.', effect: 'Batches with extended mixing: ~75% → 5%.', check: 'Syrup ≥ 45°C before dosing' },
+      tpm:        { title: 'TPM: belt tracking check every 2 h', what: 'The oven operator checks guide, tension and roller every 2 h. Marks on the frame show the correct setting.', effect: 'Tracking failures: every ~25 min → every ~2.5 h.', check: 'Belt tracking check (every 2 h)' },
+      bufor:      { title: 'Buffer before the oven', what: 'Accumulation table for 3,000 bars before the oven. The oven keeps running while the former is in changeover.', effect: 'Buffer: 800 → 3,000 pcs, ~22 min of oven run time.', check: 'Oven buffer full before changeover' },
+      prowadnice: { title: 'Infeed guides set by template', what: 'A template for setting the oven infeed guides. Bars enter in an even stream, no clumps.', effect: 'Infeed jams: every ~50 min → every ~4 h.', check: 'Infeed guides set by template' },
+      smed:       { title: 'SMED for flavour changeover', what: 'External tasks moved out of the stop: format parts and a second, clean mould wait at the machine before it stops.', effect: 'Changeover: ~45 min → ~13 min.', check: 'Format parts ready before changeover' },
+      noz:        { title: 'Knife: coating and cleaning schedule', what: 'Non-stick coated knife. Cleaning every 2 h on a schedule, not after a stop.', effect: 'Knife sticking: every ~30 min → every ~2.5 h.', check: 'Knife cleaned every 2 h' },
+      zastepstwo: { title: 'Break rotation with cover', what: 'Break schedule with rotation. Cover from line 3 takes the former for 20 min.', effect: 'Stops for breaks: 40 min → 0.', check: 'Break cover confirmed' },
+    },
+    ext: { engLooks: 'Stops owned by machines: valve, knife, belt, guides', whWhere: 'Stores, delivers to the mixer', whLooks: 'Ingredient waits at the mixer', whDecides: 'Kit timing, delivery route', qaLooks: 'Rejects: brittle bars after cold syrup, burnt bars after oven stops', plDecides: 'Rota, cover, flavour sequence' },
+    base: {
+      batch: 2500, planRate: 120, rateB: 150, rateC: 135, loadMin: 3.5, mixMin: 10.5, disMin: 3,
+      pWait: [0.65, 0.05], waitDur: [[9, 17], [2, 5]],
+      pColdN: [0.9, 0.06], pColdD: [0.6, 0.04], coldExtra: [[8, 15], [3, 5]],
+      zaworMTBF: 240, zaworDur: [6, 12],
+      setup: [[40, 52], [11, 15]], setupAt: [3, 8],
+      noz: [30, 150], nozDur: [2, 4.5],
+      belt: [800, 3000], hopperMult: 2,
+      tor: [26, 150], torDur: [4, 8], zator: [50, 220], zatorDur: [1, 3],
+      coldRej: 0.03, cRej: 0.006, torRej: 25, torRejMax: 200, stopRej: 20, nozRej: 15,
+    },
+  },
+  drinks: {
+    key: 'drinks', name: 'Drinks', company: 'Tarnbrook Drinks Co.', line: 'Line 4', sub: '500 ml still fruit drinks',
+    unit: 'bottles', thing: 'bottles', thing1: 'bottle', va: 18,
+    mach: { A: { name: 'Syrup room', short: 'Syrup room' }, B: { name: 'Filler', short: 'Filler' }, C: { name: 'Labeller & packer', short: 'Labeller' } },
+    prod: ['Apple & pear', 'Orange', 'Blackcurrant'], prodWord: 'SKU', ph: { load: 'dosing', mix: 'blending', dis: 'transferring' },
+    buf: [['Buffer tank', 'hopper', 'hopperCap'], ['Accumulation table', 'belt', 'beltCap']],
+    rows: { A: [['Blend batch', '2,200 bottles'], ['Std cycle', '22 min']], B: [['Rate', '95 bottles/min'], ['Changeover', '62 min']], C: [['Rate', '115 bottles/min'], ['Label & pack', '6 min']] },
+    inName: 'Concentrate & water', inFeeds: 'Syrup room, by batch recipe', outName: 'Palletising', outRecv: 'Labelled cases from the packer',
+    rl: {
+      skladniki: ['Waiting for concentrate', 'Concentrate'], syrop: ['Blend off target Brix', 'Brix drift'], zawor: ['CIP valve stuck', 'CIP valve'],
+      przezbrojenie: ['SKU changeover', 'Changeover'], noz: ['Filling valve dripping', 'Filler valve'], przerwa: ['Break with no cover', 'Break'],
+      tor: ['Labeller misfeed', 'Labeller'], zator: ['Bottles jam at infeed', 'Jam'], inne: ['Other', 'Other'],
+    },
+    subs: {
+      skladniki:     [['Concentrate drum not staged', 'Method', 5], ['Water treatment slow to refill', 'Machine', 3], ['Drum without release label', 'Material', 1]],
+      syrop:         [['Dosing pump drifts', 'Machine', 3], ['Concentrate stored cold overnight', 'Environment', 1, 6], ['No Brix check before transfer', 'Measurement', 3]],
+      zawor:         [['Sugar dries in the valve seat', 'Material', 2], ['No rinse after transfer', 'Method', 1]],
+      przezbrojenie: [['Waiting for the change part set', 'Method', 4], ['CIP and rinse of the filling bowl', 'Method', 3], ['Fill volume trimmed after start', 'Machine', 2]],
+      noz:           [['Worn valve seal', 'Machine', 3], ['Product foams when warm', 'Material', 3], ['No seal replacement schedule', 'Method', 2]],
+      przerwa:       [['No break rotation', 'Method', 3], ['Cover on the canning line', 'People', 2]],
+      tor:           [['Label roll runs off centre', 'Machine', 4], ['Glue temperature drifts', 'Machine', 3], ['Glue build-up on the drum', 'Method', 2]],
+      zator:         [['Bottles arrive in clumps', 'Method', 3], ['Infeed star wheel out of adjustment', 'Machine', 3]],
+    },
+    props: {
+      kitting:    { title: 'Concentrate staged before the shift', what: 'Stores stage two batches of concentrate at the syrup room with the release label attached.', effect: 'Batches waiting for concentrate: ~55% → 5%.', check: 'Concentrate for 2 batches staged' },
+      syrop:      { title: 'Brix check poka-yoke before transfer', what: 'An inline Brix meter blocks transfer outside 10.4–10.8°Bx. Dosing pump calibrated at the start of every shift.', effect: 'Batches re-blended for Brix: ~70% → 5%.', check: 'Brix in range before transfer' },
+      tpm:        { title: 'TPM: labeller check every 2 h', what: 'The packer operator checks roll alignment, glue temperature and drum cleanliness every 2 h against marks on the frame.', effect: 'Labeller misfeeds: every ~40 min → every ~3 h.', check: 'Labeller check (every 2 h)' },
+      bufor:      { title: 'Accumulation table before the labeller', what: 'Table for 2,400 bottles after the filler. The labeller keeps running while the filler is in changeover.', effect: 'Buffer: 600 → 2,400 bottles, ~21 min of labeller run time.', check: 'Accumulation table full before changeover' },
+      prowadnice: { title: 'Infeed star wheel set by template', what: 'A template for the labeller infeed. Bottles arrive in a single even stream instead of clumps.', effect: 'Infeed jams: every ~70 min → every ~4 h.', check: 'Infeed star wheel set by template' },
+      smed:       { title: 'SMED for SKU changeover', what: 'CIP, change parts and the second filling bowl are prepared while the filler still runs. Only the swap stays inside the stop.', effect: 'Changeover: ~62 min → ~18 min.', check: 'Change part set ready before changeover' },
+      noz:        { title: 'Filling valve seals on a schedule', what: 'Seal kit changed on a 2-week schedule instead of after a drip. Product held at 6°C so it foams less.', effect: 'Valve stops: every ~22 min → every ~2 h.', check: 'Valve seals checked at start of shift' },
+      zastepstwo: { title: 'Break rotation with cover', what: 'Break schedule with rotation. Cover from the canning line takes the filler for 20 min.', effect: 'Stops for breaks: 40 min → 0.', check: 'Break cover confirmed' },
+    },
+    ext: { engLooks: 'Stops owned by machines: CIP valve, filler valve, labeller, star wheel', whWhere: 'Stores, delivers to the syrup room', whLooks: 'Concentrate waits at the syrup room', whDecides: 'Staging timing, drum release', qaLooks: 'Rejects: off-Brix bottles, underfills after a valve stop', plDecides: 'Rota, cover, SKU sequence' },
+    base: {
+      batch: 2200, planRate: 82, rateB: 95, rateC: 115, loadMin: 4, mixMin: 14, disMin: 4,
+      pWait: [0.55, 0.05], waitDur: [[8, 16], [2, 5]],
+      pColdN: [0.85, 0.06], pColdD: [0.55, 0.04], coldExtra: [[7, 14], [3, 5]],
+      zaworMTBF: 260, zaworDur: [7, 14],
+      setup: [[56, 70], [16, 20]], setupAt: [3, 8],
+      noz: [22, 120], nozDur: [3, 6],
+      belt: [600, 2400], hopperMult: 1.4,
+      tor: [40, 170], torDur: [3, 6], zator: [70, 240], zatorDur: [1.5, 3],
+      coldRej: 0.025, cRej: 0.004, torRej: 18, torRejMax: 160, stopRej: 14, nozRej: 22,
+    },
+  },
+  meals: {
+    key: 'meals', name: 'Ready meals', company: 'Wherwell Kitchens', line: 'Line 1', sub: '400 g chilled ready meals',
+    unit: 'trays', thing: 'trays', thing1: 'tray', va: 46,
+    mach: { A: { name: 'Kettles', short: 'Kettles' }, B: { name: 'Tray fill & seal', short: 'Tray seal' }, C: { name: 'Blast chill & case pack', short: 'Chill & pack' } },
+    prod: ['Chicken & leek', 'Beef lasagne', 'Veg korma'], prodWord: 'Recipe', ph: { load: 'charging', mix: 'cooking', dis: 'transferring' },
+    buf: [['Sauce hold tank', 'hopper', 'hopperCap'], ['Tray accumulator', 'belt', 'beltCap']],
+    rows: { A: [['Cook batch', '1,900 trays'], ['Std cycle', '27 min']], B: [['Rate', '70 trays/min'], ['Changeover', '48 min']], C: [['Rate', '58 trays/min'], ['Chill', '32 min']] },
+    inName: 'Prep & goods-in', inFeeds: 'Kettles, by prepped veg and meat', outName: 'Despatch chill store', outRecv: 'Cased meals from the packer',
+    rl: {
+      skladniki: ['Waiting for prepped veg', 'Prep'], syrop: ['Sauce below target temp', 'Sauce temp'], zawor: ['Kettle outlet valve seized', 'Kettle valve'],
+      przezbrojenie: ['Recipe changeover', 'Changeover'], noz: ['Seal fault on tray', 'Seal fault'], przerwa: ['Break with no cover', 'Break'],
+      tor: ['Case packer arm fault', 'Case packer'], zator: ['Trays jam at chiller infeed', 'Jam'], inne: ['Other', 'Other'],
+    },
+    subs: {
+      skladniki:     [['Prep room behind schedule', 'Method', 5], ['Chilled meat still in tempering', 'Material', 3], ['Tote without allergen label', 'Material', 1]],
+      syrop:         [['Steam pressure drops', 'Machine', 3], ['Ingredients come in cold from the chiller', 'Environment', 1, 6], ['No core temp check before transfer', 'Measurement', 3]],
+      zawor:         [['Starch bakes onto the valve', 'Material', 2], ['No flush between recipes', 'Method', 1]],
+      przezbrojenie: [['Waiting for the tray format set', 'Method', 4], ['Allergen wash-down of the filler', 'Method', 3], ['Fill weight trimmed after start', 'Machine', 2]],
+      noz:           [['Film tension drifts', 'Machine', 3], ['Sauce on the tray flange', 'Material', 3], ['No sealing plate cleaning schedule', 'Method', 2]],
+      przerwa:       [['No break rotation', 'Method', 3], ['Cover on the soup line', 'People', 2]],
+      tor:           [['Vacuum cup worn', 'Machine', 4], ['Arm out of position', 'Machine', 3], ['Sauce spill under the arm', 'Method', 2]],
+      zator:         [['Trays arrive in clumps', 'Method', 3], ['Chiller infeed guides out of adjustment', 'Machine', 3]],
+    },
+    props: {
+      kitting:    { title: 'Prep kits two batches ahead', what: 'Prep room delivers weighed, labelled totes for two cook batches. Kettle operator stops weighing at the machine.', effect: 'Batches waiting for prep: ~60% → 5%.', check: 'Prep totes for 2 batches ready' },
+      syrop:      { title: 'Core temperature poka-yoke', what: 'Transfer is blocked below 82°C core. Steam valve checked and ingredients tempered 30 min before the batch.', effect: 'Batches with extended cooking: ~70% → 5%.', check: 'Sauce ≥ 82°C before transfer' },
+      tpm:        { title: 'TPM: case packer check every 2 h', what: 'The packer operator checks vacuum cups, arm position and spills every 2 h against marks on the frame.', effect: 'Case packer faults: every ~18 min → every ~1.8 h.', check: 'Case packer check (every 2 h)' },
+      bufor:      { title: 'Accumulator before the chiller', what: 'Accumulator for 2,000 trays after the sealer. The chiller and packer keep running during a recipe changeover.', effect: 'Buffer: 500 → 2,000 trays, ~34 min of chiller run time.', check: 'Accumulator full before changeover' },
+      prowadnice: { title: 'Chiller infeed guides set by template', what: 'A template for the chiller infeed. Trays enter in a single row instead of clumps.', effect: 'Infeed jams: every ~45 min → every ~3.5 h.', check: 'Chiller infeed guides set by template' },
+      smed:       { title: 'SMED for recipe changeover', what: 'Allergen wash-down kit, tray format set and the second sealing plate are staged before the line stops.', effect: 'Changeover: ~48 min → ~15 min.', check: 'Tray format set ready before changeover' },
+      noz:        { title: 'Sealing plate: cleaning and film check', what: 'Sealing plate cleaned every 2 h on a schedule. Film tension checked at every reel change.', effect: 'Seal faults: every ~26 min → every ~2.2 h.', check: 'Sealing plate cleaned every 2 h' },
+      zastepstwo: { title: 'Break rotation with cover', what: 'Break schedule with rotation. Cover from the soup line takes the sealer for 20 min.', effect: 'Stops for breaks: 40 min → 0.', check: 'Break cover confirmed' },
+    },
+    ext: { engLooks: 'Stops owned by machines: kettle valve, sealing plate, packer arm, infeed guides', whWhere: 'Prep room and goods-in, delivers to the kettles', whLooks: 'Prep waits at the kettles', whDecides: 'Prep sequence, tote delivery', qaLooks: 'Rejects: failed seals, trays held after a chiller stop', plDecides: 'Rota, cover, recipe sequence' },
+    base: {
+      batch: 1900, planRate: 48, rateB: 70, rateC: 58, loadMin: 5, mixMin: 18, disMin: 4,
+      pWait: [0.6, 0.05], waitDur: [[10, 18], [2, 5]],
+      pColdN: [0.85, 0.06], pColdD: [0.6, 0.04], coldExtra: [[9, 16], [3, 5]],
+      zaworMTBF: 230, zaworDur: [8, 15],
+      setup: [[44, 56], [13, 17]], setupAt: [3, 8],
+      noz: [26, 130], nozDur: [2.5, 5],
+      belt: [500, 2000], hopperMult: 1.6,
+      tor: [18, 110], torDur: [5, 10], zator: [45, 200], zatorDur: [2, 4],
+      coldRej: 0.03, cRej: 0.005, torRej: 14, torRejMax: 140, stopRej: 12, nozRej: 18,
+    },
+  },
+  parts: {
+    key: 'parts', name: 'Metal parts', company: 'Calder Metal Works', line: 'Cell 3', sub: 'pressed steel brackets',
+    unit: 'parts', thing: 'parts', thing1: 'part', va: 12,
+    mach: { A: { name: 'Press', short: 'Press' }, B: { name: 'CNC mill', short: 'CNC' }, C: { name: 'Deburr & inspect', short: 'Inspect' } },
+    prod: ['Bracket 40 mm', 'Bracket 60 mm', 'Bracket 80 mm'], prodWord: 'Part', ph: { load: 'loading', mix: 'pressing', dis: 'unloading' },
+    buf: [['Blank bin', 'hopper', 'hopperCap'], ['Transfer conveyor', 'belt', 'beltCap']],
+    rows: { A: [['Press batch', '700 blanks'], ['Std cycle', '21 min']], B: [['Rate', '32 parts/min'], ['Tool change', '66 min']], C: [['Rate', '40 parts/min'], ['Deburr & gauge', '4 min']] },
+    inName: 'Coil store', inFeeds: 'Press, by coil and blank kits', outName: 'Despatch', outRecv: 'Gauged parts from inspection',
+    rl: {
+      skladniki: ['Waiting for blanks', 'Blanks'], syrop: ['Die below temperature', 'Cold die'], zawor: ['Lube line blocked', 'Lube line'],
+      przezbrojenie: ['Tool change', 'Tool change'], noz: ['Insert worn, chatter', 'Insert'], przerwa: ['Break with no cover', 'Break'],
+      tor: ['Conveyor tracking off', 'Conveyor'], zator: ['Parts jam at inspection infeed', 'Jam'], inne: ['Other', 'Other'],
+    },
+    subs: {
+      skladniki:     [['No blank kit, cutting at the press', 'Method', 5], ['Coil crane busy on another cell', 'Method', 3], ['Coil without material certificate', 'Material', 1]],
+      syrop:         [['Die heater too weak', 'Machine', 3], ['Workshop cold at night', 'Environment', 1, 6], ['No first-off check after start', 'Measurement', 3]],
+      zawor:         [['Swarf blocks the lube line', 'Material', 2], ['No flush at end of batch', 'Method', 1]],
+      przezbrojenie: [['Waiting for the tool from the crib', 'Method', 4], ['Setting the tool on the machine', 'Method', 3], ['Offsets trimmed after start', 'Machine', 2]],
+      noz:           [['Insert run past its life', 'Machine', 3], ['Coolant concentration low', 'Material', 3], ['No insert change schedule', 'Method', 2]],
+      przerwa:       [['No break rotation', 'Method', 3], ['Cover on cell 2', 'People', 2]],
+      tor:           [['Loose conveyor guide', 'Machine', 4], ['Uneven belt tension', 'Machine', 3], ['Swarf under the drive roller', 'Method', 2]],
+      zator:         [['Parts arrive in clumps', 'Method', 3], ['Inspection infeed guides out of adjustment', 'Machine', 3]],
+    },
+    props: {
+      kitting:    { title: 'Blank kits before the shift', what: 'Coil store delivers cut, certificated blank kits for two press batches. The press operator stops cutting at the machine.', effect: 'Batches waiting for blanks: ~65% → 5%.', check: 'Blank kit for 2 batches ready' },
+      syrop:      { title: 'Die warm-up and first-off check', what: 'Die heater on a timer 30 min before the batch. First-off gauged before the run is released.', effect: 'Batches with extended press cycle: ~70% → 5%.', check: 'Die at temperature, first-off gauged' },
+      tpm:        { title: 'TPM: conveyor check every 2 h', what: 'The inspection operator checks guide, tension and swarf build-up every 2 h against marks on the frame.', effect: 'Tracking failures: every ~30 min → every ~2.5 h.', check: 'Conveyor check (every 2 h)' },
+      bufor:      { title: 'Buffer conveyor before inspection', what: 'Transfer conveyor extended to hold 1,600 parts. Inspection keeps running while the CNC is in tool change.', effect: 'Buffer: 400 → 1,600 parts, ~40 min of inspection run time.', check: 'Buffer full before tool change' },
+      prowadnice: { title: 'Inspection infeed guides set by template', what: 'A template for the inspection infeed. Parts arrive singly instead of in clumps.', effect: 'Infeed jams: every ~60 min → every ~4 h.', check: 'Inspection infeed guides set by template' },
+      smed:       { title: 'SMED for tool change', what: 'Tool pre-set in the crib, brought to the machine on a cart with the offsets written down. Only the swap stays inside the stop.', effect: 'Tool change: ~66 min → ~20 min.', check: 'Tool pre-set and at the machine' },
+      noz:        { title: 'Insert life on a schedule', what: 'Inserts changed on counted parts, not on chatter. Coolant concentration checked every shift.', effect: 'Insert stops: every ~25 min → every ~2.2 h.', check: 'Insert count and coolant checked' },
+      zastepstwo: { title: 'Break rotation with cover', what: 'Break schedule with rotation. Cover from cell 2 takes the CNC for 20 min.', effect: 'Stops for breaks: 40 min → 0.', check: 'Break cover confirmed' },
+    },
+    ext: { engLooks: 'Stops owned by machines: lube line, inserts, conveyor, infeed guides', whWhere: 'Coil store, delivers to the press', whLooks: 'Blank waits at the press', whDecides: 'Cutting sequence, crane priority', qaLooks: 'Rejects: out-of-gauge parts, burrs after a conveyor stop', plDecides: 'Rota, cover, part sequence' },
+    base: {
+      batch: 700, planRate: 27, rateB: 32, rateC: 40, loadMin: 6, mixMin: 12, disMin: 3,
+      pWait: [0.6, 0.05], waitDur: [[9, 16], [2, 5]],
+      pColdN: [0.85, 0.06], pColdD: [0.55, 0.04], coldExtra: [[8, 15], [3, 5]],
+      zaworMTBF: 250, zaworDur: [6, 13],
+      setup: [[60, 76], [18, 24]], setupAt: [3, 8],
+      noz: [25, 130], nozDur: [3, 7],
+      belt: [400, 1600], hopperMult: 1.5,
+      tor: [30, 160], torDur: [4, 9], zator: [60, 230], zatorDur: [1.5, 3.5],
+      coldRej: 0.02, cRej: 0.004, torRej: 10, torRejMax: 120, stopRej: 8, nozRej: 12,
+    },
+  },
+};
+const IND_KEYS = Object.keys(IND);
+function setIndustry(k) {
+  const I = IND[k] || IND.bars;
+  IND_KEY = I.key; IB = I.base; MACH = I.mach;
+  BATCH = IB.batch; PLAN_RATE = IB.planRate; PLAN_TOTAL = PLAN_RATE * 720;
+  IDEAL = { A: BATCH / ((IB.loadMin + IB.mixMin + IB.disMin) * 60), B: IB.rateB / 60, C: IB.rateC / 60 };
+  REASONS = {};
+  for (const r in RSKEL) { const w = I.rl[r]; REASONS[r] = w ? { ...RSKEL[r], label: w[0], short: w[1] } : { ...RSKEL[r] }; }
+  SUBS = { ...SHARED_SUBS, ...I.subs };
+  return I;
+}
+function industry() { return IND[IND_KEY]; }
+function propsOf(k) { const I = IND[k || IND_KEY]; return PSKEL.map(p => ({ ...p, ...(I.props[p.id] || {}) })); }
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -780,21 +993,24 @@ const hourOf = t => (((START_H + Math.floor(t / 3600)) % 24) + 24) % 24;
 const zst = () => ({ RUN: 0, SLOW: 0, STARVED: 0, BLOCKED: 0, STOP: 0, SETUP: 0 });
 let EVID = 0;
 
-// fx[k] is the effectiveness of fix k in 0..1 (1 = fully in place). Base values: ASSUMED for a mid-size bar line, see README.
+// fx[k] is the effectiveness of fix k in 0..1 (1 = fully in place). Base values per industry in IND[..].base: ASSUMED, see README.
 function params(fx) {
   const E = k => Math.max(0, Math.min(1, +fx[k] || 0));
   const kit = E('kitting'), syr = E('syrop'), smed = E('smed'), zas = E('zastepstwo'), noz = E('noz'), buf = E('bufor'), tpm = E('tpm'), pro = E('prowadnice'), pula = E('pula');
+  const b = IB;
   return {
-    pWait: lerp(0.65, 0.05, kit), waitDur: [lerp(9, 2, kit), lerp(17, 5, kit)],
-    pColdNight: lerp(0.9, 0.06, syr), pColdDay: lerp(0.6, 0.04, syr), coldExtra: [lerp(8, 3, syr), lerp(15, 5, syr)],
-    loadMin: 3.5, mixMin: 10.5, disMin: 3, zaworMTBF: 240, zaworDur: [6, 12],
-    setupDur: [lerp(40, 11, smed), lerp(52, 15, smed)], setupAt: [3 * 3600, 8 * 3600],
+    pWait: lerp(b.pWait[0], b.pWait[1], kit), waitDur: [lerp(b.waitDur[0][0], b.waitDur[1][0], kit), lerp(b.waitDur[0][1], b.waitDur[1][1], kit)],
+    pColdNight: lerp(b.pColdN[0], b.pColdN[1], syr), pColdDay: lerp(b.pColdD[0], b.pColdD[1], syr),
+    coldExtra: [lerp(b.coldExtra[0][0], b.coldExtra[1][0], syr), lerp(b.coldExtra[0][1], b.coldExtra[1][1], syr)],
+    loadMin: b.loadMin, mixMin: b.mixMin, disMin: b.disMin, zaworMTBF: b.zaworMTBF, zaworDur: b.zaworDur,
+    setupDur: [lerp(b.setup[0][0], b.setup[1][0], smed), lerp(b.setup[0][1], b.setup[1][1], smed)],
+    setupAt: [b.setupAt[0] * 3600, b.setupAt[1] * 3600],
     breaks: zas >= 0.999 ? [] : [[4.5 * 3600, 20 * (1 - zas)], [9.5 * 3600, 20 * (1 - zas)]],
-    nozMTBF: lerp(30, 150, noz), nozDur: [2, 4.5],
-    rateB: 150 / 60, beltCap: Math.round(lerp(800, 3000, buf)),
-    torMTBF: lerp(26, 150, tpm), torDur: [4, 8],
-    zatorMTBF: lerp(50, 220, pro), zatorDur: [1, 3],
-    rateC: 135 / 60, hopperCap: 2 * BATCH,
+    nozMTBF: lerp(b.noz[0], b.noz[1], noz), nozDur: b.nozDur,
+    rateB: b.rateB / 60, beltCap: Math.round(lerp(b.belt[0], b.belt[1], buf)),
+    torMTBF: lerp(b.tor[0], b.tor[1], tpm), torDur: b.torDur,
+    zatorMTBF: lerp(b.zator[0], b.zator[1], pro), zatorDur: b.zatorDur,
+    rateC: b.rateC / 60, hopperCap: Math.round(b.hopperMult * BATCH),
     // Unstaffed machine, ASSUMED: the next machine's operator covers it. Own stops last 1.6x longer (nobody there when
     // it stops, between L and I) and every ~45 min the shared operator is away 4-9 min. A floater cover plan removes it.
     unstaffedFac: lerp(1.6, 1.0, pula), shareEvery: lerp(45, 480, pula), shareDur: [lerp(4, 1, pula), lerp(9, 2, pula)],
@@ -888,7 +1104,7 @@ function stepA(s) {
     A.st = 'RUN';
     const q = BATCH / Math.round(P.disMin * 60);
     s.hopper += q; s.outA += q;
-    if (--A.pleft <= 0) { A.ph = 'start'; if (A.cold) s.rej.B += Math.round(BATCH * 0.03); }
+    if (--A.pleft <= 0) { A.ph = 'start'; if (A.cold) s.rej.B += Math.round(BATCH * IB.coldRej); }
   }
 }
 
@@ -918,16 +1134,16 @@ function step(s) {
   const P = s.P, R = s.R, t = s.t;
   if (s.t >= 0) shareStops(s);
   const C = s.C;
-  if (C.st === 'STOP') { if (--C.left <= 0) { C.ev.end = t; s.rej.C += C.ev.reason === 'tor' ? Math.min(200, Math.round((t - C.ev.start) / 60 * 25)) : 20; C.ev = null; C.st = 'RUN'; } }
+  if (C.st === 'STOP') { if (--C.left <= 0) { C.ev.end = t; s.rej.C += C.ev.reason === 'tor' ? Math.min(IB.torRejMax, Math.round((t - C.ev.start) / 60 * IB.torRej)) : IB.stopRej; C.ev = null; C.st = 'RUN'; } }
   else {
     if (C.st === 'RUN') {
       if (R() < 1 / (P.torMTBF * 60)) startStop(s, 'C', 'tor', uni(R, P.torDur));
       else if (R() < 1 / (P.zatorMTBF * 60)) startStop(s, 'C', 'zator', uni(R, P.zatorDur));
     }
-    if (C.st !== 'STOP') { const amt = Math.min(P.rateC, s.belt); s.belt -= amt; s.out += amt; s.rej.C += amt * 0.006; C.st = amt >= P.rateC - 1e-9 ? 'RUN' : 'STARVED'; }
+    if (C.st !== 'STOP') { const amt = Math.min(P.rateC, s.belt); s.belt -= amt; s.out += amt; s.rej.C += amt * IB.cRej; C.st = amt >= P.rateC - 1e-9 ? 'RUN' : 'STARVED'; }
   }
   const B = s.B;
-  if (B.st === 'STOP' || B.st === 'SETUP') { if (--B.left <= 0) { B.ev.end = t; if (B.ev.reason === 'noz') s.rej.B += 15; B.ev = null; B.st = 'RUN'; } }
+  if (B.st === 'STOP' || B.st === 'SETUP') { if (--B.left <= 0) { B.ev.end = t; if (B.ev.reason === 'noz') s.rej.B += IB.nozRej; B.ev = null; B.st = 'RUN'; } }
   else {
     if (B.setupIdx < P.setupAt.length && t >= P.setupAt[B.setupIdx]) { B.setupIdx++; startStop(s, 'B', 'przezbrojenie', uni(R, P.setupDur), 'SETUP'); }
     else if (B.breakIdx < P.breaks.length && t >= P.breaks[B.breakIdx][0]) { const d = P.breaks[B.breakIdx][1]; B.breakIdx++; if (d >= 1) startStop(s, 'B', 'przerwa', d); }
@@ -1010,27 +1226,23 @@ function autoOps(s) {
     if (needSub(s, ev) && s.t >= ev.autoAt + 40) { if (ev.rec.reason === ev.reason) ev.rec.sub = ev.sub; else ev.rec.skip = true; }
   }
 }
+setIndustry('bars');
 /*ENGINE-END*/
 
 (() => {
 'use strict';
 const $ = s => document.querySelector(s);
-const MACH = { A: { name: 'Mixer', short: 'Mixer' }, B: { name: 'Former', short: 'Former' }, C: { name: 'Tunnel oven', short: 'Oven' } };
+// Value stream: chosen in the top bar, remembered per browser. Switching reloads, because every label,
+// rate and buffer in the app comes from the profile and each stream keeps its own saved month.
+let IKEY = 'bars'; try { const k = localStorage.getItem('bneck-ind'); if (IND[k]) IKEY = k; } catch (e) {}
+setIndustry(IKEY);
+const IX = industry();
+const UNIT = IX.unit, THING = IX.thing, THING1 = IX.thing1;
 const STL = { RUN: 'Running', SLOW: 'Slow cycle', STARVED: 'Starved', BLOCKED: 'Blocked', STOP: 'Stopped', SETUP: 'Changeover' };
 const STC = { RUN: '--run', SLOW: '--slow', STARVED: '--starve', BLOCKED: '--block', STOP: '--stop', SETUP: '--setup' };
-const FLAV = ['Oat & honey', 'Oat & cranberry', 'Oat & cocoa'];
+const FLAV = IX.prod;
 const STOPR = { A: ['skladniki', 'zawor'], B: ['noz', 'przerwa'], C: ['tor', 'zator'] };  // + 'obsada' while a machine has no operator
-const PROPS = [
-  { id: 'kitting', m: 'A', reasons: ['skladniki'], title: 'Inclusion kitting before the shift', tool: 'Standard work · kitting', waste: 'Muda · waiting', what: 'The warehouse prepares weighed kits two batches ahead. The mixer operator no longer weighs at the machine.', effect: 'Batches waiting for ingredients: ~65% → 5%.', red: 0.9, check: 'Inclusion kit for 2 batches ready' },
-  { id: 'syrop', m: 'A', reasons: ['syrop'], title: 'Syrup temperature poka-yoke', tool: 'Poka-yoke · 5 Why', waste: 'Mura · variable mixing time', what: 'A sensor blocks dosing below 45°C. Tank heater on a thermostat, started 30 min before the shift.', effect: 'Batches with extended mixing: ~75% → 5%.', red: 0.9, check: 'Syrup ≥ 45°C before dosing' },
-  { id: 'tpm', m: 'C', reasons: ['tor'], title: 'TPM: belt tracking check every 2 h', tool: 'TPM · CIL checklist', waste: 'Muda · breakdowns', what: 'The oven operator checks guide, tension and roller every 2 h. Marks on the frame show the correct setting.', effect: 'Tracking failures: every ~25 min → every ~2.5 h.', red: 0.85, check: 'Belt tracking check (every 2 h)' },
-  { id: 'bufor', m: 'C', special: 'bufor', title: 'Buffer before the oven', tool: 'TOC · Drum-Buffer-Rope', waste: 'Muda · starving the bottleneck', what: 'Accumulation table for 3,000 bars before the oven. The oven keeps running while the former is in changeover.', effect: 'Buffer: 800 → 3,000 pcs, ~22 min of oven run time.', red: 0.8, check: 'Oven buffer full before changeover' },
-  { id: 'prowadnice', m: 'C', reasons: ['zator'], title: 'Infeed guides set by template', tool: 'Standardisation · poka-yoke', waste: 'Mura · uneven feeding', what: 'A template for setting the oven infeed guides. Bars enter in an even stream, no clumps.', effect: 'Infeed jams: every ~50 min → every ~4 h.', red: 0.75, check: 'Infeed guides set by template' },
-  { id: 'smed', m: 'B', reasons: ['przezbrojenie'], title: 'SMED for flavour changeover', tool: 'SMED', waste: 'Muda · changeover', what: 'External tasks moved out of the stop: format parts and a second, clean mould wait at the machine before it stops.', effect: 'Changeover: ~45 min → ~13 min.', red: 0.7, check: 'Format parts ready before changeover' },
-  { id: 'noz', m: 'B', reasons: ['noz'], title: 'Knife: coating and cleaning schedule', tool: '5 Why · standard work', waste: 'Muda · minor stops', what: 'Non-stick coated knife. Cleaning every 2 h on a schedule, not after a stop.', effect: 'Knife sticking: every ~30 min → every ~2.5 h.', red: 0.8, check: 'Knife cleaned every 2 h' },
-  { id: 'pula', m: '*', reasons: ['obsada'], title: 'Floater cover plan before the shift', tool: 'Skills matrix (ILUO) · standard work', waste: 'Muri · one person on two machines', what: 'Before each shift the shift manager books a named floater for every gap from the rota and absences. Each crew keeps two floaters trained to U on every machine.', effect: 'Stops for a missing operator: every ~45 min → every ~8 h.', red: 0.9, check: 'Every machine has a named operator' },
-  { id: 'zastepstwo', m: 'B', reasons: ['przerwa'], title: 'Break rotation with cover', tool: 'Standard work · Yamazumi', waste: 'Muri · one operator, no cover', what: 'Break schedule with rotation. Cover from line 3 takes the former for 20 min.', effect: 'Stops for breaks: 40 min → 0.', red: 1, check: 'Break cover confirmed' },
-];
+const PROPS = propsOf();
 const PROP = Object.fromEntries(PROPS.map(p => [p.id, p]));
 
 const nf = new Intl.NumberFormat('en-GB');
@@ -1042,6 +1254,7 @@ const mmss = s => Math.floor(s / 60) + ':' + pad(Math.floor(s % 60));
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const pct = x => Math.round(x * 100) + '%';
 const mname = m => MACH[m].short;
+const ml = m => MACH[m].short.toLowerCase();
 
 const LV0 = Object.fromEntries(ROSTER.map(p => [p.id, { ...p.lvl }]));
 const UI = { next: null, crewVer: 0, speed: 112, assign: { ...DEFAULT_ASSIGN }, playing: true, auto: true, hist: [], queued: {}, appliedAt: {}, fixState: {}, runTo: 0, monthDone: false, prevCum: null, prevMain: null, presim: false, bn: [], bnSh: { sh: { A: 0, B: 0, C: 0 }, main: null, tot: 0 }, rows: {}, sigs: {}, flash: null };
@@ -1129,7 +1342,7 @@ function resetDemo() {
   UI.hist = []; UI.queued = {}; UI.appliedAt = {}; UI.fixState = {}; UI.prevCum = null; UI.prevMain = null; UI.assign = { ...DEFAULT_ASSIGN }; UI.monthDone = false;
   UI.next = null; for (const p of ROSTER) p.lvl = { ...LV0[p.id] };
   startShift(1); UI.presim = true; advance(6 * 3600); UI.presim = false; updateFocus(true);
-  UI.playing = true; STORE.del('month'); renderAll(true);
+  UI.playing = true; STORE.del(MKEY); renderAll(true);
 }
 function auditFix(k) {
   const st = UI.fixState[k]; if (!st) return;
@@ -1154,9 +1367,9 @@ function lossRows() {
 }
 const rlabel = r => r === '__none' ? 'No reason given' : REASONS[r].label;
 function causeLabel(k) {
-  if (k === 'A:cykl') return 'mixer batch rhythm';
-  if (k === 'C:tempo') return 'oven slower than former';
-  if (k === 'B:tempo') return 'former rate';
+  if (k === 'A:cykl') return ml('A') + ' batch rhythm';
+  if (k === 'C:tempo') return ml('C') + ' slower than ' + ml('B');
+  if (k === 'B:tempo') return ml('B') + ' rate';
   const [m, r] = k.split(':');
   return mname(m) + ': ' + (REASONS[r] ? REASONS[r].short.toLowerCase() : r);
 }
@@ -1179,7 +1392,7 @@ function pending(m) {
 function tabShell(m) {
   return `<article class="tab" id="tab${m}" data-m="${m}">
     <div class="tab-h"><h3><span class="mid">${m}</span>${MACH[m].name}</h3><span class="mode" id="md${m}"></span></div>
-    <div class="tstate" id="ts${m}"><b id="sw${m}">Pracuje</b><span id="ss${m}"></span></div>
+    <div class="tstate" id="ts${m}"><b id="sw${m}">Running</b><span id="ss${m}"></span></div>
     <p class="impact" id="im${m}"></p>
     <div class="tbody" id="tb${m}"></div>
     <div class="tfoot"><span id="tf${m}"></span><span id="tg${m}"></span></div>
@@ -1253,23 +1466,23 @@ function tabDynamic(m) {
   if (m === 'A') {
     const b = x.batch;
     if (st === 'STOP') sub = `Batch ${b} · ${REASONS[x.ev.reason].short.toLowerCase()} ${mmss(S.t - x.ev.start)}`;
-    else if (x.ph === 'load') sub = `Batch ${b} · loading`;
-    else if (x.ph === 'mix') sub = `Batch ${b} · mixing ${mmss(x.mixEl)} / std ${mmss(x.mixStd)}`;
-    else if (x.ph === 'disWait') sub = `Batch ${b} ready · hopper full`;
-    else if (x.ph === 'dis') sub = `Batch ${b} · discharging to hopper`;
+    else if (x.ph === 'load') sub = `Batch ${b} · ${IX.ph.load}`;
+    else if (x.ph === 'mix') sub = `Batch ${b} · ${IX.ph.mix} ${mmss(x.mixEl)} / std ${mmss(x.mixStd)}`;
+    else if (x.ph === 'disWait') sub = `Batch ${b} ready · ${BUF[0][0].toLowerCase()} full`;
+    else if (x.ph === 'dis') sub = `Batch ${b} · ${IX.ph.dis} to the ${BUF[0][0].toLowerCase()}`;
     else sub = `Batch ${b}`;
   } else if (m === 'B') {
-    sub = (st === 'STOP' || st === 'SETUP') ? `${REASONS[x.ev.reason].short} · ${mmss(S.t - x.ev.start)}` : `150 pcs/min · hopper ${fmt(S.hopper)} pcs`;
+    sub = (st === 'STOP' || st === 'SETUP') ? `${REASONS[x.ev.reason].short} · ${mmss(S.t - x.ev.start)}` : `${IX.base.rateB} ${UNIT}/min · ${BUF[0][0].toLowerCase()} ${fmt(S.hopper)} ${UNIT}`;
   } else {
-    sub = st === 'STOP' ? `${REASONS[x.ev.reason].short} · ${mmss(S.t - x.ev.start)}` : `135 pcs/min · buffer ${fmt(S.belt)} pcs`;
+    sub = st === 'STOP' ? `${REASONS[x.ev.reason].short} · ${mmss(S.t - x.ev.start)}` : `${IX.base.rateC} ${UNIT}/min · ${BUF[1][0].toLowerCase()} ${fmt(S.belt)} ${UNIT}`;
   }
   $('#ss' + m).textContent = sub;
   const bnmode = S.focus === m;
   let im;
-  if (bnmode) im = 'Bottleneck. One minute stopped here is about 120 bars fewer at the end of the line.';
-  else if (m === 'A') im = `The hopper gives the former ${f1(S.hopper / 150)} min of stock.`;
-  else if (m === 'B') im = `The buffer gives the oven ${f1(S.belt / 135)} min of stock.`;
-  else im = S.focus ? `The line is limited by the ${mname(S.focus).toLowerCase()} now, not the oven.` : 'End of line.';
+  if (bnmode) im = `Bottleneck. One minute stopped here is about ${PLAN_RATE} ${THING} fewer at the end of the line.`;
+  else if (m === 'A') im = `The ${BUF[0][0].toLowerCase()} gives the ${ml('B')} ${f1(S.hopper / BUF[0][3])} min of stock.`;
+  else if (m === 'B') im = `The ${BUF[1][0].toLowerCase()} gives the ${ml('C')} ${f1(S.belt / BUF[1][3])} min of stock.`;
+  else im = S.focus ? `The line is limited by the ${ml(S.focus)} now, not the ${ml('C')}.` : 'End of line.';
   $('#im' + m).textContent = im;
   let n = 0, rec = 0, det = 0;
   for (const ev of S.events) if (ev.m === m) { n++; if (ev.rec) { rec++; if (ev.rec.sub != null) det++; } }
@@ -1282,12 +1495,12 @@ function tabDynamic(m) {
 }
 
 // ---------- line view ----------
-const BUF = [['Hopper', 'hopper', 'hopperCap', 150], ['Belt buffer', 'belt', 'beltCap', 135]];
+const BUF = IX.buf.map((b, i) => [b[0], b[1], b[2], i === 0 ? IX.base.rateB : IX.base.rateC]);
 function machShell(m) {
-  const rows = { A: [['Batch', '2,500 pcs'], ['Std cycle', '17 min']], B: [['Rate', '150 pcs/min'], ['Changeover', '45 min']], C: [['Rate', '135 pcs/min'], ['Baking', '14 min']] }[m];
+  const rows = IX.rows[m];
   return `<article class="mach" id="mach${m}" tabindex="0" role="button" aria-label="${MACH[m].name} detail" data-mach="${m}">
     <div class="mh"><h3><span class="mid">${m}</span>${MACH[m].name}</h3><span class="bntag" id="mbt${m}" hidden>BOTTLENECK</span><span class="opchip" id="mop${m}"></span></div>
-    <div class="mstate"><b id="mst${m}">Pracuje</b><span id="msx${m}"></span></div>
+    <div class="mstate"><b id="mst${m}">Running</b><span id="msx${m}"></span></div>
     <dl class="mstats"><dt>${rows[0][0]}</dt><dd>${rows[0][1]}</dd><dt>${rows[1][0]}</dt><dd id="mr${m}">${rows[1][1]}</dd><dt>Attainment</dt><dd id="mp${m}">0%</dd><dt>Bottleneck</dt><dd class="bnv" id="mn${m}">0%</dd></dl>
     <div class="mbar" id="mbar${m}">${['RUN','SLOW','STARVED','BLOCKED','STOP','SETUP'].map(k => `<i id="mq${m}${k}" style="background:var(${STC[k]});width:0"></i>`).join('')}</div>
   </article>`;
@@ -1298,10 +1511,10 @@ function bufShell(i) {
     <div class="bv"><span id="bv${i}">0 / 0</span><small id="bm${i}">≈ 0 min</small></div></div>`;
 }
 function buildLine() {
-  $('#vflow').innerHTML = `<div class="endcap"><b>Plan</b> 120 pcs/min · takt 0.50 s · <span id="vProd">Oat & honey</span></div><div class="varrow" id="va0"></div>`
+  $('#vflow').innerHTML = `<div class="endcap"><b>Plan</b> ${PLAN_RATE} ${UNIT}/min · takt ${(60 / PLAN_RATE).toFixed(2)} s · <span id="vProd">${esc(FLAV[0])}</span></div><div class="varrow" id="va0"></div>`
     + machShell('A') + `<div class="varrow" id="va1"></div>` + bufShell(0) + `<div class="varrow" id="va2"></div>`
     + machShell('B') + `<div class="varrow" id="va3"></div>` + bufShell(1) + `<div class="varrow" id="va4"></div>`
-    + machShell('C') + `<div class="varrow" id="va5"></div><div class="endcap"><b>Packing</b> outside demo scope</div>`;
+    + machShell('C') + `<div class="varrow" id="va5"></div><div class="endcap"><b>${esc(IX.outName)}</b> outside demo scope</div>`;
 }
 function nowBn() {
   let best = null, bl = -1;
@@ -1323,7 +1536,7 @@ function renderLine() {
     const oc = $('#mop' + m), h = opChip(m); if (oc.innerHTML !== h) oc.innerHTML = h;
     for (const k of ['RUN', 'SLOW', 'STARVED', 'BLOCKED', 'STOP', 'SETUP']) $('#mq' + m + k).style.width = (100 * S.secs[m][k] / tot) + '%';
   }
-  $('#mrB').textContent = S.fx.smed ? '13 min' : '45 min';
+  $('#mrB').textContent = Math.round(S.fx.smed ? S.P.setupDur[0] : IX.base.setup[0][0]) + ' min';
   const P = S.P;
   BUF.forEach(([name, key, cap, rate], i) => {
     const v = S[key], c = P[cap], l = v / c;
@@ -1339,7 +1552,7 @@ function renderLine() {
   $('#vProd').textContent = S.B.st === 'SETUP' ? `changeover: ${FLAV[S.B.setupIdx - 1]} → ${FLAV[S.B.setupIdx]}` : FLAV[S.t < su[0] ? 0 : S.t < su[1] ? 1 : 2];
   $('#sBnNow').textContent = bnNow ? MACH[bnNow].name : '–';
   const h1 = S.hopper / PLAN_RATE, h2 = S.belt / PLAN_RATE;
-  $('#sLead').innerHTML = `<span>Hopper<b>${f1(h1)} min</b></span><span>Belt buffer<b>${f1(h2)} min</b></span><span>Value added<b>25 min</b></span><span>Total<b>${fmt(h1 + h2 + 25)} min</b></span>`;
+  $('#sLead').innerHTML = `<span>${esc(BUF[0][0])}<b>${f1(h1)} min</b></span><span>${esc(BUF[1][0])}<b>${f1(h2)} min</b></span><span>Value added<b>${IX.va} min</b></span><span>Total<b>${fmt(h1 + h2 + IX.va)} min</b></span>`;
   return bnNow;
 }
 function oeeCls(v) { return v >= 0.85 ? 'hi' : v >= 0.65 ? 'mid2' : 'lo'; }
@@ -1350,10 +1563,10 @@ function renderSide() {
   rows.push(`<tr class="tot"><td>Line</td><td colspan="3" style="font-family:var(--f-b);color:var(--muted);text-align:left">good / plan</td><td class="${oeeCls(lo)}">${pct(lo)}</td></tr>`);
   $('#sOee').innerHTML = rows.join('');
   const planH = PLAN_RATE * 60, hrs = S.hourly.map(b => b.out), cur = S.out - (S.hourly.length ? S.hourly[S.hourly.length - 1].cumOut : 0), curFrac = (S.t % 3600) / 3600;
-  const bars = hrs.map(v => `<i class="${v < planH * 0.85 ? 'lo' : ''}" style="--h:${Math.min(100, 100 * v / (planH * 1.2))}%" title="${fmt(v)} pcs"></i>`).join('') + (curFrac > 0.05 ? `<i class="live" style="--h:${Math.min(100, 100 * (cur / curFrac) / (planH * 1.2))}%" title="${fmt(cur)} pcs so far"></i>` : '');
+  const bars = hrs.map(v => `<i class="${v < planH * 0.85 ? 'lo' : ''}" style="--h:${Math.min(100, 100 * v / (planH * 1.2))}%" title="${fmt(v)} ${UNIT}"></i>`).join('') + (curFrac > 0.05 ? `<i class="live" style="--h:${Math.min(100, 100 * (cur / curFrac) / (planH * 1.2))}%" title="${fmt(cur)} ${UNIT} so far"></i>` : '');
   $('#sHours').innerHTML = bars + ''.padEnd(0);
   let open = 0; const per = { A: 0, B: 0, C: 0 }; for (const ev of S.events) if (needsInput(S, ev)) { open++; per[ev.m]++; }
-  $('#sOpen').innerHTML = `<div class="orow"><span>Open reports</span><span class="mono">${open}${open ? ' · ' + MS.filter(m => per[m]).map(m => mname(m) + ' ' + per[m]).join(', ') : ''}</span></div><div class="orow"><span>Rejects so far</span><span class="mono">${fmt(S.rej.B + S.rej.C)} pcs</span></div>`;
+  $('#sOpen').innerHTML = `<div class="orow"><span>Open reports</span><span class="mono">${open}${open ? ' · ' + MS.filter(m => per[m]).map(m => mname(m) + ' ' + per[m]).join(', ') : ''}</span></div><div class="orow"><span>Rejects so far</span><span class="mono">${fmt(S.rej.B + S.rej.C)} ${UNIT}</span></div>`;
 }
 function wasteSplit() {
   const W = { Muda: { t: 0, it: {} }, Mura: { t: 0, it: {} }, Muri: { t: 0, it: {} } };
@@ -1585,10 +1798,10 @@ function renderFlow() {
   const w = S.wait, items = [];
   const planNow = PLAN_RATE * S.t / 60 || 1;
   const bs = sum(w.B.starved), bb = sum(w.B.blocked), cs = sum(w.C.starved), ab = sum(w.A.blocked);
-  if (bs >= 120) items.push([bs, 'B ← A', `The former waited for the mixer <b class="mono">${fmt(bs / 60)} min</b>. The mixer is at ${pct(S.outA / planNow)} of plan.`, topCauses(w.B.starved, 3)]);
-  if (bb >= 120) items.push([bb, 'B → C', `The former was blocked <b class="mono">${fmt(bb / 60)} min</b> because the oven was not taking bars.`, topCauses(w.B.blocked, 3)]);
-  if (cs >= 120) items.push([cs, 'C ← B', `The oven waited for bars <b class="mono">${fmt(cs / 60)} min</b>. Pure loss at the end of the line.`, topCauses(w.C.starved, 3)]);
-  if (ab >= 120) items.push([ab, 'A → B', `The mixer waited to discharge <b class="mono">${fmt(ab / 60)} min</b> because the hopper was full.`, topCauses(w.A.blocked, 3)]);
+  if (bs >= 120) items.push([bs, 'B ← A', `The ${ml('B')} waited for the ${ml('A')} <b class="mono">${fmt(bs / 60)} min</b>. The ${ml('A')} is at ${pct(S.outA / planNow)} of plan.`, topCauses(w.B.starved, 3)]);
+  if (bb >= 120) items.push([bb, 'B → C', `The ${ml('B')} was blocked <b class="mono">${fmt(bb / 60)} min</b> because the ${ml('C')} was not taking ${THING}.`, topCauses(w.B.blocked, 3)]);
+  if (cs >= 120) items.push([cs, 'C ← B', `The ${ml('C')} waited for ${THING} <b class="mono">${fmt(cs / 60)} min</b>. Pure loss at the end of the line.`, topCauses(w.C.starved, 3)]);
+  if (ab >= 120) items.push([ab, 'A → B', `The ${ml('A')} waited to discharge <b class="mono">${fmt(ab / 60)} min</b> because the ${BUF[0][0].toLowerCase()} was full.`, topCauses(w.A.blocked, 3)]);
   items.sort((a, b) => b[0] - a[0]);
   $('#flow').innerHTML = items.length ? items.map(i => `<div class="fl"><span class="chain">${i[1]}</span><p>${i[2]}<small>Causes: ${esc(i[3] || 'not enough data')}</small></p></div>`).join('') : '<p class="calm">Not enough data. The machines have not waited on each other yet.</p>';
 }
@@ -1614,7 +1827,7 @@ function renderFish() {
     const o = cats[cat][label] || (cats[cat][label] = { n: 0, min: 0 }); o.n++; o.min += d;
   }
   for (const r of Object.values(UI.rows)) if (r.m === m) bnLost += r.bn;
-  if (m === 'A') { const ns = nightShare('syrop'); if (ns.n >= 3 && ns.night / ns.n >= 0.6) cats['Environment']['Cold syrup mostly after 00:00'] = { n: ns.night, min: -1 }; }
+  if (m === 'A') { const ns = nightShare('syrop'); if (ns.n >= 3 && ns.night / ns.n >= 0.6) cats['Environment'][`${REASONS.syrop.short} mostly after 00:00`] = { n: ns.night, min: -1 }; }
   $('#fishT').textContent = `Ishikawa: ${MACH[m].name}, shift bottleneck`;
   const pos = [['People', 190, 'top'], ['Machine', 400, 'top'], ['Method', 610, 'top'], ['Material', 190, 'bot'], ['Measurement', 400, 'bot'], ['Environment', 610, 'bot']];
   let h = `<line class="spine" x1="20" y1="150" x2="722" y2="150"/>`;
@@ -1655,15 +1868,15 @@ function renderWaste() {
 function renderPatterns() {
   const L = [];
   const ns = nightShare('syrop');
-  if (ns.n >= 3 && ns.night >= 3) L.push([ns.night / ns.n >= 0.6, `${ns.night} of ${ns.n} slow cycles from cold syrup fall between 00:00 and 06:00.${ns.night / ns.n >= 0.6 ? ' The hall cools down at night.' : ''}`, 'Mixer · time of report']);
+  if (ns.n >= 3 && ns.night >= 3) L.push([ns.night / ns.n >= 0.6, `${ns.night} of ${ns.n} slow cycles from ${REASONS.syrop.short.toLowerCase()} fall between 00:00 and 06:00.${ns.night / ns.n >= 0.6 ? ' The hall cools down at night.' : ''}`, `${mname('A')} · time of report`]);
   const tor = S.events.filter(e => e.rec && e.rec.reason === 'tor').length;
-  if (tor >= 3) L.push([UI.bnSh.main === 'C', `The oven belt loses tracking every ${fmt(S.t / 60 / tor)} min on average.`, `Oven · ${tor} reports`]);
+  if (tor >= 3) L.push([UI.bnSh.main === 'C', `${REASONS.tor.label} on the ${ml('C')} every ${fmt(S.t / 60 / tor)} min on average.`, `${mname('C')} · ${tor} reports`]);
   const su = S.events.filter(e => e.type === 'setup' && e.end != null);
-  if (su.length) { const av = su.reduce((a, e) => a + e.end - e.start, 0) / su.length / 60; L.push([UI.bnSh.main === 'B', `Changeover takes ${fmt(av)} min on average. SMED target: under 15 min.`, `Former · ${su.length} changeovers`]); }
+  if (su.length) { const av = su.reduce((a, e) => a + e.end - e.start, 0) / su.length / 60; L.push([UI.bnSh.main === 'B', `${REASONS.przezbrojenie.short} takes ${fmt(av)} min on average. SMED target: under ${Math.round(IX.base.setup[1][1])} min.`, `${mname('B')} · ${su.length} changeovers`]); }
   const noz = S.events.filter(e => e.rec && e.rec.reason === 'noz').length;
-  if (noz >= 3) L.push([false, `The former knife sticks every ${fmt(S.t / 60 / noz)} min on average.`, `Former · ${noz} reports`]);
+  if (noz >= 3) L.push([false, `${REASONS.noz.label} on the ${ml('B')} every ${fmt(S.t / 60 / noz)} min on average.`, `${mname('B')} · ${noz} reports`]);
   const bc = S.wait.B.blocked, cStopBlock = Object.entries(bc).filter(([k]) => k === 'C:tor' || k === 'C:zator').reduce((a, [, v]) => a + v, 0);
-  if (cStopBlock >= 600) L.push([UI.bnSh.main === 'C', `${pct(cStopBlock / Math.max(1, sum(bc)))} of former blockages come from oven stops. The former is not at fault here.`, `Flow B → C · ${fmt(cStopBlock / 60)} min`]);
+  if (cStopBlock >= 600) L.push([UI.bnSh.main === 'C', `${pct(cStopBlock / Math.max(1, sum(bc)))} of ${ml('B')} blockages come from ${ml('C')} stops. The ${ml('B')} is not at fault here.`, `Flow B → C · ${fmt(cStopBlock / 60)} min`]);
   const ev = S.events.filter(e => e.type !== 'setup'), none = ev.filter(e => !e.rec).length, inn = ev.filter(e => e.rec && e.rec.reason === 'inne').length;
   if (ev.length) L.push([none / ev.length > 0.25, `No reason given: ${none} of ${ev.length} events. “Other”: ${inn}.`, 'Data quality']);
   $('#pat').innerHTML = L.length ? L.map(([hot, t, s]) => `<li class="${hot ? 'hot' : ''}">${esc(t)}<small>${esc(s)}</small></li>`).join('') : '<li>Not enough data.</li>';
@@ -1678,7 +1891,7 @@ function computeProps() {
       let bm = 0; for (const k in S.wait.C.starved) if (k.startsWith('B:')) bm += S.wait.C.starved[k];
       bm /= 60;
       if (!(sh.sh.C >= 0.3 && bm >= 10) && !UI.queued[p.id]) continue;
-      ev = `The oven was starved ${fmt(bm)} min by former stops.`; gain = bm * p.red * 135 * scale; min = bm;
+      ev = `The ${ml('C')} was starved ${fmt(bm)} min by ${ml('B')} stops.`; gain = bm * p.red * IX.base.rateC * scale; min = bm;
     } else {
       if (pm === '*') {
         let bv = 0; pm = null;
@@ -1703,7 +1916,7 @@ function renderProps() {
   if (evs.length >= 4 && none / evs.length >= 0.25) h += `<article class="prop is-bn"><div class="ptop"><span class="tool">Andon · reporting standard</span><span class="first">Data first</span></div><h4>Incomplete data</h4><p class="what">${none} of ${evs.length} events have no reason. Without it BNECK sees where the line loses, but not why.</p><p class="offnote">Report reasons on the tablets or tick “Operators report automatically”.</p></article>`;
   list.forEach((o, i) => {
     const p = o.p, q = !!UI.queued[p.id];
-    const g = o.gain >= 500 ? `up to +${fmt(Math.round(o.gain / 100) * 100)} pcs per shift` : 'about 0 now';
+    const g = o.gain >= 500 ? `up to +${fmt(Math.round(o.gain / 100) * 100)} ${UNIT} per shift` : 'about 0 now';
     h += `<article class="prop ${o.isBn ? 'is-bn' : 'is-off'}">
       <div class="ptop"><span class="pm">${o.m}</span><span class="tool">${esc(p.tool)}</span>${i === 0 && o.gain >= 500 ? '<span class="first">Do this first</span>' : ''}</div>
       <h4>${esc(p.title)}</h4><p class="what">${esc(p.what)}</p>
@@ -1724,7 +1937,7 @@ function renderOverview() {
   const L = [];
   if (planNow && S.t >= 600) {
     const gap = planNow - goodOut(S);
-    L.push(`Line: <b>${pct(goodOut(S) / planNow)} of plan</b> (good units) at ${clock(S.t)}. ${gap > 0 ? `<b>${fmt(gap)} pcs</b> short.` : `<b>${fmt(-gap)} pcs</b> ahead.`}`);
+    L.push(`Line: <b>${pct(goodOut(S) / planNow)} of plan</b> (good units) at ${clock(S.t)}. ${gap > 0 ? `<b>${fmt(gap)} ${UNIT}</b> short.` : `<b>${fmt(-gap)} ${UNIT}</b> ahead.`}`);
   }
   if (main && S.t < 3600) L.push(`Bottleneck carried over from the previous shift: <span class="bnw">${MACH[main].name.toLowerCase()}</span>. This shift's data settles after the first hour.`);
   else if (main) {
@@ -1735,14 +1948,14 @@ function renderOverview() {
   } else L.push('Bottleneck not settled yet. Not enough data from this shift.');
   if (main) { const p = opOf(S, main); if (p && p.lvl[main] <= 2) L.push(`${p.name} is at the bottleneck at level ${LVL[p.lvl[main]]}. Check the Crew tab.`); }
   const best = computeProps().find(o => o.gain >= 500);
-  if (best) L.push(`First: <b>${esc(best.p.title)}</b> (${esc(best.p.tool)}). Estimate up to +${fmt(Math.round(best.gain / 100) * 100)} pcs per shift.`);
+  if (best) L.push(`First: <b>${esc(best.p.title)}</b> (${esc(best.p.tool)}). Estimate up to +${fmt(Math.round(best.gain / 100) * 100)} ${UNIT} per shift.`);
   else if (main) L.push('No fix with a clear gain. Collect more reason reports.');
   const prev = UI.hist[UI.hist.length - 1];
   if (prev && !S.done) L.push(`Previous shift (${prev.dow} ${prev.type}): ${pct(prev.pct)} of plan, bottleneck: ${prev.main ? mname(prev.main).toLowerCase() : '–'}.`);
   const h = L.map(x => `<li>${x}</li>`).join('');
   if (UI.sigs.ov !== h) { UI.sigs.ov = h; $('#oSum').innerHTML = h; }
   const nx = computeProps().slice(0, 3);
-  const nh = nx.length ? nx.map(o => `<li><b>${esc(o.p.title)}</b> <span class="mono">${o.gain >= 500 ? 'up to +' + fmt(Math.round(o.gain / 100) * 100) + ' pcs' : 'about 0 now'}</span><small>${esc(o.p.tool)} · ${mname(o.m)}${o.isBn ? '' : ', not the bottleneck'}</small></li>`).join('') : '<li>No proposal with a clear gain yet.</li>';
+  const nh = nx.length ? nx.map(o => `<li><b>${esc(o.p.title)}</b> <span class="mono">${o.gain >= 500 ? 'up to +' + fmt(Math.round(o.gain / 100) * 100) + ' ' + UNIT : 'about 0 now'}</span><small>${esc(o.p.tool)} · ${mname(o.m)}${o.isBn ? '' : ', not the bottleneck'}</small></li>`).join('') : '<li>No proposal with a clear gain yet.</li>';
   if (UI.sigs.onext !== nh) { UI.sigs.onext = nh; $('#oNext').innerHTML = nh; }
 }
 function renderHistChart() {
@@ -1769,7 +1982,8 @@ const STORE = (() => {
   return { open, get, set, del };
 })();
 function snapshot() { return { v: 1, savedAt: Date.now(), n: S.n, hist: UI.hist, appliedAt: UI.appliedAt, fixState: UI.fixState, assign: UI.assign, monthDone: UI.monthDone, levels: Object.fromEntries(ROSTER.map(p => [p.id, { ...p.lvl }])), next: UI.next }; }
-function saveState() { STORE.set('month', snapshot()); }
+const MKEY = 'month:' + IX.key;
+function saveState() { STORE.set(MKEY, snapshot()); }
 function loadState(d) {
   if (!d || !Array.isArray(d.hist)) return false;
   UI.hist = d.hist; UI.appliedAt = d.appliedAt || {}; UI.fixState = d.fixState || {}; UI.assign = { ...DEFAULT_ASSIGN, ...(d.assign || {}) }; UI.queued = {}; UI.monthDone = !!d.monthDone;
@@ -1908,7 +2122,7 @@ function renderDecisions() {
   const H = UI.hist; if (ROLE !== 'slt') return;
   const D = [];
   const props = computeProps().filter(o => o.gain >= 500);
-  if (props[0]) D.push(`<li><b>Approve: ${esc(props[0].p.title)}</b> <span class="mono">up to +${fmt(Math.round(props[0].gain / 100) * 100)} pcs per shift</span><small>${esc(props[0].p.tool)} · ${mname(props[0].m)} · effort ${props[0].p.id === 'bufor' ? 'M, capital' : 'S, standard work'}</small></li>`);
+  if (props[0]) D.push(`<li><b>Approve: ${esc(props[0].p.title)}</b> <span class="mono">up to +${fmt(Math.round(props[0].gain / 100) * 100)} ${UNIT} per shift</span><small>${esc(props[0].p.tool)} · ${mname(props[0].m)} · effort ${props[0].p.id === 'bufor' ? 'M, capital' : 'S, standard work'}</small></li>`);
   const slip = Object.keys(UI.appliedAt).filter(k => (S.fx[k] || 0) < 0.95);
   if (slip.length) D.push(`<li><b>Hold the line on ${slip.length} slipping ${slip.length === 1 ? 'fix' : 'fixes'}</b><small>${slip.map(k => esc(PROP[k].title)).join(', ')}: ask for the weekly audit, not a new project.</small></li>`);
   for (const m of MS) { const n = CREW.filter(c => c.lvl[m] >= 3).length; if (n <= 2) { D.push(`<li><b>Fund cross-training on the ${mname(m).toLowerCase()}</b><small>Only ${n} people at U or O. One absence drops the line to level L. Target: 4 within a quarter.</small></li>`); break; } }
@@ -1929,7 +2143,7 @@ function renderHistory(force) {
   const rows = aggRows(sel).sort((a, b) => b.bn - a.bn || b.min - a.min).slice(0, 8), mx = Math.max(1, ...rows.map(r => r.min));
   $('#hPareto').innerHTML = rows.length ? rows.map(r => `<div class="prow"><span class="nm"><span class="pm">${r.m}</span>${esc(rlabel(r.r))}</span><span class="ptrack"><i style="width:${100 * r.min / mx}%"></i><b style="width:${100 * r.bn / mx}%"></b></span><span class="pv">${fmt(r.min)} min · <em>${fmt(r.bn)}</em></span></div>`).join('') : '<p class="calm">No finished shifts in this period.</p>';
   const wk = {}; for (const h of UI.hist) { const w = wk[h.week] || (wk[h.week] = { n: 0, A: 0, B: 0, C: 0, p: 0 }); w.n++; w.p += h.pct; for (const m of MS) w[m] += h.bnSh[m]; }
-  $('#hBn').innerHTML = `<thead><tr><th>Week</th><th>Shifts</th><th>Mixer</th><th>Former</th><th>Oven</th><th>Plan</th></tr></thead><tbody>${Object.entries(wk).map(([k, w]) => `<tr><td>Week ${k}</td><td>${w.n}</td>${MS.map(m => { const v = w[m] / w.n; return `<td class="${v >= 0.5 ? 'lo' : ''}">${pct(v)}</td>`; }).join('')}<td>${pct(w.p / w.n)}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:left;font-family:var(--f-b);color:var(--muted)">No finished shifts yet.</td></tr>'}</tbody>`;
+  $('#hBn').innerHTML = `<thead><tr><th>Week</th><th>Shifts</th>${MS.map(m => `<th>${esc(mname(m))}</th>`).join('')}<th>Plan</th></tr></thead><tbody>${Object.entries(wk).map(([k, w]) => `<tr><td>Week ${k}</td><td>${w.n}</td>${MS.map(m => { const v = w[m] / w.n; return `<td class="${v >= 0.5 ? 'lo' : ''}">${pct(v)}</td>`; }).join('')}<td>${pct(w.p / w.n)}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:left;font-family:var(--f-b);color:var(--muted)">No finished shifts yet.</td></tr>'}</tbody>`;
   $('#hIns').innerHTML = insights().map(([hot, t, s]) => `<li class="${hot ? 'hot' : ''}">${esc(t)}<small>${esc(s)}</small></li>`).join('');
   drawTrend(); drawOeeTrend();
 }
@@ -1959,7 +2173,7 @@ function setRole(r, go) {
   renderRoleStrip(); UI.sigs = {}; renderAll();
 }
 function setAsset(m) { ASSET = m; try { localStorage.setItem('bneck-asset', m); } catch (e) {} document.querySelectorAll('[data-asset]').forEach(b => b.setAttribute('aria-pressed', b.dataset.asset === m ? 'true' : 'false')); setRole('op', false); }
-document.querySelectorAll('[data-asset]').forEach(b => b.addEventListener('click', () => setAsset(b.dataset.asset)));
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-asset]'); if (b) setAsset(b.dataset.asset); });
 let THEME = 'light';
 try { const t = localStorage.getItem('bneck-theme'); if (t === 'dark') THEME = 'dark'; } catch (e) {}
 function setTheme(t) { THEME = t; document.documentElement.setAttribute('data-theme', t); $('#bTheme').textContent = t === 'dark' ? 'Light' : 'Dark'; try { localStorage.setItem('bneck-theme', t); } catch (e) {} readColors(); if (S) { drawCum(); drawGantt(); renderHistory(false); } }
@@ -2036,16 +2250,16 @@ const FLOW = {
   ci:   { band: 'strategy', name: 'CI / Lean', where: 'Floor and office', looks: 'Recurring problems at the bottleneck, fishbone, fixes that held or slipped', decides: 'Which fix next, the standard and the audit', cadence: 'Weekly check of each fix, daily walk', up: 'Site leadership', view: 'slt' },
   sm:   { band: 'decision', name: 'Shift manager', where: 'Line office, on the floor every hour', looks: 'This shift: output vs plan, bottleneck, losses, help needed from other teams', decides: 'Who stands where, what to escalate, which fix to start next shift', cadence: 'Handover, hourly check, end of shift', up: 'Site leadership, CI', view: 'sm' },
   tl:   { band: 'decision', name: 'Team leader', where: 'On the line', looks: 'The line now: which machine stopped, why, who is at it, open reports', decides: 'Move people, call maintenance, restart order', cadence: 'Continuous, 2 min every hour with the SM', up: 'Shift manager', view: 'tl' },
-  eng:  { band: 'decision', name: 'Engineering', ext: true, where: 'Workshop, called to the line', looks: 'Stops owned by machines: valve, knife, belt, guides', decides: 'Repair now or at changeover, spare parts, TPM checks', cadence: 'On call, weekly TPM review', up: 'Site leadership', escFor: ['zawor', 'noz', 'tor', 'zator'] },
-  wh:   { band: 'decision', name: 'Warehouse', ext: true, where: 'Stores, delivers to the mixer', looks: 'Ingredient waits at the mixer', decides: 'Kit timing, delivery route', cadence: 'Per batch', up: 'Site leadership', escFor: ['skladniki'] },
-  qa:   { band: 'decision', name: 'Quality', ext: true, where: 'Lab and line checks', looks: 'Rejects: brittle bars after cold syrup, burnt bars after oven stops', decides: 'Hold, release, rework, parameter limits', cadence: 'Hourly checks', up: 'Site leadership', escFor: ['rej'] },
-  pl:   { band: 'decision', name: 'Planning / HR', ext: true, where: 'Office', looks: 'Breaks without cover, changeover timing, skills gaps', decides: 'Rota, cover, flavour sequence', cadence: 'Weekly plan', up: 'Site leadership', escFor: ['przerwa', 'przezbrojenie', 'obsada'] },
+  eng:  { band: 'decision', name: 'Engineering', ext: true, where: 'Workshop, called to the line', looks: IX.ext.engLooks, decides: 'Repair now or at changeover, spare parts, TPM checks', cadence: 'On call, weekly TPM review', up: 'Site leadership', escFor: ['zawor', 'noz', 'tor', 'zator'] },
+  wh:   { band: 'decision', name: 'Warehouse', ext: true, where: IX.ext.whWhere, looks: IX.ext.whLooks, decides: IX.ext.whDecides, cadence: 'Per batch', up: 'Site leadership', escFor: ['skladniki'] },
+  qa:   { band: 'decision', name: 'Quality', ext: true, where: 'Lab and line checks', looks: IX.ext.qaLooks, decides: 'Hold, release, rework, parameter limits', cadence: 'Hourly checks', up: 'Site leadership', escFor: ['rej'] },
+  pl:   { band: 'decision', name: 'Planning / HR', ext: true, where: 'Office', looks: 'Breaks without cover, changeover timing, skills gaps', decides: IX.ext.plDecides, cadence: 'Weekly plan', up: 'Site leadership', escFor: ['przerwa', 'przezbrojenie', 'obsada'] },
 };
 let FSEL = 'sm';
 function buildFlow() {
   const node = (k, o) => `<button type="button" class="fnode${o.ext ? ' ext' : ''}" data-fn="${k}" aria-pressed="false"><b>${esc(o.name)}</b><small>${esc(o.where)}</small></button>`;
   const band = (cls, lbl, sub, inner) => `<div class="band ${cls}"><div class="bandl"><span>${sub}</span><b>${lbl}</b></div><div class="bandr">${inner}</div></div>`;
-  const prod = [`<button type="button" class="fnode buf" data-fn="in" aria-pressed="false"><b>Silo & stores</b><small>raw materials</small></button>`];
+  const prod = [`<button type="button" class="fnode buf" data-fn="in" aria-pressed="false"><b>${esc(IX.inName)}</b><small>raw materials</small></button>`];
   const chain = ['A', 'b0', 'B', 'b1', 'C'];
   for (const c of chain) {
     prod.push('<span class="farrow" aria-hidden="true">→</span>');
@@ -2079,13 +2293,13 @@ function flowDetail(k) {
       <div class="live">Now <b style="color:${x.st === 'RUN' ? 'var(--ink)' : `var(${STC[x.st]})`}">${STL[x.st]}</b> · OEE ${pct(o.oee)} · bottleneck ${pct(UI.bnSh.sh[k])} of shift</div>
       <div class="pact" style="margin-top:12px"><button type="button" class="btn" data-mach-open="${k}">Machine detail</button><button type="button" class="btn" data-op-asset="${k}">Its tablet</button></div>`;
   }
-  if (k[0] === 'b') { const i = +k[1], v = S[BUF[i][1]], c = S.P[BUF[i][2]]; return `<span class="lbl">Production · buffer</span><h3>${BUF[i][0]}</h3><dl><dt>Holds</dt><dd>${fmt(v)} of ${fmt(c)} pcs</dd><dt>Gives</dt><dd>${f1(v / BUF[i][3])} min to the next machine</dd><dt>Why it matters</dt><dd>A buffer before the bottleneck keeps it running when the machine before it stops.</dd></dl>`; }
-  return k === 'in' ? '<span class="lbl">Production · input</span><h3>Silo & stores</h3><dl><dt>Owner</dt><dd>Warehouse</dd><dt>Feeds</dt><dd>Mixer, by weighed kits</dd></dl>' : '<span class="lbl">Production · output</span><h3>Packing</h3><dl><dt>Owner</dt><dd>Next line, outside this demo</dd><dt>Receives</dt><dd>Baked bars from the oven</dd></dl>';
+  if (k[0] === 'b') { const i = +k[1], v = S[BUF[i][1]], c = S.P[BUF[i][2]]; return `<span class="lbl">Production · buffer</span><h3>${BUF[i][0]}</h3><dl><dt>Holds</dt><dd>${fmt(v)} of ${fmt(c)} ${UNIT}</dd><dt>Gives</dt><dd>${f1(v / BUF[i][3])} min to the next machine</dd><dt>Why it matters</dt><dd>A buffer before the bottleneck keeps it running when the machine before it stops.</dd></dl>`; }
+  return k === 'in' ? `<span class="lbl">Production · input</span><h3>${esc(IX.inName)}</h3><dl><dt>Owner</dt><dd>Warehouse</dd><dt>Feeds</dt><dd>${esc(IX.inFeeds)}</dd></dl>` : `<span class="lbl">Production · output</span><h3>${esc(IX.outName)}</h3><dl><dt>Owner</dt><dd>Next line, outside this demo</dd><dt>Receives</dt><dd>${esc(IX.outRecv)}</dd></dl>`;
 }
 function renderFlow2() {
   if ($('#p-flow').hidden) return;
   for (const m of MS) { const x = S[m], st = $('#fs' + m); st.textContent = STL[x.st]; st.style.color = x.st === 'RUN' ? 'var(--ink)' : `var(${STC[x.st]})`; const p = opOf(S, m); $('#fo' + m).textContent = p ? p.name + ' · ' + LVL[p.lvl[m]] : '–'; $('#fm' + m).classList.toggle('is-bn', nowBn() === m); }
-  BUF.forEach((b, i) => { $('#fb' + i).textContent = fmt(S[b[1]]) + ' pcs'; });
+  BUF.forEach((b, i) => { $('#fb' + i).textContent = fmt(S[b[1]]) + ' ' + UNIT; });
   const rel = { slt: ['ci', 'sm'], ci: ['slt', 'sm', 'A', 'B', 'C'], sm: ['tl', 'slt', 'ci', 'eng', 'wh', 'qa', 'pl', 'A', 'B', 'C'], tl: ['sm', 'A', 'b0', 'B', 'b1', 'C', 'eng'], eng: ['sm', 'tl', 'A', 'B', 'C'], wh: ['in', 'A', 'sm'], qa: ['B', 'C', 'sm'], pl: ['sm', 'B'] };
   const keep = rel[FSEL] ? new Set([FSEL, ...rel[FSEL]]) : null;
   document.querySelectorAll('[data-fn]').forEach(b => { b.setAttribute('aria-pressed', b.dataset.fn === FSEL ? 'true' : 'false'); b.classList.toggle('dim', !!keep && !keep.has(b.dataset.fn)); });
@@ -2105,7 +2319,7 @@ function escData() {
   for (const [k, f] of Object.entries(FLOW)) {
     if (!f.escFor) continue;
     let min = 0, top = null, tm = 0;
-    if (f.escFor.includes('rej')) { const r = S.rej.B + S.rej.C; min = r / PLAN_RATE; top = `${fmt(r)} rejected bars`; }
+    if (f.escFor.includes('rej')) { const r = S.rej.B + S.rej.C; min = r / PLAN_RATE; top = `${fmt(r)} rejected ${THING}`; }
     for (const r of Object.values(UI.rows)) if (f.escFor.includes(r.r)) { min += r.min; if (r.min > tm) { tm = r.min; top = `${mname(r.m).toLowerCase()}: ${rlabel(r.r).toLowerCase()}`; } }
     out.push({ k, name: f.name, min, top });
   }
@@ -2223,7 +2437,7 @@ function renderFast() {
   const early = S.t < 600;
   $('#kPct').textContent = planNow && !early ? pct(good / planNow) : '–';
   const bn = renderLine(), main = S.focus || UI.bnSh.main;
-  $('#kPctS').textContent = `shift target ${fmt(PLAN_TOTAL)} pcs`;
+  $('#kPctS').textContent = `shift target ${fmt(PLAN_TOTAL)} ${UNIT}`;
   $('#kBn').textContent = main ? MACH[main].name : '–';
   $('#kBnS').textContent = main ? (S.t < 3600 ? `carried over · now: ${bn ? mname(bn).toLowerCase() : '–'}` : `${pct(UI.bnSh.sh[main])} of shift · now: ${bn ? mname(bn).toLowerCase() : '–'}`) : 'active period method';
   $('#nPct').textContent = planNow && !early ? pct(good / planNow) + ' of plan' : '– of plan';
@@ -2313,6 +2527,22 @@ $('#tAuto').addEventListener('change', e => { UI.auto = e.target.checked; S.auto
 })();
 
 // ---------- boot ----------
+function buildIndustry() {
+  $('#indSel').innerHTML = IND_KEYS.map(k => `<option value="${k}"${k === IX.key ? ' selected' : ''}>${esc(IND[k].name)} · ${esc(IND[k].company)}</option>`).join('');
+  $('#plantName').textContent = `${IX.company} · ${IX.line}`;
+  $('#plantSub').textContent = `${IX.sub} · fictional plant, simulated data`;
+  $('#ipnPlant').textContent = IX.company;
+  $('#aboutPlant').textContent = IX.company;
+  $('#footPlant').textContent = IX.company;
+  $('#lgPlan').textContent = `${PLAN_RATE} ${UNIT}/min`;
+  $('#assetSeg').innerHTML = MS.map(m => `<button type="button" data-asset="${m}" aria-pressed="${m === ASSET ? 'true' : 'false'}">${m} · ${esc(mname(m))}</button>`).join('');
+  document.title = `BNECK · ${IX.company}`;
+}
+$('#indSel').addEventListener('change', e => {
+  try { localStorage.setItem('bneck-ind', e.target.value); } catch (err) {}
+  location.reload();
+});
+buildIndustry();
 $('#tabs').innerHTML = MS.map(tabShell).join('');
 buildLine(); readColors(); buildFlow();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readColors(); drawCum(); drawGantt(); });
@@ -2324,6 +2554,6 @@ resetDemo();
 setRole(ROLE, false);
 showTab((location.hash || '').slice(1) || ROLES[ROLE].tab);
 requestAnimationFrame(frame);
-STORE.open().then(async () => { const d = await STORE.get('month'); if (d && d.hist && d.hist.length && loadState(d)) toast(`Resumed the saved month at day ${S.cal.day}. Reset demo starts over.`); });
+STORE.open().then(async () => { const d = await STORE.get(MKEY); if (d && d.hist && d.hist.length && loadState(d)) toast(`Resumed the saved month at day ${S.cal.day}. Reset demo starts over.`); });
 })();
 </script>
