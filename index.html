@@ -130,6 +130,10 @@ main { max-width: 1360px; margin: 0 auto; padding-inline: 24px; padding-block: 2
 .slegend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); margin-bottom: 14px; }
 
 /* line view: vertical flow + side panels */
+.lvsw { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 14px; }
+.lvsw .hint { margin: 0; }
+.livewrap { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--sh); padding: 8px; overflow-x: auto; overflow-y: hidden; }
+.livewrap canvas { display: block; width: 100%; min-width: 520px; cursor: pointer; }
 .lineg { display: grid; grid-template-columns: minmax(0, 7fr) minmax(300px, 5fr); gap: 20px; align-items: start; }
 @media (max-width: 980px) { .lineg { grid-template-columns: minmax(0, 1fr); } }
 .vflow { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
@@ -543,10 +547,15 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
   </section>
 
   <section class="tp" id="p-linia" role="tabpanel" aria-labelledby="t-linia" hidden>
-    <div class="sh"><h2>Live line</h2><p>The stream flows top to bottom. On the right: bottleneck, OEE and this shift so far. Tap a machine for detail.</p></div>
+    <div class="sh"><h2>Live line</h2><p>The whole stream in one view. On the right: bottleneck, OEE and this shift so far. Tap a machine for its detail.</p></div>
     <div class="slegend"><span><i style="background:var(--run)"></i>Running</span><span><i style="background:var(--slow)"></i>Slow cycle</span><span><i style="background:var(--starve)"></i>Starved</span><span><i style="background:var(--block)"></i>Blocked</span><span><i style="background:var(--stop)"></i>Stopped</span><span><i style="background:var(--setup)"></i>Changeover</span></div>
+    <div class="lvsw">
+      <div class="seg" role="group" aria-label="Line view"><button type="button" data-lv="live" aria-pressed="true">Live</button><button type="button" data-lv="cards" aria-pressed="false">Cards</button></div>
+      <p class="hint" id="lvHint"></p>
+    </div>
     <div class="lineg">
-      <div class="vflow" id="vflow"></div>
+      <div class="livewrap" id="liveWrap"><canvas id="live" role="img" aria-label="Live line"></canvas></div>
+      <div class="vflow" id="vflow" hidden></div>
       <aside class="side">
         <div class="panel"><h3>Bottleneck</h3><div class="bnnow"><b id="sBnNow">–</b><span>right now</span></div><div class="stack" id="sBnRows"></div><p class="hint" style="margin:12px 0 0">Share of shift time, active period method.</p></div>
         <div class="panel"><h3>OEE</h3><p class="hint">Availability × Performance × Quality. Starved and blocked time counts against performance.</p><table class="oee"><thead><tr><th>Machine</th><th>A</th><th>P</th><th>Q</th><th>OEE</th></tr></thead><tbody id="sOee"></tbody></table></div>
@@ -1555,6 +1564,136 @@ function renderLine() {
   $('#sLead').innerHTML = `<span>${esc(BUF[0][0])}<b>${f1(h1)} min</b></span><span>${esc(BUF[1][0])}<b>${f1(h2)} min</b></span><span>Value added<b>${IX.va} min</b></span><span>Total<b>${fmt(h1 + h2 + IX.va)} min</b></span>`;
   return bnNow;
 }
+// ---------- live line (canvas) ----------
+// One continuous stream left to right: input, three machines with their operator, two buffers, output.
+// The figure's posture is the machine state, so a stopped machine reads as a raised hand, not a colour alone.
+const LIVE = { on: true, ph: [0, 0, 0, 0, 0, 0], hit: [], w: 0 };
+try { if (localStorage.getItem('bneck-lineview') === 'cards') LIVE.on = false; } catch (e) {}
+function setLineView(v) {
+  LIVE.on = v === 'live';
+  try { localStorage.setItem('bneck-lineview', LIVE.on ? 'live' : 'cards'); } catch (e) {}
+  $('#liveWrap').hidden = !LIVE.on; $('#vflow').hidden = LIVE.on;
+  $('#lvHint').textContent = LIVE.on
+    ? 'Left to right: input, the three machines with their operator, the buffers between them, output. The posture shows the state, so a raised hand is a stop.'
+    : 'Top to bottom: the same stream as cards, with batch, rate, attainment and the time split per machine.';
+  document.querySelectorAll('[data-lv]').forEach(b => b.setAttribute('aria-pressed', (b.dataset.lv === 'live') === LIVE.on ? 'true' : 'false'));
+  if (LIVE.on && S) drawLive(performance.now());
+}
+function figure(g, x, y, st, bn, t, sc) {
+  // y is the ground line. Height about 34 px before scaling.
+  const col = bn ? COL.bn : COL.ink;
+  g.save(); g.translate(x, y); g.scale(sc || 1, sc || 1);
+  g.strokeStyle = col; g.fillStyle = col; g.lineWidth = 2.2; g.lineCap = 'round'; g.lineJoin = 'round';
+  const bob = st === 'RUN' ? Math.sin(t / 260) * 1.2 : st === 'SLOW' ? Math.sin(t / 620) * 0.8 : 0;
+  if (st === 'SETUP') { g.translate(0, 2); g.rotate(0.22); }
+  g.translate(0, bob);
+  g.beginPath(); g.arc(0, -28, 4.6, 0, 7); g.fillStyle = col; g.fill();
+  g.beginPath(); g.moveTo(0, -23.4); g.lineTo(0, -12); g.stroke();                       // body
+  g.beginPath(); g.moveTo(0, -12); g.lineTo(-5, 0); g.moveTo(0, -12); g.lineTo(5, 0); g.stroke(); // legs
+  g.beginPath();
+  if (st === 'STOP') { g.moveTo(0, -21); g.lineTo(-6, -14); g.moveTo(0, -21); g.lineTo(7, -34); }          // hand up
+  else if (st === 'SETUP') { g.moveTo(0, -21); g.lineTo(8, -15); g.moveTo(0, -21); g.lineTo(7, -11); }      // both hands on the machine
+  else if (st === 'SLOW') { g.moveTo(0, -21); g.lineTo(-6, -14); g.moveTo(0, -21); g.lineTo(8, -24); }      // one hand on the panel
+  else if (st === 'STARVED' || st === 'BLOCKED') { g.moveTo(-6, -17); g.lineTo(6, -19); g.moveTo(6, -17); g.lineTo(-6, -19); } // arms crossed
+  else { g.moveTo(0, -21); g.lineTo(-6, -13); g.moveTo(0, -21); g.lineTo(6, -13); }                         // working
+  g.stroke();
+  if (st === 'STOP') { g.fillStyle = COL.stop; g.beginPath(); g.arc(7, -36, 3, 0, 7); g.fill(); }
+  g.restore();
+}
+function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function drawLive(now) {
+  const c = $('#live'); if (!c || !c.clientWidth) return;
+  const narrow = c.clientWidth < 680, H = narrow ? 254 : 292;
+  const dpr = window.devicePixelRatio || 1, W = c.clientWidth;
+  if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); c.style.height = H + 'px'; }
+  const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  const bn = nowBn();
+  const MW = narrow ? 86 : 118, BW = narrow ? 34 : 46, MH = narrow ? 64 : 76;
+  const pad = 10, slots = 3 * MW + 2 * BW, belt = Math.max(16, (W - 2 * pad - slots) / 4);
+  const midY = narrow ? 86 : 96, ground = midY + MH / 2 + (narrow ? 50 : 62);
+  let x = pad;
+  const xs = {}; LIVE.hit = [];
+  const seg = [];
+  g.font = `600 ${narrow ? 10 : 11}px ${COL.body}`; g.textBaseline = 'middle';
+  const beltLine = (x0, x1, i) => {
+    g.strokeStyle = COL.line; g.lineWidth = 3; g.lineCap = 'butt';
+    g.beginPath(); g.moveTo(x0, midY); g.lineTo(x1, midY); g.stroke();
+    seg.push([x0, x1, i]);
+  };
+  const machine = (m) => {
+    const st = S[m].st, isBn = bn === m, x0 = x, y0 = midY - MH / 2;
+    g.lineWidth = isBn ? 3 : 2; g.strokeStyle = isBn ? COL.bn : (st === 'RUN' ? COL.line : COL[SCOL[st]]);
+    g.fillStyle = COL.surface; roundRect(g, x0, y0, MW, MH, 8); g.fill(); g.stroke();
+    g.fillStyle = COL[SCOL[st]]; roundRect(g, x0 + 1.5, y0 + 1.5, MW - 3, 5, 3); g.fill();
+    g.fillStyle = COL.ink; g.textAlign = 'center';
+    g.font = `700 ${narrow ? 12 : 14}px ${COL.body}`;
+    g.fillText(mname(m), x0 + MW / 2, y0 + (narrow ? 24 : 27));
+    g.font = `500 ${narrow ? 10 : 11}px ${COL.mono}`; g.fillStyle = COL[SCOL[st]];
+    g.fillText(STL[st], x0 + MW / 2, y0 + (narrow ? 42 : 48));
+    if (isBn) {
+      g.font = `700 ${narrow ? 9 : 10}px ${COL.mono}`; g.fillStyle = COL.bn;
+      g.fillText('BOTTLENECK', x0 + MW / 2, y0 - 12);
+    }
+    figure(g, x0 + MW / 2, ground, st, isBn, now, narrow ? 1.15 : 1.35);
+    const op = CREW_BY[S.assign[m]];
+    if (op) { g.font = `500 ${narrow ? 10 : 11}px ${COL.body}`; g.fillStyle = COL.muted; g.fillText(`${op.name} · ${LVL[op.lvl[m]]}`, x0 + MW / 2, ground + 16); }
+    LIVE.hit.push([x0, y0, MW, ground + 20 - y0, m]);
+    xs[m] = x0 + MW / 2; x += MW;
+  };
+  const buffer = (i) => {
+    const [name, key, cap, rate] = BUF[i], v = S[key], cp = S.P[cap], l = Math.max(0, Math.min(1, v / cp));
+    const y0 = midY - 22, h = 44;
+    g.strokeStyle = COL.line; g.lineWidth = 2; g.fillStyle = COL.surface;
+    roundRect(g, x, y0, BW, h, 5); g.fill(); g.stroke();
+    g.save(); roundRect(g, x + 2, y0 + 2, BW - 4, h - 4, 4); g.clip();
+    g.fillStyle = l < 0.12 ? COL.starve : COL.line2;
+    g.fillRect(x + 2, y0 + h - 2 - (h - 4) * l, BW - 4, (h - 4) * l); g.restore();
+    g.fillStyle = COL.muted; g.textAlign = 'center'; g.font = `500 ${narrow ? 9 : 10}px ${COL.mono}`;
+    g.fillText(Math.round(l * 100) + '%', x + BW / 2, midY);
+    g.fillText(f1(v / rate) + ' min', x + BW / 2, y0 + h + 12);
+    x += BW;
+  };
+  const cap = (label, left) => {
+    if (belt < 50) return;
+    g.fillStyle = COL.muted; g.textAlign = left ? 'left' : 'right'; g.font = `500 ${narrow ? 9 : 10}px ${COL.body}`;
+    g.fillText(label, left ? pad : W - pad, midY + 26);
+  };
+  // in -> A -> buf0 -> B -> buf1 -> C -> out
+  beltLine(x, x + belt, 0); x += belt; machine('A');
+  beltLine(x, x + belt / 2, 1); x += belt / 2; buffer(0); beltLine(x, x + belt / 2, 2); x += belt / 2; machine('B');
+  beltLine(x, x + belt / 2, 3); x += belt / 2; buffer(1); beltLine(x, x + belt / 2, 4); x += belt / 2; machine('C');
+  beltLine(x, W - pad, 5);
+  cap(IX.inName, true); cap(IX.outName, false);
+  // product dots: a segment runs only when the machine feeding it is actually producing
+  const A = S.A, run = [A.ph === 'load' && A.st === 'RUN', A.ph === 'dis', S.B.st === 'RUN', S.B.st === 'RUN', S.C.st === 'RUN', S.C.st === 'RUN'];
+  const dt = Math.min(80, now - (LIVE.t || now)); LIVE.t = now;
+  g.fillStyle = COL.ink;
+  for (const [x0, x1, i] of seg) {
+    if (run[i]) LIVE.ph[i] = (LIVE.ph[i] + dt * 0.045) % 14;
+    const len = x1 - x0; if (len < 8) continue;
+    for (let d = LIVE.ph[i]; d < len; d += 14) {
+      g.globalAlpha = run[i] ? 1 : 0.22;
+      g.beginPath(); g.arc(x0 + d, midY, 2.6, 0, 7); g.fill();
+    }
+  }
+  g.globalAlpha = 1;
+  // one line of text, same numbers as the cards
+  const planNow = PLAN_RATE * S.t / 60 || 1;
+  g.textAlign = 'center'; g.fillStyle = COL.muted; g.font = `500 ${narrow ? 10 : 11}px ${COL.mono}`;
+  g.fillText(`${clock(S.t)} · ${S.t < 600 ? '–' : pct(goodOut(S) / planNow)} of plan · ${fmt(goodOut(S))} ${UNIT} good`, W / 2, H - 10);
+  if (bn && xs[bn] != null && LIVE.lastBn !== bn) {
+    LIVE.lastBn = bn;
+    const wrap = $('#liveWrap');
+    if (wrap.scrollWidth > wrap.clientWidth + 4) wrap.scrollTo({ left: Math.max(0, xs[bn] - wrap.clientWidth / 2), behavior: 'smooth' });
+  }
+  c.setAttribute('aria-label', `Live line. ${MS.map(m => `${mname(m)}: ${STL[S[m].st]}`).join('. ')}. Bottleneck: ${bn ? mname(bn) : 'none'}. The Cards view has the same numbers as text.`);
+}
+$('#live').addEventListener('click', e => {
+  const r = e.currentTarget.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+  for (const [x, y, w, h, m] of LIVE.hit) if (px >= x && px <= x + w && py >= y && py <= y + h) { openDrawer(m); return; }
+});
+document.querySelectorAll('[data-lv]').forEach(b => b.addEventListener('click', () => setLineView(b.dataset.lv)));
+
 function oeeCls(v) { return v >= 0.85 ? 'hi' : v >= 0.65 ? 'mid2' : 'lo'; }
 function renderSide() {
   $('#sBnRows').innerHTML = MS.map(m => `<div class="bnrow"><span>${MACH[m].name}</span><span class="bar"><i style="width:${100 * UI.bnSh.sh[m]}%"></i></span><span class="pv">${pct(UI.bnSh.sh[m])}</span></div>`).join('');
@@ -2464,6 +2603,7 @@ function frame(now) {
   if (UI.playing && !S.done) { acc += dt * UI.speed; const n = Math.floor(acc); acc -= n; if (n) advance(n); }
   if (now - tSlow > 700) { tSlow = now; renderSlow(); }
   if (now - tFast > 90) { tFast = now; renderFast(); }
+  if (LIVE.on && !$('#p-linia').hidden && S) drawLive(now);
   if (now - tCanvas > 250) { tCanvas = now; drawCum(); drawGantt(); }
   requestAnimationFrame(frame);
 }
@@ -2543,6 +2683,7 @@ $('#indSel').addEventListener('change', e => {
   location.reload();
 });
 buildIndustry();
+setLineView(LIVE.on ? 'live' : 'cards');
 $('#tabs').innerHTML = MS.map(tabShell).join('');
 buildLine(); readColors(); buildFlow();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readColors(); drawCum(); drawGantt(); });
