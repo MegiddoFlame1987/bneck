@@ -8,6 +8,7 @@
 :root {
   --bg: #ECEDEB; --surface: #F8F8F6; --raised: #FFFFFF; --sunk: #F1F1EE; --ink: #22262A; --muted: #5F666C; --faint: #8C9298; --line: #D3D5D2; --line2: #E3E4E1;
   --run: #3A8F68; --slow: #C28A2A; --starve: #7A6BB8; --block: #D27A3F; --stop: #C44A42; --setup: #4A7FB8;
+  --ps: #2F7A72; --pssoft: #E2EFEC; --pshatch: rgba(47,122,114,.11);
   --bn: #8E2A6A; --bnsoft: #F3E4EE; --onbn: #FFFFFF; --ok: #3A8F68; --oksoft: #E4F0EA; --warnsoft: #F7EEDC; --stopsoft: #F6E3E1; --inv: rgba(34,38,42,.14);
   --f-d: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
   --f-b: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -18,6 +19,7 @@
 :root[data-theme="dark"] {
   --bg: #23262A; --surface: #2C3035; --raised: #33373D; --sunk: #272A2E; --ink: #DDE0E3; --muted: #A2A8AE; --faint: #777D83; --line: #43484E; --line2: #393D43;
   --run: #5FB58C; --slow: #D9A85A; --starve: #A091D8; --block: #E39A66; --stop: #E07068; --setup: #7AA6D6;
+  --ps: #6FBFB4; --pssoft: #253A38; --pshatch: rgba(111,191,180,.14);
   --bn: #D98BBF; --bnsoft: #43303C; --onbn: #1E1218; --ok: #5FB58C; --oksoft: #2A3A32; --warnsoft: #3E3628; --stopsoft: #42302F; --inv: rgba(221,224,227,.16);
   --sh: 0 1px 2px rgba(0,0,0,.25), 0 3px 10px rgba(0,0,0,.2);
   color-scheme: dark;
@@ -130,6 +132,26 @@ main { max-width: 1360px; margin: 0 auto; padding-inline: 24px; padding-block: 2
 .slegend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); margin-bottom: 14px; }
 
 /* line view: vertical flow + side panels */
+/* "Someone is working on this": a hatch plus a tag. Never colour alone (ISA-101, and it has to read when printed). */
+.ps-on { background-image: repeating-linear-gradient(135deg, var(--pshatch) 0 7px, transparent 7px 16px); }
+/* The cards' inner blocks have solid backgrounds, so the stripes go on the header band, where they read. */
+.tab.ps-on .tab-h { margin: -16px -18px 2px; padding: 12px 18px; border-radius: 15px 15px 0 0; }
+.mach.ps-on .mh { margin: -16px -20px 2px; padding: 12px 20px; border-radius: 8px 8px 0 0; }
+.tab.ps-on .tab-h, .mach.ps-on .mh { background-image: repeating-linear-gradient(135deg, var(--pshatch) 0 7px, transparent 7px 16px); border-bottom: 1px solid var(--ps); }
+.tab.ps-on { box-shadow: inset 3px 0 0 var(--ps), 0 0 0 6px var(--line2), var(--sh); }
+.mach.ps-on { box-shadow: inset 3px 0 0 var(--ps), var(--sh); }
+.pstag { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; background: var(--pssoft); color: var(--ps); font-family: var(--f-m); font-size: 11px; font-weight: 600; letter-spacing: .04em; }
+.pstag::before { content: ""; width: 7px; height: 7px; border-radius: 2px; background: var(--ps); }
+.pstag.done::before { border-radius: 999px; background: var(--ok); }
+.pstag.done { color: var(--ok); background: var(--oksoft); }
+.psnote { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0 0 12px; padding: 10px 12px; border-left: 3px solid var(--ps); border-radius: 0 var(--rs) var(--rs) 0; background: var(--pssoft); font-size: 13px; }
+.psnote b { color: var(--ps); font-weight: 600; }
+.psnote.done { border-left-color: var(--ok); background: var(--oksoft); }
+.psnote.done b { color: var(--ok); }
+.psnote small { color: var(--muted); font-family: var(--f-m); font-size: 12px; }
+.psbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 12px; padding: 12px; border-radius: var(--rs); background: var(--sunk); border: 1px solid var(--line2); }
+.psbar .lbl { margin: 0; }
+.psbar .grow { flex: 1 1 auto; min-width: 0; }
 .lvsw { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 14px; }
 .lvsw .hint { margin: 0; }
 .livewrap { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--sh); padding: 8px; overflow-x: auto; overflow-y: hidden; }
@@ -458,7 +480,36 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
 .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line2); color: var(--muted); font-size: 12px; line-height: 1.5; max-width: 90ch; }
 .hctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 16px; }
 .bnA { background: var(--setup); } .bnB { background: var(--slow); } .bnC { background: var(--stop); }
-#toasts { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; flex-direction: column; gap: 10px; max-width: min(400px, calc(100vw - 40px)); }
+/* assistant */
+.chatfab { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 42; display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border: 1px solid var(--line); border-radius: 999px; background: var(--ink); color: var(--bg); font-family: var(--f-b); font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 16px rgba(22,32,43,.18); }
+.chatfab:hover { opacity: .9; }
+.chatfab svg { width: 17px; height: 17px; }
+.chat { position: fixed; right: 20px; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 44; width: min(380px, calc(100vw - 40px)); max-height: min(560px, calc(100vh - 140px)); display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: 0 10px 40px rgba(22,32,43,.22); overflow: hidden; }
+.chat-h { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line2); background: var(--sunk); }
+.chat-h b { font-family: var(--f-d); font-size: 18px; flex: 1 1 auto; }
+.chat-h .lbl { margin: 0; }
+.chatlog { flex: 1 1 auto; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.5; }
+.cmsg { max-width: 94%; padding: 9px 12px; border-radius: var(--rs); }
+.cmsg.bot { background: var(--sunk); border: 1px solid var(--line2); align-self: flex-start; }
+.cmsg.you { background: var(--ink); color: var(--bg); align-self: flex-end; }
+.cmsg small { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+.cmsg.you small { color: var(--line); }
+.csug { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.chip-q { padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font-family: var(--f-b); font-size: 12px; cursor: pointer; }
+.chip-q:hover { border-color: var(--ink); }
+.chip-q.go { margin-top: 8px; border-color: var(--ink); font-weight: 600; }
+.chat-f { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--line2); }
+.chat-f input { flex: 1 1 auto; min-width: 0; padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--rs); background: var(--raised); color: var(--ink); font-family: var(--f-b); font-size: 14px; }
+.chat-f input:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+.chatnote { padding: 8px 14px; border-top: 1px solid var(--line2); background: var(--sunk); color: var(--muted); font-size: 11px; }
+body.chat-open #toasts { bottom: calc(640px + env(safe-area-inset-bottom, 0px)); }
+@media (max-width: 560px) {
+  .chat { right: 0; left: 0; bottom: 0; width: auto; max-height: 78vh; border-radius: var(--r) var(--r) 0 0; }
+  .chatfab { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); padding: 10px 14px; }
+  body.chat-open .chatfab { display: none; }
+  body.chat-open #toasts { bottom: calc(78vh + 12px); }
+}
+#toasts { position: fixed; right: 20px; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; flex-direction: column; gap: 10px; max-width: min(400px, calc(100vw - 40px)); }
 .toast { background: var(--ink); color: var(--bg); border-left: 4px solid var(--bn); padding: 12px 14px; border-radius: var(--rs); font-size: 14px; box-shadow: 0 8px 22px rgba(0,0,0,.2); animation: tin .25s ease-out; }
 @keyframes tin { from { transform: translateY(8px); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .varrow.on, .tab.flash, .toast { animation: none; } }
@@ -676,6 +727,14 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
     <div id="drBody"></div>
   </aside>
 </div>
+<button type="button" class="chatfab" id="chatFab" aria-expanded="false" aria-controls="chat">
+  <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4z"/></svg>Ask BNECK</button>
+<section class="chat" id="chat" hidden aria-label="Ask BNECK">
+  <div class="chat-h"><b>Ask BNECK</b><span class="lbl" id="chatScope"></span><button type="button" class="btn" id="chatX" aria-label="Close">Close</button></div>
+  <div class="chatlog" id="chatLog" aria-live="polite"></div>
+  <form class="chat-f" id="chatF"><input id="chatIn" type="text" autocomplete="off" placeholder="Ask about this shift" aria-label="Ask about this shift"><button type="submit" class="btn primary">Ask</button></form>
+  <p class="chatnote">Answers are read from the running simulation, not written by a language model. Nothing leaves the browser.</p>
+</section>
 <div id="toasts" aria-live="polite"></div>
 
 <script>
@@ -1266,7 +1325,7 @@ const mname = m => MACH[m].short;
 const ml = m => MACH[m].short.toLowerCase();
 
 const LV0 = Object.fromEntries(ROSTER.map(p => [p.id, { ...p.lvl }]));
-const UI = { next: null, crewVer: 0, speed: 112, assign: { ...DEFAULT_ASSIGN }, playing: true, auto: true, hist: [], queued: {}, appliedAt: {}, fixState: {}, runTo: 0, monthDone: false, prevCum: null, prevMain: null, presim: false, bn: [], bnSh: { sh: { A: 0, B: 0, C: 0 }, main: null, tot: 0 }, rows: {}, sigs: {}, flash: null };
+const UI = { ps: {}, next: null, crewVer: 0, speed: 112, assign: { ...DEFAULT_ASSIGN }, playing: true, auto: true, hist: [], queued: {}, appliedAt: {}, fixState: {}, runTo: 0, monthDone: false, prevCum: null, prevMain: null, presim: false, bn: [], bnSh: { sh: { A: 0, B: 0, C: 0 }, main: null, tot: 0 }, rows: {}, sigs: {}, flash: null };
 let S = null;
 
 // ---------- sim control ----------
@@ -1348,7 +1407,7 @@ function runShifts(count) {
   UI.presim = false; if (!UI.monthDone) updateFocus(true); saveState(); renderAll(true);
 }
 function resetDemo() {
-  UI.hist = []; UI.queued = {}; UI.appliedAt = {}; UI.fixState = {}; UI.prevCum = null; UI.prevMain = null; UI.assign = { ...DEFAULT_ASSIGN }; UI.monthDone = false;
+  UI.hist = []; UI.queued = {}; UI.ps = {}; UI.appliedAt = {}; UI.fixState = {}; UI.prevCum = null; UI.prevMain = null; UI.assign = { ...DEFAULT_ASSIGN }; UI.monthDone = false;
   UI.next = null; for (const p of ROSTER) p.lvl = { ...LV0[p.id] };
   startShift(1); UI.presim = true; advance(6 * 3600); UI.presim = false; updateFocus(true);
   UI.playing = true; STORE.del(MKEY); renderAll(true);
@@ -1441,14 +1500,16 @@ function renderTab(m) {
   const fxm = PROPS.filter(p => p.m === m && S.fx[p.id]);
   const recent = [];
   for (let i = S.events.length - 1; i >= 0 && recent.length < 2; i--) { const e = S.events[i]; if (e.m === m && e.rec && !needsInput(S, e) && e.end != null) recent.push(e); }
-  const sig = [ROLE, ASSET, recent.map(e => e.id + ':' + e.rec.reason + ':' + e.rec.sub).join(','), S.n, bnmode, pend.slice(0, 3).map(e => e.id + ':' + (e.rec ? e.rec.reason : '') + ':' + (e.end == null ? 1 : 0)).join(','), Math.max(0, pend.length - 3), fxm.map(p => p.id + (S.checks[p.id] ? 1 : 0)).join(',')].join('|');
+  const ps = psFor(m);
+  const sig = [ps.map(o => o.k + (o.done ? 'd' : '')).join(','), ROLE, ASSET, recent.map(e => e.id + ':' + e.rec.reason + ':' + e.rec.sub).join(','), S.n, bnmode, pend.slice(0, 3).map(e => e.id + ':' + (e.rec ? e.rec.reason : '') + ':' + (e.end == null ? 1 : 0)).join(','), Math.max(0, pend.length - 3), fxm.map(p => p.id + (S.checks[p.id] ? 1 : 0)).join(',')].join('|');
   const tab = $('#tab' + m);
   tab.classList.toggle('bnmode', bnmode);
   if (UI.flash === m) { tab.classList.remove('flash'); void tab.offsetWidth; tab.classList.add('flash'); UI.flash = null; }
   if (UI.sigs[m] === sig) return;
   UI.sigs[m] = sig;
   $('#md' + m).textContent = bnmode ? 'Mode: bottleneck' : 'Mode: standard';
-  let h = '';
+  tab.classList.toggle('ps-on', ps.some(o => !o.done));
+  let h = psNotes(m);
   if (!pend.length) h += `<p class="calm">No open reports.${S.auto ? '' : ' When the machine stops, the question appears here.'}</p>`;
   if (ROLE === 'op' && m === ASSET) {
     const open = pend.filter(e => !e.rec), rs = [...STOPR[m], ...(m === 'A' ? ['syrop'] : [])];
@@ -1508,7 +1569,7 @@ const BUF = IX.buf.map((b, i) => [b[0], b[1], b[2], i === 0 ? IX.base.rateB : IX
 function machShell(m) {
   const rows = IX.rows[m];
   return `<article class="mach" id="mach${m}" tabindex="0" role="button" aria-label="${MACH[m].name} detail" data-mach="${m}">
-    <div class="mh"><h3><span class="mid">${m}</span>${MACH[m].name}</h3><span class="bntag" id="mbt${m}" hidden>BOTTLENECK</span><span class="opchip" id="mop${m}"></span></div>
+    <div class="mh"><h3><span class="mid">${m}</span>${MACH[m].name}</h3><span class="bntag" id="mbt${m}" hidden>BOTTLENECK</span><span class="pstag" id="mps${m}" hidden></span><span class="opchip" id="mop${m}"></span></div>
     <div class="mstate"><b id="mst${m}">Running</b><span id="msx${m}"></span></div>
     <dl class="mstats"><dt>${rows[0][0]}</dt><dd>${rows[0][1]}</dd><dt>${rows[1][0]}</dt><dd id="mr${m}">${rows[1][1]}</dd><dt>Attainment</dt><dd id="mp${m}">0%</dd><dt>Bottleneck</dt><dd class="bnv" id="mn${m}">0%</dd></dl>
     <div class="mbar" id="mbar${m}">${['RUN','SLOW','STARVED','BLOCKED','STOP','SETUP'].map(k => `<i id="mq${m}${k}" style="background:var(${STC[k]});width:0"></i>`).join('')}</div>
@@ -1538,6 +1599,10 @@ function renderLine() {
     el.classList.toggle('is-bn', bnNow === m);
     el.style.borderColor = bnNow === m ? '' : st === 'RUN' ? '' : `var(${STC[st]})`;
     $('#mbt' + m).hidden = bnNow !== m;
+    const ps = psFor(m), pst = $('#mps' + m), open = ps.filter(o => !o.done);
+    pst.hidden = !ps.length;
+    if (ps.length) { pst.className = 'pstag' + (open.length ? '' : ' done'); pst.textContent = open.length ? (open.length > 1 ? `${open.length} IN PROBLEM SOLVING` : 'IN PROBLEM SOLVING') : 'SOLVED'; pst.title = ps.map(o => psLine(o).text).join(' · '); }
+    el.classList.toggle('ps-on', open.length > 0);
     const sw = $('#mst' + m); sw.textContent = STL[st]; sw.style.color = st === 'RUN' ? 'var(--ink)' : `var(${STC[st]})`;
     $('#msx' + m).textContent = (st === 'STOP' || st === 'SETUP') ? REASONS[x.ev.reason].short + ' · ' + mmss(S.t - x.ev.start) : (m === 'A' && x.ph === 'mix' ? `mixing ${mmss(x.mixEl)} / std ${mmss(x.mixStd)}` : m === 'A' ? `batch ${x.batch}` : st === 'STARVED' ? 'waiting for input' : st === 'BLOCKED' ? 'waiting for space' : 'nominal rate');
     $('#mp' + m).textContent = pct(Math.min(9.99, outs[m] / planNow));
@@ -1625,6 +1690,18 @@ function drawLive(now) {
     g.lineWidth = isBn ? 3 : 2; g.strokeStyle = isBn ? COL.bn : (st === 'RUN' ? COL.line : COL[SCOL[st]]);
     g.fillStyle = COL.surface; roundRect(g, x0, y0, MW, MH, 8); g.fill(); g.stroke();
     g.fillStyle = COL[SCOL[st]]; roundRect(g, x0 + 1.5, y0 + 1.5, MW - 3, 5, 3); g.fill();
+    const ps = psFor(m), psOpenN = ps.filter(o => !o.done).length;
+    if (ps.length) {
+      if (psOpenN) {
+        g.save(); roundRect(g, x0 + 1, y0 + 7, MW - 2, MH - 8, 6); g.clip();
+        g.strokeStyle = COL.pshatch; g.lineWidth = 7;
+        for (let d = -MH; d < MW + MH; d += 16) { g.beginPath(); g.moveTo(x0 + d, y0 + MH); g.lineTo(x0 + d + MH, y0); g.stroke(); }
+        g.restore();
+      }
+      g.fillStyle = psOpenN ? COL.ps : COL.run;
+      g.font = `700 ${narrow ? 8 : 9}px ${COL.mono}`; g.textAlign = 'center';
+      g.fillText(psOpenN ? 'PROBLEM SOLVING' : 'SOLVED', x0 + MW / 2, y0 + MH - 7);
+    }
     g.fillStyle = COL.ink; g.textAlign = 'center';
     g.font = `700 ${narrow ? 12 : 14}px ${COL.body}`;
     g.fillText(mname(m), x0 + MW / 2, y0 + (narrow ? 24 : 27));
@@ -1862,7 +1939,7 @@ document.addEventListener('click', e => {
 let COL = {};
 function readColors() {
   const cs = getComputedStyle(document.documentElement);
-  for (const k of ['run', 'slow', 'starve', 'block', 'stop', 'setup', 'bn', 'ink', 'muted', 'line', 'line2', 'surface']) COL[k] = cs.getPropertyValue('--' + k).trim();
+  for (const k of ['run', 'slow', 'starve', 'block', 'stop', 'setup', 'bn', 'ps', 'pshatch', 'ink', 'muted', 'line', 'line2', 'surface']) COL[k] = cs.getPropertyValue('--' + k).trim();
   const fam = cs.getPropertyValue('--f-m').trim(); COL.mono = fam; COL.body = cs.getPropertyValue('--f-b').trim();
 }
 const SCOL = { RUN: 'run', SLOW: 'slow', STARVED: 'starve', BLOCKED: 'block', STOP: 'stop', SETUP: 'setup' };
@@ -2120,12 +2197,12 @@ const STORE = (() => {
   const del = k => new Promise(res => { if (!db) return res(false); try { const t = db.transaction('kv', 'readwrite').objectStore('kv').delete(k); t.onsuccess = () => res(true); t.onerror = () => res(false); } catch (e) { res(false); } });
   return { open, get, set, del };
 })();
-function snapshot() { return { v: 1, savedAt: Date.now(), n: S.n, hist: UI.hist, appliedAt: UI.appliedAt, fixState: UI.fixState, assign: UI.assign, monthDone: UI.monthDone, levels: Object.fromEntries(ROSTER.map(p => [p.id, { ...p.lvl }])), next: UI.next }; }
+function snapshot() { return { v: 1, savedAt: Date.now(), n: S.n, hist: UI.hist, appliedAt: UI.appliedAt, fixState: UI.fixState, assign: UI.assign, monthDone: UI.monthDone, ps: UI.ps, levels: Object.fromEntries(ROSTER.map(p => [p.id, { ...p.lvl }])), next: UI.next }; }
 const MKEY = 'month:' + IX.key;
 function saveState() { STORE.set(MKEY, snapshot()); }
 function loadState(d) {
   if (!d || !Array.isArray(d.hist)) return false;
-  UI.hist = d.hist; UI.appliedAt = d.appliedAt || {}; UI.fixState = d.fixState || {}; UI.assign = { ...DEFAULT_ASSIGN, ...(d.assign || {}) }; UI.queued = {}; UI.monthDone = !!d.monthDone;
+  UI.hist = d.hist; UI.appliedAt = d.appliedAt || {}; UI.fixState = d.fixState || {}; UI.assign = { ...DEFAULT_ASSIGN, ...(d.assign || {}) }; UI.queued = {}; UI.monthDone = !!d.monthDone; UI.ps = d.ps || {};
   for (const p of ROSTER) { const L = d.levels && d.levels[p.id]; p.lvl = { ...LV0[p.id] }; if (L) for (const m of MS) if (L[m] >= 1 && L[m] <= 4) p.lvl[m] = L[m] | 0; }
   UI.next = d.next && d.next.assign && d.next.status && CREWS.includes(d.next.crew) ? planInfo({ n: d.next.n, crew: d.next.crew, status: d.next.status, assign: Object.fromEntries(MS.map(m => [m, CREW_BY[d.next.assign[m]] ? d.next.assign[m] : null])) }) : null;
   UI.prevCum = UI.hist.length ? null : null; UI.prevMain = UI.hist.length ? UI.hist[UI.hist.length - 1].main : null;
@@ -2309,10 +2386,21 @@ function setRole(r, go) {
   for (const m of MS) $('#tab' + m).hidden = r === 'op' && m !== ASSET;
   if (r === 'slt') { HPER = 'weeks'; document.querySelectorAll('[data-per]').forEach(x => x.setAttribute('aria-pressed', x.dataset.per === 'weeks' ? 'true' : 'false')); }
   if (go || !ROLES[r].tabs.includes(TAB)) showTab(ROLES[r].tab);
+  $('#chatScope').textContent = ROLES[r].name;
+  if (CHAT.open) renderChat();
   renderRoleStrip(); UI.sigs = {}; renderAll();
 }
 function setAsset(m) { ASSET = m; try { localStorage.setItem('bneck-asset', m); } catch (e) {} document.querySelectorAll('[data-asset]').forEach(b => b.setAttribute('aria-pressed', b.dataset.asset === m ? 'true' : 'false')); setRole('op', false); }
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-asset]'); if (b) setAsset(b.dataset.asset); });
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-ps]'); if (b) psToggle(b.dataset.ps); });
+$('#chatFab').addEventListener('click', () => setChat(!CHAT.open));
+$('#chatX').addEventListener('click', () => setChat(false));
+$('#chatF').addEventListener('submit', e => { e.preventDefault(); const v = $('#chatIn').value; $('#chatIn').value = ''; chatAsk(v); });
+$('#chatLog').addEventListener('click', e => {
+  const q = e.target.closest('[data-q]'), g = e.target.closest('[data-goto]');
+  if (q) chatAsk(q.dataset.q); else if (g) showTab(g.dataset.goto);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && CHAT.open && !$('#drawer').hidden === false) setChat(false); });
 let THEME = 'light';
 try { const t = localStorage.getItem('bneck-theme'); if (t === 'dark') THEME = 'dark'; } catch (e) {}
 function setTheme(t) { THEME = t; document.documentElement.setAttribute('data-theme', t); $('#bTheme').textContent = t === 'dark' ? 'Light' : 'Dark'; try { localStorage.setItem('bneck-theme', t); } catch (e) {} readColors(); if (S) { drawCum(); drawGantt(); renderHistory(false); } }
@@ -2473,6 +2561,210 @@ document.addEventListener('click', e => { const b = e.target.closest('[data-rais
 
 // ---------- fishbone tab ----------
 let FKEY = null;
+// ---------- assistant ----------
+// Rule engine over the live simulation, not a language model. Every number it gives is read from the shift that is
+// running, so it cannot invent one. It answers inside the current view's scope: an operator is told about their own
+// machine, a team leader about the line, a shift manager and CI about the shift and the month.
+// To put a real model behind it, implement askModel() against a server that holds the key. A key in the page would
+// be readable by anyone who opens the demo, so there is none here.
+async function askModel(q, facts) { return null; }  // facts = snapshot() plus the live shift; returns text or null
+
+const CHAT = { open: false, log: [], busy: false };
+try { CHAT.open = localStorage.getItem('bneck-chat') === '1'; } catch (e) {}
+
+function chatScope() {
+  const sc = ROLES[ROLE].scope;
+  return { sc, machines: sc === 'op' ? [ASSET] : MS, month: sc === 'sm' || sc === 'slt' };
+}
+function machineIn(q) {
+  for (const m of MS) {
+    const names = [MACH[m].name.toLowerCase(), MACH[m].short.toLowerCase()];
+    for (const nm of names) if (nm && q.includes(nm)) return m;
+  }
+  const w = q.split(/[^a-z]+/);
+  for (const m of MS) if (w.includes(m.toLowerCase())) return m;
+  return null;
+}
+const has = (q, ...ws) => ws.some(w => q.includes(w));
+
+function botFacts() {
+  const planNow = PLAN_RATE * S.t / 60 || 1, good = goodOut(S);
+  return { planNow, good, att: good / planNow, bn: S.focus || UI.bnSh.main, bnNow: nowBn() };
+}
+function topLosses(n, only) {
+  return Object.values(UI.rows).filter(r => r.min >= 1 && (!only || only.includes(r.m)))
+    .sort((a, b) => b.min - a.min).slice(0, n);
+}
+function botAnswer(q) {
+  q = ' ' + q.toLowerCase().replace(/[^\p{L}\p{N}%]+/gu, ' ').trim() + ' ';
+  const { sc, machines, month } = chatScope();
+  const f = botFacts(), mq = machineIn(q);
+  const scoped = m => machines.includes(m);
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+  if (has(q, 'help', 'what can you', 'commands', 'how do i use'))
+    return { h: `Ask me about the shift that is running. I read the simulation, I do not guess.<br>Things I answer: the bottleneck and why, why a machine stopped, what to do first, plan attainment, OEE, losses, buffers, changeover, who is on which machine, what is being worked on.` };
+
+  if (has(q, 'bottleneck', 'constraint', 'slowest', 'limiting', 'drum')) {
+    if (!f.bn) return { h: 'No clear bottleneck yet. Let the shift run past the first hour.' };
+    if (sc === 'op') {
+      const mine = f.bn === ASSET;
+      return { h: mine
+        ? `<b>Your machine is the bottleneck</b> right now. A minute lost here is about ${PLAN_RATE} ${THING} off the end of the line. Report the reason and the detail when the tablet asks.`
+        : `The line is held by the ${ml(f.bn)}, not your machine. Keep running to the standard; a minute you save here does not reach the end of the line today.`, tab: 'operatorzy' };
+    }
+    const sh = pct(UI.bnSh.sh[f.bn]), lo = topLosses(1, [f.bn])[0];
+    return { h: `<b>${mname(f.bn)}</b>, ${sh} of the shift so far.${lo ? ` Its biggest own loss is ${esc(rlabel(lo.r)).toLowerCase()}, ${fmt(lo.min)} min.` : ''} One minute there is about ${PLAN_RATE} ${THING} at the end of the line.`, tab: sc === 'tl' ? 'linia' : 'linia' };
+  }
+
+  if (mq && has(q, 'why', 'stopped', 'stop', 'down', 'doing', 'status', 'state', 'what is')) {
+    if (!scoped(mq)) return { h: `Your view is ${ROLES[ROLE].name.toLowerCase()}, so I only answer about the ${ml(ASSET)}. Switch the view at the top to see the rest of the line.` };
+    const x = S[mq], st = x.st;
+    let why = `<b>${mname(mq)}: ${STL[st].toLowerCase()}</b>`;
+    if (st === 'STOP' || st === 'SETUP') why += ` · ${esc(REASONS[x.ev.reason].label)}, ${mmss(S.t - x.ev.start)} so far.`;
+    else if (st === 'STARVED') why += ` · nothing coming from the ${ml(mq === 'C' ? 'B' : 'A')}. The problem is upstream, not here.`;
+    else if (st === 'BLOCKED') why += ` · the ${ml(mq === 'A' ? 'B' : 'C')} is not taking output. The problem is downstream, not here.`;
+    else why += '.';
+    const l = topLosses(2, [mq]);
+    if (l.length) why += `<br>Lost today: ${l.map(r => `${esc(rlabel(r.r)).toLowerCase()} ${fmt(r.min)} min`).join(', ')}.`;
+    const ps = psFor(mq).filter(o => !o.done);
+    if (ps.length) why += `<br>Being worked on: ${ps.map(o => esc(REASONS[o.r].label)).join(', ')}.`;
+    return { h: why, tab: sc === 'op' ? 'operatorzy' : 'linia' };
+  }
+
+  if (has(q, 'what should', 'what do i do', 'first', 'priority', 'next', 'fix', 'improve', 'recommend', 'advice')) {
+    if (sc === 'op') {
+      const open = pending(ASSET).filter(e => !e.rec).length;
+      return { h: open
+        ? `${open} stop${open > 1 ? 's' : ''} on your machine with no reason yet. Say why on the buttons; without it nobody can fix the cause.`
+        : `Nothing open on your machine. Keep the standard checks ticked; that is what holds the fixes in place.`, tab: 'operatorzy' };
+    }
+    const list = computeProps(), best = list.find(o => o.gain >= 500) || list[0];
+    if (!best) return { h: 'No proposal with a clear gain yet. Run more shifts, or report reasons on the tablets so the causes are known.' };
+    return { h: `<b>${esc(best.p.title)}</b> (${esc(best.p.tool)}) on the ${ml(best.p.m)}.<br>${esc(best.ev)}<br>Estimate ${best.gain >= 500 ? `up to +${fmt(Math.round(best.gain / 100) * 100)} ${UNIT} per shift` : 'about 0 now'}.${best.isBn ? '' : ` Note: the ${ml(best.p.m)} is not the bottleneck, so this will not raise line output today.`}`, tab: 'dzialania' };
+  }
+
+  if (has(q, 'plan', 'attainment', 'output', 'how are we', 'how is the shift', 'behind', 'ahead', 'target')) {
+    if (S.t < 600) return { h: 'Too early in the shift for a meaningful number. Ask again after the first ten minutes.' };
+    const gap = Math.round(f.planNow - f.good);
+    return { h: `<b>${pct(f.att)} of plan</b> at ${clock(S.t)}. ${fmt(f.good)} good ${UNIT}, ${gap > 0 ? `${fmt(gap)} short` : `${fmt(-gap)} ahead`} of plan to now. Shift target ${fmt(PLAN_TOTAL)} ${UNIT}.`, tab: sc === 'op' ? 'operatorzy' : 'przeglad' };
+  }
+
+  if (has(q, 'oee', 'availability', 'performance', 'quality')) {
+    const ms = machines.filter(scoped);
+    return { h: ms.map(m => { const o = oee(S, m); return `<b>${mname(m)}</b> ${pct(o.oee)} · A ${pct(o.A)} P ${pct(o.P)} Q ${pct(o.Q)}`; }).join('<br>') + `<br><small>Starved and blocked time counts against performance, so a machine waiting for another one shows it.</small>`, tab: 'linia' };
+  }
+
+  if (has(q, 'loss', 'losses', 'pareto', 'biggest', 'worst', 'where am i losing', 'waste')) {
+    const l = topLosses(4, machines);
+    if (!l.length) return { h: 'No losses worth naming yet this shift.' };
+    return { h: l.map(r => `${esc(rlabel(r.r))} · ${mname(r.m)} · <b>${fmt(r.min)} min</b>${r.bn >= 1 ? ` (${fmt(r.bn)} at the bottleneck)` : ''}`).join('<br>') + `<br><small>Only the bottleneck minutes cost output.</small>`, tab: sc === 'op' ? 'operatorzy' : 'analiza' };
+  }
+
+  if (has(q, 'buffer', 'stock', 'hopper', 'tank', 'accumulat', 'how much time')) {
+    return { h: BUF.map((b, i) => `<b>${esc(b[0])}</b> ${fmt(S[b[1]])} ${UNIT} · ${f1(S[b[1]] / b[3])} min of cover for the ${ml(i === 0 ? 'B' : 'C')}`).join('<br>'), tab: sc === 'op' ? 'operatorzy' : 'linia' };
+  }
+
+  if (has(q, 'changeover', 'smed', 'setup')) {
+    const su = S.events.filter(e => e.type === 'setup' && e.end != null);
+    if (!su.length) return { h: `No finished ${REASONS.przezbrojenie.short.toLowerCase()} yet this shift.` };
+    const av = su.reduce((a, e) => a + e.end - e.start, 0) / su.length / 60;
+    return { h: `${su.length} this shift, ${fmt(av)} min on average. SMED target under ${Math.round(IX.base.setup[1][1])} min. Every minute is ${PLAN_RATE} ${THING} if the ${ml('B')} is the bottleneck.`, tab: 'analiza' };
+  }
+
+  if (has(q, 'who', 'crew', 'operator', 'staffing', 'iluo', 'skill', 'absent', 'cover')) {
+    if (sc === 'op') { const p = CREW_BY[S.assign[ASSET]]; return { h: p ? `You are logged in as the ${ml(ASSET)} tablet. ${esc(p.name)} is on it, level ${LVL[p.lvl[ASSET]]}.` : `No operator assigned to the ${ml(ASSET)} right now.` }; }
+    return { h: MS.map(m => { const p = CREW_BY[S.assign[m]]; return `<b>${mname(m)}</b> ${p ? `${esc(p.name)} · ${LVL[p.lvl[m]]}` : '<span style="color:var(--stop)">no operator</span>'}`; }).join('<br>') + `<br><small>The level multiplies how long a stop on that machine lasts: I ×1.45, L ×1.15, U ×1.0, O ×0.8.</small>`, tab: 'zaloga' };
+  }
+
+  if (has(q, 'problem solving', 'working on', 'worked on', 'being fixed', 'in progress', ' ci ', 'kaizen', 'anyone')) {
+    const all = MS.flatMap(m => psFor(m).map(o => ({ ...o, m })));
+    if (!all.length) return { h: 'Nothing marked as being worked on. CI marks a recurring problem on the Fishbone tab; it then shows on the tablets.' };
+    return { h: all.map(o => { const l = psLine(o); return `<b>${mname(o.m)}</b> ${esc(l.text)} <small>${esc(l.by)} · ${esc(l.since)}</small>`; }).join('<br>'), tab: sc === 'op' ? 'operatorzy' : 'fishbone' };
+  }
+
+  if (has(q, 'thanks', 'thank you', 'cheers', ' ok ')) return { h: 'Anytime.' };
+
+  const s3 = chatSuggestions();
+  return { h: `I did not get that. I answer from this shift's data, so try one of these:<br>${s3.map(x => `<button type="button" class="chip-q" data-q="${esc(x)}">${esc(x)}</button>`).join(' ')}` };
+}
+function chatSuggestions() {
+  const { sc } = chatScope();
+  if (sc === 'op') return [`Is my machine the bottleneck?`, `Why did it stop?`, `What should I do?`];
+  if (sc === 'tl') return [`Where is the bottleneck?`, `Where am I losing most?`, `Who is on which machine?`];
+  if (sc === 'slt') return [`Where is the bottleneck?`, `What should we fix first?`, `What is being worked on?`];
+  return [`Where is the bottleneck?`, `How is the shift against plan?`, `What should I do first?`];
+}
+function chatPush(who, html, tab) {
+  CHAT.log.push({ who, html, tab });
+  if (CHAT.log.length > 40) CHAT.log.splice(0, CHAT.log.length - 40);
+  renderChat();
+}
+function chatAsk(text) {
+  const t = String(text || '').trim(); if (!t) return;
+  chatPush('you', esc(t));
+  const a = botAnswer(t);
+  chatPush('bot', a.h, a.tab);
+}
+function renderChat() {
+  const box = $('#chatLog');
+  box.innerHTML = CHAT.log.map(m => `<div class="cmsg ${m.who}">${m.html}${m.tab && ROLES[ROLE].tabs.includes(m.tab) ? `<button type="button" class="chip-q go" data-goto="${m.tab}">Open ${esc(TABNAME[m.tab] || m.tab)}</button>` : ''}</div>`).join('')
+    + `<div class="csug">${chatSuggestions().map(x => `<button type="button" class="chip-q" data-q="${esc(x)}">${esc(x)}</button>`).join('')}</div>`;
+  box.scrollTop = box.scrollHeight;
+}
+function setChat(on) {
+  CHAT.open = on;
+  try { localStorage.setItem('bneck-chat', on ? '1' : '0'); } catch (e) {}
+  $('#chat').hidden = !on; $('#chatFab').setAttribute('aria-expanded', on ? 'true' : 'false');
+  document.body.classList.toggle('chat-open', on);
+  if (on) { renderChat(); $('#chatIn').focus(); }
+}
+
+// ---------- "CI is working on this" ----------
+// CI or the shift manager marks a recurring problem as being worked on. Operator and team leader see it on their
+// own screen: a hatch on the machine and one line saying what is being worked on and since when. It closes itself
+// when a fix covering that reason goes in, so the operator sees the end of the loop, not only the start.
+// Key is the fishbone problem key: machine|reason.
+const psOpen = () => Object.entries(UI.ps).map(([k, v]) => ({ k, m: k.split('|')[0], r: k.split('|')[1], ...v }));
+function psDoneBy(o) {
+  // A fix that targets this reason and was put in place after the work started closes it.
+  for (const k in UI.appliedAt) {
+    const p = PROP[k];
+    if (p && p.reasons && p.reasons.includes(o.r) && UI.appliedAt[k] >= o.at) return { id: k, at: UI.appliedAt[k] };
+  }
+  return null;
+}
+function psFor(m) {
+  const out = [];
+  for (const o of psOpen()) {
+    if (o.m !== m) continue;
+    const done = psDoneBy(o);
+    if (done && S.n - done.at > 6) continue;   // shown for six shifts after the fix, then it is just normal work
+    out.push({ ...o, done });
+  }
+  return out;
+}
+const psAny = m => psFor(m).length > 0;
+function psToggle(k) {
+  if (UI.ps[k]) { delete UI.ps[k]; toast('Problem solving closed. The tablets stop showing it.'); }
+  else {
+    const [m, r] = k.split('|');
+    UI.ps[k] = { at: S.n, by: ROLES[ROLE].name };
+    toast(`${mname(m)} · ${REASONS[r].label}: marked as being worked on. The operator and the team leader see it now.`);
+  }
+  UI.sigs = {}; saveState(); renderAll();
+}
+function psLine(o) {
+  const d = o.done ? ` Fix in place since day ${calOf(o.done.at).day}: ${PROP[o.done.id].title}.` : '';
+  return { done: !!o.done, text: `${REASONS[o.r].label}${d}`, since: o.done ? 'solved' : `since day ${calOf(o.at).day}`, by: o.by };
+}
+function psNotes(m) {
+  return psFor(m).map(o => {
+    const l = psLine(o);
+    return `<p class="psnote${l.done ? ' done' : ''}"><b>${l.done ? 'Solved' : 'Being worked on'}</b><span class="grow">${esc(l.text)}</span><small>${esc(l.by)} · ${esc(l.since)}</small></p>`;
+  }).join('');
+}
+
 function fishProblems() {
   const agg = {};
   const add = (m, r, sub, min, bn, shiftId) => { if (!r || r === 'inne' || !SUBS[r]) return; const k = m + '|' + r, o = agg[k] || (agg[k] = { k, m, r, min: 0, bn: 0, shifts: new Set(), subs: {}, n: 0 }); o.min += min; o.bn += bn; o.shifts.add(shiftId); o.n++; if (sub != null) o.subs[sub] = (o.subs[sub] || { n: 0, min: 0 }), o.subs[sub].n++, o.subs[sub].min += min; };
@@ -2534,12 +2826,19 @@ function renderFishTab(force) {
     fx = `<div class="reco"><span class="tool">${esc(p.tool)} · ${esc(p.waste)}</span><h4>${esc(p.title)}</h4><p>${esc(p.what)}</p><p class="hint" style="margin:0">${esc(p.effect)} · ${status}</p>
       <div class="pact">${at ? (eff < 0.95 ? `<button type="button" class="btn" data-audit="${p.id}">Audit now</button>` : '') : q ? '' : `<button type="button" class="btn primary" data-act="apply" data-k="${p.id}">Implement from next shift</button>`}</div></div>`;
   }
+  const on = !!UI.ps[o.k], dn = on ? psDoneBy({ ...UI.ps[o.k], r: o.r }) : null;
+  fx += `<div class="psbar">
+    <span class="lbl">Problem solving</span>
+    <span class="grow">${on ? (dn ? `Closed by a fix on day ${calOf(dn.at).day}. The tablets show it as solved for six shifts.` : `Marked as being worked on since day ${calOf(UI.ps[o.k].at).day} by ${esc(UI.ps[o.k].by)}. The ${ml(o.m)} operator and the team leader see it on their screen.`) : 'Mark this as being worked on. The operator who reports it sees that it went somewhere, instead of reporting into silence.'}</span>
+    <button type="button" class="btn${on ? '' : ' primary'}" data-ps="${esc(o.k)}">${on ? 'Stop showing it' : "Start, and tell the floor"}</button>
+  </div>`;
   if (UI.sigs.ffix !== fx) { UI.sigs.ffix = fx; $('#fishFix').innerHTML = fx; }
 }
 $('#fishSel').addEventListener('change', e => { FKEY = e.target.value; UI.sigs.ffix = null; renderFishTab(true); });
 
 // ---------- tabs ----------
 const TABS = ['flow', 'przeglad', 'linia', 'zaloga', 'operatorzy', 'analiza', 'fishbone', 'historia', 'dzialania', 'demo'];
+const TABNAME = { flow: 'Flow', przeglad: 'Overview', linia: 'Line', zaloga: 'Shift & crew', operatorzy: 'Operators', analiza: 'Analysis', fishbone: 'Fishbone', historia: 'History', dzialania: 'Actions', demo: 'About' };
 let TAB = 'przeglad';
 function showTab(id, focusTab) {
   if (!TABS.includes(id) || !ROLES[ROLE].tabs.includes(id)) id = ROLES[ROLE].tab;
@@ -2683,6 +2982,8 @@ $('#indSel').addEventListener('change', e => {
   location.reload();
 });
 buildIndustry();
+chatPush('bot', `I read the shift that is running. Ask about the bottleneck, a machine, losses, buffers, the crew or what to do first.`);
+setChat(CHAT.open);
 setLineView(LIVE.on ? 'live' : 'cards');
 $('#tabs').innerHTML = MS.map(tabShell).join('');
 buildLine(); readColors(); buildFlow();
