@@ -480,19 +480,6 @@ body.scope-tl .lineg { grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr);
 .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line2); color: var(--muted); font-size: 12px; line-height: 1.5; max-width: 90ch; }
 .hctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 16px; }
 .bnA { background: var(--setup); } .bnB { background: var(--slow); } .bnC { background: var(--stop); }
-/* demo time limit */
-.trchip { padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--sunk); color: var(--muted); font-family: var(--f-m); font-size: 12px; font-weight: 600; white-space: nowrap; }
-.trchip.warn { border-color: var(--bn); color: var(--bn); background: var(--bnsoft); }
-.trial { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; background: rgba(18,22,26,.62); backdrop-filter: blur(5px); }
-.trial-c { width: min(520px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; padding: 28px; border-radius: var(--r); background: var(--surface); border: 1px solid var(--line); box-shadow: 0 20px 60px rgba(0,0,0,.3); }
-.trial-c h2 { font-size: 28px; margin: 0 0 6px; }
-.trial-c p { margin: 0 0 14px; font-size: 15px; line-height: 1.55; }
-.trial-c .who { margin: 0 0 18px; padding: 12px 14px; border-left: 3px solid var(--bn); border-radius: 0 var(--rs) var(--rs) 0; background: var(--bnsoft); font-size: 13px; line-height: 1.5; }
-.trial-c a { color: var(--ink); font-weight: 600; }
-.trial-f { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
-.trial-f input { flex: 1 1 180px; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--rs); background: var(--raised); color: var(--ink); font-family: var(--f-m); font-size: 14px; }
-.trial-c .err { min-height: 18px; margin: 8px 0 0; color: var(--stop); font-size: 13px; }
-.trial-c .fine { margin: 16px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
 /* assistant */
 .chatfab { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 42; display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border: 1px solid var(--line); border-radius: 999px; background: var(--ink); color: var(--bg); font-family: var(--f-b); font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 16px rgba(22,32,43,.18); }
 .chatfab:hover { opacity: .9; }
@@ -544,7 +531,6 @@ body.chat-open #toasts { bottom: calc(640px + env(safe-area-inset-bottom, 0px));
     <div class="ctrl">
       <label class="rolew"><span class="lbl">Value stream</span><select id="indSel" aria-label="Value stream"></select></label>
       <label class="rolew"><span class="lbl">View</span><select id="roleSel" aria-label="Your view"><option value="sm">Shift manager · this shift</option><option value="op">Operator · one machine</option><option value="tl">Team leader · the line</option><option value="slt">Site leadership / CI · the month</option></select></label>
-      <span class="trchip" id="trChip" hidden></span>
       <button class="btn" id="bTheme" type="button" title="Light or dark">Dark</button>
       <div class="seg" role="group" aria-label="Simulation speed">
         <button type="button" data-sp="60" aria-pressed="false" title="1 shift minute per second">×1</button>
@@ -740,18 +726,6 @@ body.chat-open #toasts { bottom: calc(640px + env(safe-area-inset-bottom, 0px));
     <div class="dr-h"><h3 id="drTitle">Machine</h3><button type="button" class="btn" id="drClose">Close</button></div>
     <div id="drBody"></div>
   </aside>
-</div>
-<div class="trial" id="trial" hidden role="dialog" aria-modal="true" aria-labelledby="trH">
-  <div class="trial-c">
-    <h2 id="trH">That is the three minutes</h2>
-    <p>This is a working demo of BNECK: bottleneck detection on a simulated line, crew skills, operator tablets and a lean proposal engine. It runs for three minutes without asking anything of you.</p>
-    <p>To see it properly, or to talk about running it on a real line, email me and I will send a link that opens with no limit.</p>
-    <p><a id="trMail" href="#">email</a></p>
-    <form class="trial-f" id="trF"><input id="trIn" type="text" autocomplete="off" placeholder="Unlock code" aria-label="Unlock code"><button type="submit" class="btn primary">Unlock</button></form>
-    <p class="err" id="trErr" role="status"></p>
-    <p class="who">© 2026 Norbert Mazur, all rights reserved: BNECK, its code, screens and the combination of bottleneck detection, crew ILUO, tablet modes and the proposal engine. The methods behind it are public and not claimed: active period method (Roser, 2001), OEE per ISO 22400, ILUO, muda/mura/muri, SMED, TPM, Theory of Constraints. The plants in the demo are fictional.</p>
-    <p class="fine">The limit is a courtesy, not a lock: this page runs in your browser and you could remove it. Please do not. Nothing you do here is sent anywhere.</p>
-  </div>
 </div>
 <button type="button" class="chatfab" id="chatFab" aria-expanded="false" aria-controls="chat">
   <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4z"/></svg>Ask BNECK</button>
@@ -2419,7 +2393,6 @@ function setRole(r, go) {
 function setAsset(m) { ASSET = m; try { localStorage.setItem('bneck-asset', m); } catch (e) {} document.querySelectorAll('[data-asset]').forEach(b => b.setAttribute('aria-pressed', b.dataset.asset === m ? 'true' : 'false')); setRole('op', false); }
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-asset]'); if (b) setAsset(b.dataset.asset); });
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-ps]'); if (b) psToggle(b.dataset.ps); });
-$('#trF').addEventListener('submit', e => { e.preventDefault(); trialUnlock($('#trIn').value); });
 $('#chatFab').addEventListener('click', () => setChat(!CHAT.open));
 $('#chatX').addEventListener('click', () => setChat(false));
 $('#chatF').addEventListener('submit', e => { e.preventDefault(); const v = $('#chatIn').value; $('#chatIn').value = ''; chatAsk(v); });
@@ -2588,60 +2561,6 @@ document.addEventListener('click', e => { const b = e.target.closest('[data-rais
 
 // ---------- fishbone tab ----------
 let FKEY = null;
-// ---------- demo time limit ----------
-// A courtesy gate and a way to be asked for access, NOT protection: anyone can read this file and remove it.
-// What actually protects the work is LICENSE and authorship, not this counter.
-// To change the unlock code, replace TKEY below with btoa(yourCode.split('').reverse().join('')).
-// To change the contact address, replace the two halves in TMAIL.
-const TRIAL_SEC = 180;
-const TKEY = 'NjIwMi1URVNST0QtS0NFTkI=';                      // the code, reversed then base64. Obfuscated, not secret.
-const TMAIL = () => atob('bm9yYmVydC5tLm1henVy') + String.fromCharCode(64) + atob('Z21haWwuY29t');
-const tnorm = v => String(v || '').trim().toUpperCase().replace(/\s+/g, '');
-const tgood = v => tnorm(v) === atob(TKEY).split('').reverse().join('');
-const TR = { used: 0, locked: false, open: true, last: 0 };
-try {
-  TR.open = localStorage.getItem('bneck-key') === '1';
-  TR.used = Math.max(0, +localStorage.getItem('bneck-used') || 0);
-} catch (e) {}
-// A link with the code in it, so the reply to an email is one click and nobody types anything.
-try {
-  const u = new URLSearchParams(location.search).get('unlock');
-  if (u && tgood(u)) { TR.open = true; localStorage.setItem('bneck-key', '1'); localStorage.setItem('bneck-used', '0'); TR.used = 0; }
-} catch (e) {}
-
-function trialUnlock(v) {
-  if (!tgood(v)) { $('#trErr').textContent = 'That code is not right. Check the email.'; return false; }
-  TR.open = true; TR.used = 0; TR.locked = false;
-  try { localStorage.setItem('bneck-key', '1'); localStorage.setItem('bneck-used', '0'); } catch (e) {}
-  $('#trial').hidden = true; $('#trChip').hidden = true; $('#chatFab').hidden = false;
-  UI.playing = true; toast('Unlocked. The demo runs without a time limit on this browser.');
-  return true;
-}
-function trialLock() {
-  TR.locked = true; UI.playing = false;
-  const m = TMAIL();
-  $('#trMail').textContent = m; $('#trMail').href = `mailto:${m}?subject=BNECK%20demo%20access`;
-  if (CHAT.open) setChat(false);
-  $('#chatFab').hidden = true;
-  $('#trial').hidden = false; $('#trIn').focus();
-}
-// Counts time the page is actually being looked at, so a tab left open overnight does not spend the demo.
-function trialTick(now) {
-  if (TR.open) return;
-  if (!TR.last) TR.last = now;
-  const dt = (now - TR.last) / 1000; TR.last = now;
-  if (document.visibilityState !== 'visible' || TR.locked) return;
-  TR.used = Math.min(TRIAL_SEC, TR.used + Math.min(1, dt));
-  if (Math.floor(TR.used) !== Math.floor(TR.used - dt)) {
-    try { localStorage.setItem('bneck-used', String(Math.round(TR.used))); } catch (e) {}
-    const left = Math.max(0, TRIAL_SEC - TR.used);
-    const c = $('#trChip');
-    c.hidden = false;
-    c.classList.toggle('warn', left <= 60);
-    c.textContent = `Demo ${Math.floor(left / 60)}:${pad(Math.floor(left % 60))}`;
-  }
-  if (TR.used >= TRIAL_SEC && !TR.locked) trialLock();
-}
 
 // ---------- assistant ----------
 // Rule engine over the live simulation, not a language model. Every number it gives is read from the shift that is
@@ -2980,9 +2899,8 @@ function renderAll(force) { if (force) UI.sigs = {}; renderSlow(); renderFast();
 
 let last = performance.now(), acc = 0, tFast = 0, tSlow = 0, tCanvas = 0;
 function frame(now) {
-  trialTick(now);
   const dt = Math.min(0.25, (now - last) / 1000); last = now;
-  if (UI.playing && !S.done && !TR.locked) { acc += dt * UI.speed; const n = Math.floor(acc); acc -= n; if (n) advance(n); }
+  if (UI.playing && !S.done) { acc += dt * UI.speed; const n = Math.floor(acc); acc -= n; if (n) advance(n); }
   if (now - tSlow > 700) { tSlow = now; renderSlow(); }
   if (now - tFast > 90) { tFast = now; renderFast(); }
   if (LIVE.on && !$('#p-linia').hidden && S) drawLive(now);

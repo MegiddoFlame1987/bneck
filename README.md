@@ -20,14 +20,7 @@ machine, the floater cover plan) is shared. Each stream keeps its own saved mont
 
 | File | What it is |
 |---|---|
-| `index.html` | The whole app in one file. View switcher = scope: Operator sees one machine with large downtime buttons for that machine only, Team leader sees the line, Shift manager sees the shift (all tabs), Site leadership sees the month (History by week, decisions, Actions). Light theme by default, dark as an in-app switch. Tap a machine for its detail. The published demo runs for three minutes of actual viewing, then asks the visitor to get in touch; a reply with
-`?unlock=<code>` on the link opens it with no limit on that browser, or the code can be typed in. The counter pauses
-when the tab is in the background and survives a reload. It is a courtesy gate and a way to be asked for access, not
-protection: the page runs in the visitor's browser and the check can be removed from it. What protects the work is
-`LICENSE` and authorship. To change the code or the contact address, edit `TKEY` and `TMAIL` at the top of the
-demo-time-limit block; the address is assembled in script rather than written into the page, so simple scrapers miss it.
-
-Ask BNECK (bottom right) answers about the running shift from the simulation itself: bottleneck, a machine's state and why, losses, buffers, changeover, crew, what to fix first, what is being worked on. It is a rule engine, not a language model, so it cannot give a number the data does not hold, and nothing leaves the browser. Answers follow the view's scope: an operator is told about their own machine. `askModel()` is the one place a real model behind a server would plug in; there is no API key in the page.
+| `index.html` | The whole app in one file. View switcher = scope: Operator sees one machine with large downtime buttons for that machine only, Team leader sees the line, Shift manager sees the shift (all tabs), Site leadership sees the month (History by week, decisions, Actions). Light theme by default, dark as an in-app switch. Tap a machine for its detail. Ask BNECK (bottom right) answers about the running shift from the simulation itself: bottleneck, a machine's state and why, losses, buffers, changeover, crew, what to fix first, what is being worked on. It is a rule engine, not a language model, so it cannot give a number the data does not hold, and nothing leaves the browser. Answers follow the view's scope: an operator is told about their own machine. `askModel()` is the one place a real model behind a server would plug in; there is no API key in the page.
 
 Problem solving: on the Fishbone tab, CI or the shift manager marks a recurring problem as being worked on. The operator's tablet and the team leader's line then show it, as a hatched header, a teal edge and one line saying what and since when, so a reported stop does not disappear into silence. When a fix covering that reason goes in, the same place reads Solved for six shifts and then clears.
 
